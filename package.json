@@ -1,0 +1,52 @@
+{
+  "name": "egg-ts-helper",
+  "version": "0.0.1",
+  "description": "egg typescript helper",
+  "bin": {
+    "ets": "dist/bin.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -d",
+    "build:w": "tsc -d -w",
+    "lint": "tslint ./src/**/*.ts ./test/**/*.test.ts",
+    "check": "npm run build && npm run lint",
+    "test": "npm run check && egg-bin test",
+    "test-local": "egg-bin test",
+    "cov": "npm run check && egg-bin cov"
+  },
+  "keywords": [
+    "egg",
+    "typescript"
+  ],
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "files": [
+    "dist"
+  ],
+  "author": "wanghx",
+  "license": "MIT",
+  "dependencies": {
+    "chokidar": "^2.0.1",
+    "glob": "^7.1.2",
+    "mkdirp": "^0.5.1"
+  },
+  "devDependencies": {
+    "@types/chokidar": "^1.7.4",
+    "@types/del": "^3.0.0",
+    "@types/glob": "^5.0.35",
+    "@types/mkdirp": "^0.5.2",
+    "@types/node": "^9.4.5",
+    "@types/power-assert": "^1.4.29",
+    "del": "^3.0.0",
+    "egg-bin": "^4.3.7",
+    "source-map-support": "^0.5.3",
+    "ts-node": "^5.0.1",
+    "tslint": "^5.9.1",
+    "typescript": "^2.7.1"
+  }
+}
