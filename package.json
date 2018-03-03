@@ -35,6 +35,9 @@
     "glob": "^7.1.2",
     "mkdirp": "^0.5.1"
   },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
   "devDependencies": {
     "@types/chokidar": "^1.7.4",
     "@types/del": "^3.0.0",
