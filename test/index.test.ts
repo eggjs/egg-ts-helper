@@ -22,7 +22,7 @@ describe('index.ts', () => {
       cwd: path.resolve(__dirname, './fixtures/app'),
     });
 
-    await sleep(10);
+    await sleep(1000);
 
     assert(!!tsHelper.config);
     assert(tsHelper.config.framework === 'egg');

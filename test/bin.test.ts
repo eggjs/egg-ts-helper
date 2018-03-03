@@ -49,7 +49,7 @@ describe('bin.ts', () => {
   it('should works with -w correctly', async () => {
     triggerBin('-c', path.resolve(__dirname, './fixtures/app4'), '-w');
 
-    await sleep(1000);
+    await sleep(2000);
     const dir = path.resolve(__dirname, './fixtures/app4/app/service/test');
     mkdirp.sync(dir);
 
