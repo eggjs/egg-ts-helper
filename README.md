@@ -13,3 +13,41 @@
 [appveyor-image]: https://ci.appveyor.com/api/projects/status/github/whxaxes/egg-ts-helper?branch=master&svg=true
 [coveralls-url]: https://coveralls.io/r/whxaxes/egg-ts-helper
 [coveralls-image]: https://img.shields.io/coveralls/whxaxes/egg-ts-helper.svg
+
+
+## Install
+
+```
+npm i egg-ts-helper --save-dev
+```
+
+or
+
+```
+yarn add egg-ts-helper --dev
+```
+
+## Usage
+
+using npx
+
+```
+$ npx ets -h
+
+Usage: ets [options]
+Options:
+   -h, --help             usage
+   -v, --version          show version
+   -w, --watch            watch file change
+   -c, --cwd [path]       egg application base dir(default: process.cwd)
+   -f, --framework [name] egg framework(default: egg)
+   -s, --silent           no log
+```
+
+Watching Files
+
+```
+$ ets -w
+```
+
+
