@@ -27,9 +27,19 @@ describe('index.ts', () => {
     assert(!!tsHelper.config);
     assert(tsHelper.config.framework === 'egg');
 
-    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/app/controller/index.d.ts')));
+    assert(
+      fs.existsSync(
+        path.resolve(
+          __dirname,
+          './fixtures/app/typings/app/controller/index.d.ts',
+        ),
+      ),
+    );
 
-    const dts = path.resolve(__dirname, './fixtures/app/typings/app/service/index.d.ts');
+    const dts = path.resolve(
+      __dirname,
+      './fixtures/app/typings/app/service/index.d.ts',
+    );
     fs.writeFileSync(path.resolve(dir, 'test.ts'), '');
     fs.writeFileSync(path.resolve(dir, 'test-two.ts'), '');
 
@@ -61,5 +71,28 @@ describe('index.ts', () => {
     });
 
     assert(tsHelper.config.framework === 'larva');
+  });
+
+  it('should support rewrite by options.watchDirs', () => {
+    const tsHelper = new TsHelper({
+      cwd: path.resolve(__dirname, './fixtures/app3'),
+      watch: false,
+      watchDirs: {
+        controller: false,
+
+        proxy: {
+          path: 'app/test/proxy',
+          interface: 'IProxy',
+          generator: 'class',
+        },
+
+        service: false,
+      },
+    });
+
+    assert(tsHelper.watchNameList.length === 1);
+    assert(
+      tsHelper.watchDirs[0].includes(['app', 'test', 'proxy'].join(path.sep)),
+    );
   });
 });

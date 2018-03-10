@@ -7,7 +7,7 @@ const argv = process.argv;
 // show help
 if (findInArgv(false, '-h', '--help')) {
     console.info(`
-Usage: tsh [options]
+Usage: ets [options]
 Options:
    -h, --help             usage
    -v, --version          show version

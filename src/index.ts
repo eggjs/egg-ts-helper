@@ -20,7 +20,7 @@ export interface TsHelperOption {
   cwd?: string;
   framework?: string;
   typings?: string;
-  watchDirs?: WatchItem[];
+  watchDirs?: { [key: string]: WatchItem };
   caseStyle?: string;
   watch?: boolean;
   autoRemoveJs?: boolean;
@@ -42,28 +42,31 @@ export const defaultConfig = {
   autoRemoveJs: true,
   throttle: 500,
   watch: true,
-  watchDirs: [
-    {
+  watchDirs: {
+    controller: {
       path: 'app/controller',
       interface: 'IController',
       generator: 'class',
     },
-    {
+
+    proxy: {
       path: 'app/proxy',
       interface: 'IProxy',
       generator: 'class',
     },
-    {
+
+    service: {
       path: 'app/service',
       interface: 'IService',
       generator: 'class',
     },
-  ],
+  },
 };
 
 export default class TsHelper extends EventEmitter {
   readonly config: TsHelperConfig;
   readonly watchDirs: string[];
+  readonly watchNameList: string[];
   private tickerMap: PlainObject = {};
   private watcher: chokidar.FSWatcher;
   private generators: { [key: string]: TsGenerator<any> } = {};
@@ -73,6 +76,12 @@ export default class TsHelper extends EventEmitter {
     const config = {
       ...defaultConfig,
       ...options,
+    };
+
+    // merge watchDirs
+    config.watchDirs = {
+      ...defaultConfig.watchDirs,
+      ...options.watchDirs,
     };
 
     // resolve config.typings to absolute url
@@ -89,7 +98,14 @@ export default class TsHelper extends EventEmitter {
     }
 
     this.config = config as TsHelperConfig;
-    this.watchDirs = this.config.watchDirs.map(item => {
+
+    // filter
+    this.watchNameList = Object.keys(this.config.watchDirs).filter(
+      key => !!this.config.watchDirs[key],
+    );
+
+    this.watchDirs = this.watchNameList.map(key => {
+      const item = this.config.watchDirs[key];
       const p = item.path.replace(/\/|\\/, path.sep);
       return getAbsoluteUrlByCwd(p, config.cwd);
     });
@@ -154,7 +170,7 @@ export default class TsHelper extends EventEmitter {
   private generateTs(index: number) {
     const config = this.config;
     const dir = this.watchDirs[index];
-    const generatorConfig = config.watchDirs[index];
+    const generatorConfig = config.watchDirs[this.watchNameList[index]];
     const generator = this.generators[generatorConfig.generator];
 
     if (!generator) {

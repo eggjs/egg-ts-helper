@@ -13,7 +13,9 @@ export interface TsHelperOption {
     cwd?: string;
     framework?: string;
     typings?: string;
-    watchDirs?: WatchItem[];
+    watchDirs?: {
+        [key: string]: WatchItem;
+    };
     caseStyle?: string;
     watch?: boolean;
     autoRemoveJs?: boolean;
@@ -36,14 +38,27 @@ export declare const defaultConfig: {
     throttle: number;
     watch: boolean;
     watchDirs: {
-        path: string;
-        interface: string;
-        generator: string;
-    }[];
+        controller: {
+            path: string;
+            interface: string;
+            generator: string;
+        };
+        proxy: {
+            path: string;
+            interface: string;
+            generator: string;
+        };
+        service: {
+            path: string;
+            interface: string;
+            generator: string;
+        };
+    };
 };
 export default class TsHelper extends EventEmitter {
     readonly config: TsHelperConfig;
     readonly watchDirs: string[];
+    readonly watchNameList: string[];
     private tickerMap;
     private watcher;
     private generators;
