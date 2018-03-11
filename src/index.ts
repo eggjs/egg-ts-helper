@@ -92,7 +92,7 @@ export const defaultConfig = {
 const gd = path.resolve(__dirname, './generators');
 const generators = fs
   .readdirSync(gd)
-  .filter(f => f.endsWith('.ts'))
+  .filter(f => !f.endsWith('.d.ts'))
   .map(
     f => require(path.resolve(gd, f.substring(0, f.lastIndexOf('.')))).default,
   );
