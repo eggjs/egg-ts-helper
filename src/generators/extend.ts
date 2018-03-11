@@ -6,8 +6,6 @@ import * as glob from 'glob';
 import * as path from 'path';
 import { default as TsHelper, GeneratorResult } from '../';
 
-const EXTEND_LIST = ['Context', 'Application', 'Request', 'Response', 'Helper'];
-
 export default function(tsHelper: TsHelper) {
   tsHelper.register('extend', (config, baseConfig) => {
     const dtsDir = path.resolve(
@@ -16,7 +14,7 @@ export default function(tsHelper: TsHelper) {
     );
 
     let fileList: string[];
-    if (!config.changedFile) {
+    if (!config.file) {
       fileList = glob.sync('**/*.@(js|ts)', { cwd: config.dir });
 
       // filter d.ts and the same name ts/js
@@ -24,7 +22,7 @@ export default function(tsHelper: TsHelper) {
         f => !(f.endsWith('.d.ts') || f.endsWith('.js')),
       );
     } else {
-      fileList = config.changedFile.endsWith('.ts') ? [config.changedFile] : [];
+      fileList = config.file.endsWith('.ts') ? [config.file] : [];
     }
 
     if (!fileList.length) {
@@ -34,12 +32,17 @@ export default function(tsHelper: TsHelper) {
     const tsList: GeneratorResult[] = [];
     fileList.forEach(f => {
       const basename = path.basename(f, '.ts');
-      const interfaceName = basename[0].toUpperCase() + basename.substring(1);
-      if (!EXTEND_LIST.includes(interfaceName)) {
+      const interfaceName = config.interface[basename];
+      if (!interfaceName) {
         return;
       }
 
+      const dist = path.resolve(dtsDir, `${basename}.d.ts`);
       f = path.resolve(config.dir, f);
+      if (!fs.existsSync(f)) {
+        return { dist };
+      }
+
       const content = fs.readFileSync(f, {
         encoding: 'utf-8',
       });
@@ -65,7 +68,7 @@ export default function(tsHelper: TsHelper) {
       tsPath = tsPath.substring(0, tsPath.lastIndexOf('.'));
 
       tsList.push({
-        dist: path.resolve(dtsDir, `${basename}.d.ts`),
+        dist,
         content:
           `import ExtendObject from '${tsPath}';\n` +
           'declare module \'egg\' {\n' +

@@ -21,17 +21,18 @@ export interface TsHelperOption {
     watch?: boolean;
     autoRemoveJs?: boolean;
     throttle?: number;
+    execAtInit?: boolean;
 }
 export declare type TsHelperConfig = typeof defaultConfig;
 export declare type TsGenConfig = {
     dir: string;
-    changedFile?: string;
+    file?: string;
 } & WatchItem;
 export interface GeneratorResult {
     dist: string;
     content?: string;
 }
-export declare type TsGenerator<T> = (config: T, baseConfig: TsHelperConfig) => GeneratorResult | GeneratorResult[] | void;
+export declare type TsGenerator<T, U = GeneratorResult | GeneratorResult[] | void> = (config: T, baseConfig: TsHelperConfig) => U;
 export declare const defaultConfig: {
     cwd: string;
     framework: string;
@@ -40,9 +41,17 @@ export declare const defaultConfig: {
     autoRemoveJs: boolean;
     throttle: number;
     watch: boolean;
+    execAtInit: boolean;
     watchDirs: {
         extend: {
             path: string;
+            interface: {
+                context: string;
+                application: string;
+                request: string;
+                response: string;
+                helper: string;
+            };
             generator: string;
             trigger: string[];
         };
@@ -70,13 +79,15 @@ export default class TsHelper extends EventEmitter {
     readonly config: TsHelperConfig;
     readonly watchDirs: string[];
     readonly watchNameList: string[];
-    private tickerMap;
+    readonly generators: {
+        [key: string]: TsGenerator<any>;
+    };
     private watcher;
-    private generators;
+    private tickerMap;
     constructor(options?: TsHelperOption);
     register<T extends TsGenConfig = TsGenConfig>(name: string, tsGen: TsGenerator<T>): void;
     private initWatcher();
     private findInWatchDirs(p);
-    private generateTs(index, type?, changedFile?);
+    private generateTs(index, type?, file?);
     private onChange(p, type);
 }

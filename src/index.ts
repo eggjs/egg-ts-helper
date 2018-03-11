@@ -3,8 +3,6 @@ import { EventEmitter } from 'events';
 import * as fs from 'fs';
 import * as mkdirp from 'mkdirp';
 import * as path from 'path';
-import classGenerator from './generators/class';
-import extendGenerator from './generators/extend';
 
 declare global {
   interface PlainObject {
@@ -27,21 +25,22 @@ export interface TsHelperOption {
   watch?: boolean;
   autoRemoveJs?: boolean;
   throttle?: number;
+  execAtInit?: boolean;
 }
 
 export type TsHelperConfig = typeof defaultConfig;
 export type TsGenConfig = {
   dir: string;
-  changedFile?: string;
+  file?: string;
 } & WatchItem;
 export interface GeneratorResult {
   dist: string;
   content?: string;
 }
-export type TsGenerator<T> = (
+export type TsGenerator<T, U = GeneratorResult | GeneratorResult[] | void> = (
   config: T,
   baseConfig: TsHelperConfig,
-) => GeneratorResult | GeneratorResult[] | void;
+) => U;
 
 export const defaultConfig = {
   cwd: process.cwd(),
@@ -51,9 +50,17 @@ export const defaultConfig = {
   autoRemoveJs: true,
   throttle: 500,
   watch: true,
+  execAtInit: true,
   watchDirs: {
     extend: {
       path: 'app/extend',
+      interface: {
+        context: 'Context',
+        application: 'Application',
+        request: 'Request',
+        response: 'Response',
+        helper: 'IHelper',
+      },
       generator: 'extend',
       trigger: ['add', 'change', 'unlink'],
     },
@@ -81,13 +88,22 @@ export const defaultConfig = {
   },
 };
 
+// preload generators
+const gd = path.resolve(__dirname, './generators');
+const generators = fs
+  .readdirSync(gd)
+  .filter(f => f.endsWith('.ts'))
+  .map(
+    f => require(path.resolve(gd, f.substring(0, f.lastIndexOf('.')))).default,
+  );
+
 export default class TsHelper extends EventEmitter {
   readonly config: TsHelperConfig;
   readonly watchDirs: string[];
   readonly watchNameList: string[];
-  private tickerMap: PlainObject = {};
+  readonly generators: { [key: string]: TsGenerator<any> } = {};
   private watcher: chokidar.FSWatcher;
-  private generators: { [key: string]: TsGenerator<any> } = {};
+  private tickerMap: PlainObject = {};
 
   constructor(options: TsHelperOption = {}) {
     super();
@@ -117,25 +133,27 @@ export default class TsHelper extends EventEmitter {
 
     this.config = config as TsHelperConfig;
 
-    // filter
+    // add build-in generators
+    generators.forEach(gen => gen(this));
+
+    // cached watch list
     this.watchNameList = Object.keys(this.config.watchDirs).filter(
       key => !!this.config.watchDirs[key],
     );
 
+    // format watch dirs
     this.watchDirs = this.watchNameList.map(key => {
       const item = this.config.watchDirs[key];
       const p = item.path.replace(/\/|\\/, path.sep);
       return getAbsoluteUrlByCwd(p, config.cwd);
     });
 
-    // add built-in ts generator
-    classGenerator(this);
-    extendGenerator(this);
-
-    // generate d.ts on start
-    process.nextTick(() => {
-      this.watchDirs.forEach((_, i) => this.generateTs(i));
-    });
+    // generate d.ts at init
+    if (this.config.execAtInit) {
+      process.nextTick(() => {
+        this.watchDirs.forEach((_, i) => this.generateTs(i));
+      });
+    }
 
     // start watching dirs
     if (config.watch) {
@@ -187,10 +205,12 @@ export default class TsHelper extends EventEmitter {
     return -1;
   }
 
-  private generateTs(index: number, type?: string, changedFile?: string) {
+  private generateTs(index: number, type?: string, file?: string) {
     const config = this.config;
     const dir = this.watchDirs[index];
-    const generatorConfig = config.watchDirs[this.watchNameList[index]] as WatchItem;
+    const generatorConfig = config.watchDirs[
+      this.watchNameList[index]
+    ] as WatchItem;
 
     if (type && !generatorConfig.trigger.includes(type)) {
       // check whether need to regenerate ts
@@ -202,7 +222,7 @@ export default class TsHelper extends EventEmitter {
       throw new Error(`ts generator: ${generatorConfig.generator} not exist!!`);
     }
 
-    const result = generator({ ...generatorConfig, dir, changedFile }, config);
+    const result = generator({ ...generatorConfig, dir, file }, config);
     if (result) {
       const resultList = Array.isArray(result) ? result : [result];
       resultList.forEach(item => {

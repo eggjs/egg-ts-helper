@@ -26,20 +26,10 @@ describe('index.ts', () => {
 
     assert(!!tsHelper.config);
     assert(tsHelper.config.framework === 'egg');
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/app/controller/index.d.ts')));
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/app/extend/context.d.ts')));
 
-    assert(
-      fs.existsSync(
-        path.resolve(
-          __dirname,
-          './fixtures/app/typings/app/controller/index.d.ts',
-        ),
-      ),
-    );
-
-    const dts = path.resolve(
-      __dirname,
-      './fixtures/app/typings/app/service/index.d.ts',
-    );
+    const dts = path.resolve(__dirname, './fixtures/app/typings/app/service/index.d.ts');
     fs.writeFileSync(path.resolve(dir, 'test.ts'), '');
     fs.writeFileSync(path.resolve(dir, 'test-two.ts'), '');
 
@@ -77,16 +67,16 @@ describe('index.ts', () => {
     const tsHelper = new TsHelper({
       cwd: path.resolve(__dirname, './fixtures/app3'),
       watch: false,
+      execAtInit: false,
       watchDirs: {
+        extend: false,
         controller: false,
-
+        service: false,
         proxy: {
           path: 'app/test/proxy',
           interface: 'IProxy',
           generator: 'class',
         },
-
-        service: false,
       },
     });
 
