@@ -12,7 +12,7 @@ function sleep(time) {
 function triggerBin(...args: string[]) {
   return spawn(
     path.resolve(__dirname, '../node_modules/.bin/ts-node'),
-    [path.resolve(__dirname, '../src/bin.ts')].concat(args),
+    [path.resolve(__dirname, '../dist/bin.js')].concat(args),
   );
 }
 

@@ -8,7 +8,7 @@ import {
   defaultConfig,
   GeneratorResult,
   TsGenerator,
-} from '../../src/';
+} from '../../dist/';
 
 function sleep(time) {
   return new Promise(res => setTimeout(res, time));

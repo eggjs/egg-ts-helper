@@ -8,7 +8,7 @@ import {
   defaultConfig,
   GeneratorResult,
   TsGenerator,
-} from '../../src/';
+} from '../../dist/';
 
 describe('generators/class.ts', () => {
   const appDir = path.resolve(__dirname, '../fixtures/app');

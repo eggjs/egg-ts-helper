@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as mkdirp from 'mkdirp';
 import * as path from 'path';
 import * as assert from 'power-assert';
-import TsHelper from '../src/';
+import TsHelper from '../dist/';
 
 function sleep(time) {
   return new Promise(res => setTimeout(res, time));
