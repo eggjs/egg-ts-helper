@@ -8,4 +8,4 @@ run/
 *.swp
 *.lock
 .nyc_output
-
+*.log

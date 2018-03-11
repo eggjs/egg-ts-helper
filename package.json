@@ -31,6 +31,9 @@
   "author": "wanghx",
   "license": "MIT",
   "dependencies": {
+    "babel-traverse": "^6.26.0",
+    "babel-types": "^6.26.0",
+    "babylon": "^7.0.0-beta.40",
     "chokidar": "^2.0.1",
     "glob": "^7.1.2",
     "mkdirp": "^0.5.1"
@@ -39,12 +42,15 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
+    "@types/babel-traverse": "^6.25.3",
+    "@types/babylon": "^6.16.2",
     "@types/chokidar": "^1.7.4",
     "@types/del": "^3.0.0",
     "@types/glob": "^5.0.35",
     "@types/mkdirp": "^0.5.2",
     "@types/node": "^9.4.5",
     "@types/power-assert": "^1.4.29",
+    "@types/babel-types": "^7.0.1",
     "del": "^3.0.0",
     "egg-bin": "^4.3.7",
     "source-map-support": "^0.5.3",

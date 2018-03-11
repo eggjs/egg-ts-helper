@@ -8,6 +8,7 @@ declare global  {
 export interface WatchItem extends PlainObject {
     path: string;
     generator: string;
+    trigger: string[];
 }
 export interface TsHelperOption {
     cwd?: string;
@@ -24,11 +25,13 @@ export interface TsHelperOption {
 export declare type TsHelperConfig = typeof defaultConfig;
 export declare type TsGenConfig = {
     dir: string;
+    changedFile?: string;
 } & WatchItem;
-export declare type TsGenerator<T> = (config: T, baseConfig: TsHelperConfig) => {
+export interface GeneratorResult {
     dist: string;
     content?: string;
-} | void;
+}
+export declare type TsGenerator<T> = (config: T, baseConfig: TsHelperConfig) => GeneratorResult | GeneratorResult[] | void;
 export declare const defaultConfig: {
     cwd: string;
     framework: string;
@@ -38,20 +41,28 @@ export declare const defaultConfig: {
     throttle: number;
     watch: boolean;
     watchDirs: {
+        extend: {
+            path: string;
+            generator: string;
+            trigger: string[];
+        };
         controller: {
             path: string;
             interface: string;
             generator: string;
+            trigger: string[];
         };
         proxy: {
             path: string;
             interface: string;
             generator: string;
+            trigger: string[];
         };
         service: {
             path: string;
             interface: string;
             generator: string;
+            trigger: string[];
         };
     };
 };
@@ -66,6 +77,6 @@ export default class TsHelper extends EventEmitter {
     register<T extends TsGenConfig = TsGenConfig>(name: string, tsGen: TsGenerator<T>): void;
     private initWatcher();
     private findInWatchDirs(p);
-    private generateTs(index);
-    private onChange(p);
+    private generateTs(index, type?, changedFile?);
+    private onChange(p, type);
 }
