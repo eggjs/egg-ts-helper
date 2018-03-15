@@ -41,7 +41,9 @@ export default function(tsHelper: TsHelper) {
       const moduleName = props
         .map(prop => prop[0].toUpperCase() + prop.substring(1))
         .join('');
-      const tsPath = path.relative(dtsDir, path.join(config.dir, f));
+      const tsPath = path
+        .relative(dtsDir, path.join(config.dir, f))
+        .replace(/\/|\\/g, '/');
       importStr += `import ${moduleName} from '${tsPath}';\n`;
 
       // create mapping

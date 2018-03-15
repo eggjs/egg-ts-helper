@@ -64,7 +64,7 @@ export default function(tsHelper: TsHelper) {
         return;
       }
 
-      let tsPath = path.relative(dtsDir, f);
+      let tsPath = path.relative(dtsDir, f).replace(/\/|\\/g, '/');
       tsPath = tsPath.substring(0, tsPath.lastIndexOf('.'));
 
       tsList.push({

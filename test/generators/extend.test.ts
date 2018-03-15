@@ -43,12 +43,10 @@ describe('generators/extend.ts', () => {
         path.resolve(appDir, './typings/app/extend/application.d.ts'),
     );
 
-    assert(
-      item.content &&
-        item.content.includes('interface Application') &&
-        item.content.includes('typeof ExtendObject.isCool') &&
-        item.content.includes('typeof ExtendObject.isNotCool'),
-    );
+    assert(item.content.includes('../../../app/extend/application'));
+    assert(item.content.includes('interface Application'));
+    assert(item.content.includes('typeof ExtendObject.isCool'));
+    assert(item.content.includes('typeof ExtendObject.isNotCool'));
   });
 
   it('should works without error with helper', () => {
@@ -62,11 +60,9 @@ describe('generators/extend.ts', () => {
     );
 
     const item = result[0];
-    assert(
-      item.content &&
-        item.content.includes('interface IHelper') &&
-        item.content.includes('typeof ExtendObject.isCool') &&
-        item.content.includes('typeof ExtendObject.isNotCool'),
-    );
+    assert(item.content.includes('../../../app/extend/helper'));
+    assert(item.content.includes('interface IHelper'));
+    assert(item.content.includes('typeof ExtendObject.isCool'));
+    assert(item.content.includes('typeof ExtendObject.isNotCool'));
   });
 });

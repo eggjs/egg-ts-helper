@@ -35,7 +35,8 @@ describe('generators/class.ts', () => {
     assert(
       result.dist === path.resolve(appDir, './typings/app/controller/index.d.ts'),
     );
-    assert(result.content && result.content.includes('interface IController'));
-    assert(result.content && result.content.includes('home: Home;'));
+    assert(result.content.includes('../../../app/controller/home'));
+    assert(result.content.includes('interface IController'));
+    assert(result.content.includes('home: Home;'));
   });
 });
