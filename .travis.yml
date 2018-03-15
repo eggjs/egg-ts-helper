@@ -5,5 +5,5 @@ node_js:
 install:
   - npm i npminstall && npminstall
 script:
-  - npm run cov
+  - DEBUG=egg-ts-helper* npm run cov
 after_script: "npm install coveralls && cat ./coverage/lcov.info | coveralls"
