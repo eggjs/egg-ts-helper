@@ -9,6 +9,7 @@ install:
 test_script:
   - node --version
   - npm --version
-  - DEBUG=egg-ts-helper* npm run test
+  - set DEBUG=egg-ts-helper*,-not_this
+  - npm run test
 
 build: off
