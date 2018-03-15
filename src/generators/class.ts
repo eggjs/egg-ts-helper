@@ -1,6 +1,8 @@
+import * as d from 'debug';
 import * as glob from 'glob';
 import * as path from 'path';
 import TsHelper from '../';
+const debug = d('egg-ts-helper#generators_class');
 
 export default function(tsHelper: TsHelper) {
   tsHelper.register('class', (config, baseConfig) => {
@@ -21,6 +23,7 @@ export default function(tsHelper: TsHelper) {
       );
     });
 
+    debug('file list : %o', fileList);
     if (!fileList.length) {
       return { dist };
     }
@@ -44,6 +47,7 @@ export default function(tsHelper: TsHelper) {
       const tsPath = path
         .relative(dtsDir, path.join(config.dir, f))
         .replace(/\/|\\/g, '/');
+      debug('import %s from %s', moduleName, tsPath);
       importStr += `import ${moduleName} from '${tsPath}';\n`;
 
       // create mapping

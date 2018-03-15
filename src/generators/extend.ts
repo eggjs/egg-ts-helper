@@ -1,10 +1,12 @@
 import traverse from 'babel-traverse';
 import * as t from 'babel-types';
 import * as babylon from 'babylon';
+import * as d from 'debug';
 import * as fs from 'fs';
 import * as glob from 'glob';
 import * as path from 'path';
 import { default as TsHelper, GeneratorResult } from '../';
+const debug = d('egg-ts-helper#generators_extend');
 
 export default function(tsHelper: TsHelper) {
   tsHelper.register('extend', (config, baseConfig) => {
@@ -25,6 +27,7 @@ export default function(tsHelper: TsHelper) {
       fileList = config.file.endsWith('.ts') ? [config.file] : [];
     }
 
+    debug('file list : %o', fileList);
     if (!fileList.length) {
       return;
     }
@@ -60,6 +63,7 @@ export default function(tsHelper: TsHelper) {
       });
 
       const properties = findReturnProperties(ast);
+      debug('find return properties : %o', properties);
       if (!properties || !properties.length) {
         return;
       }
@@ -67,6 +71,7 @@ export default function(tsHelper: TsHelper) {
       let tsPath = path.relative(dtsDir, f).replace(/\/|\\/g, '/');
       tsPath = tsPath.substring(0, tsPath.lastIndexOf('.'));
 
+      debug('import extendObject from %s', tsPath);
       tsList.push({
         dist,
         content:

@@ -1,8 +1,10 @@
 import * as chokidar from 'chokidar';
+import * as d from 'debug';
 import { EventEmitter } from 'events';
 import * as fs from 'fs';
 import * as mkdirp from 'mkdirp';
 import * as path from 'path';
+const debug = d('egg-ts-helper#index');
 
 declare global {
   interface PlainObject {
@@ -150,6 +152,7 @@ export default class TsHelper extends EventEmitter {
 
     // generate d.ts at init
     if (this.config.execAtInit) {
+      debug('exec at init');
       process.nextTick(() => {
         this.watchDirs.forEach((_, i) => this.generateTs(i));
       });
@@ -183,6 +186,7 @@ export default class TsHelper extends EventEmitter {
           // auto remove js while ts was deleted
           const jsPath = p.substring(0, p.lastIndexOf('.')) + '.js';
           if (fs.existsSync(jsPath)) {
+            debug('auto remove js file %s', jsPath);
             fs.unlinkSync(jsPath);
           }
         }
@@ -223,10 +227,12 @@ export default class TsHelper extends EventEmitter {
     }
 
     const result = generator({ ...generatorConfig, dir, file }, config);
+    debug('generate ts file result : %o', result);
     if (result) {
       const resultList = Array.isArray(result) ? result : [result];
       resultList.forEach(item => {
         if (item.content) {
+          debug('generated d.ts : %s', item.dist);
           mkdirp.sync(path.dirname(item.dist));
           fs.writeFileSync(
             item.dist,
@@ -236,6 +242,7 @@ export default class TsHelper extends EventEmitter {
           );
           this.emit('update', item.dist);
         } else if (fs.existsSync(item.dist)) {
+          debug('remove d.ts : %s', item.dist);
           fs.unlinkSync(item.dist);
           this.emit('remove', item.dist);
         }
@@ -245,6 +252,8 @@ export default class TsHelper extends EventEmitter {
 
   // trigger while file changed
   private onChange(p: string, type: string) {
+    debug('%s trigger change', p);
+
     // istanbul ignore next
     if (p.endsWith('d.ts')) {
       return;
@@ -263,6 +272,7 @@ export default class TsHelper extends EventEmitter {
         return;
       }
 
+      debug('trigger change event in %s', index);
       this.emit('change', p);
       this.generateTs(index, type, p);
       this.tickerMap[k] = null;
