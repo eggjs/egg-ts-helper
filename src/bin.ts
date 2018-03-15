@@ -15,6 +15,7 @@ Options:
    -c, --cwd [path]       egg application base dir(default: process.cwd)
    -f, --framework [name] egg framework(default: egg)
    -s, --silent           no log
+   -i, --ignore           ignore dir, your can ignore multiple dirs with comma like: -i proxy,controller
   `);
 
   process.exit(0);
@@ -24,10 +25,15 @@ Options:
 }
 
 const watchFiles = findInArgv(false, '-w', '--watch') === 'true';
+const ignoreList = (findInArgv(true, '-i', '--ignore') || '').split(',');
+const watchDirs = {};
+ignoreList.forEach(key => (watchDirs[key] = false));
+
 const tsHelper = new TsHelper({
   cwd: findInArgv(true, '-c', '--cwd') || defaultConfig.cwd,
   framework: findInArgv(true, '-f', '--framework') || defaultConfig.framework,
   watch: watchFiles,
+  watchDirs,
 });
 
 if (watchFiles && !findInArgv(false, '-s', '--silent')) {

@@ -46,6 +46,16 @@ describe('bin.ts', () => {
     assert(data.match(/\d+\.\d+\.\d+/));
   });
 
+  it('should works with -i correctly', async () => {
+    triggerBin('-c', path.resolve(__dirname, './fixtures/app5'), '-i', 'controller,service');
+    await sleep(2000);
+    assert(!fs.existsSync(path.resolve(__dirname, './fixtures/app5/typings/app/controller/index.d.ts')));
+    assert(!fs.existsSync(path.resolve(__dirname, './fixtures/app5/typings/app/service/index.d.ts')));
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app5/typings/app/extend/context.d.ts')));
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app5/typings/app/extend/application.d.ts')));
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app5/typings/app/extend/helper.d.ts')));
+  });
+
   it('should works with -w correctly', async () => {
     triggerBin('-c', path.resolve(__dirname, './fixtures/app4'), '-w');
 

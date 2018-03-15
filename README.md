@@ -1,5 +1,7 @@
 # egg-ts-helper
 
+Auto generated d.ts for egg controller, service, extend and proxy.
+
 [![NPM version][npm-image]][npm-url]
 [![Build Status][travis-image]][travis-url]
 [![Appveyor status][appveyor-image]][appveyor-url]
@@ -42,6 +44,7 @@ Options:
    -c, --cwd [path]       egg application base dir(default: process.cwd)
    -f, --framework [name] egg framework(default: egg)
    -s, --silent           no log
+   -i, --ignore           ignore dir, your can ignore multiple dirs with comma like: -i proxy,controller
 ```
 
 Watching Files
