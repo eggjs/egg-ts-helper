@@ -4,7 +4,8 @@ node_js:
   - '8'
 install:
   - npm i npminstall && npminstall
+os:
+  - osx
 script:
-  - export CHOKIDAR_USEPOLLING=1
   - DEBUG=egg-ts-helper* npm run cov
 after_script: "npm install coveralls && cat ./coverage/lcov.info | coveralls"
