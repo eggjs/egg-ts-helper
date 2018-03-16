@@ -209,14 +209,14 @@ export default class TsHelper extends EventEmitter {
     return -1;
   }
 
-  private generateTs(index: number, type?: string, file?: string) {
+  private generateTs(index: number, event?: string, file?: string) {
     const config = this.config;
     const dir = this.watchDirs[index];
     const generatorConfig = config.watchDirs[
       this.watchNameList[index]
     ] as WatchItem;
 
-    if (type && !generatorConfig.trigger.includes(type)) {
+    if (event && !generatorConfig.trigger.includes(event)) {
       // check whether need to regenerate ts
       return;
     }
@@ -251,7 +251,7 @@ export default class TsHelper extends EventEmitter {
   }
 
   // trigger while file changed
-  private onChange(p: string, type: string) {
+  private onChange(p: string, event: string) {
     debug('%s trigger change', p);
 
     // istanbul ignore next
@@ -274,7 +274,7 @@ export default class TsHelper extends EventEmitter {
 
       debug('trigger change event in %s', index);
       this.emit('change', p);
-      this.generateTs(index, type, p);
+      this.generateTs(index, event, p);
       this.tickerMap[k] = null;
     }, this.config.throttle);
   }

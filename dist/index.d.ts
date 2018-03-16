@@ -88,6 +88,6 @@ export default class TsHelper extends EventEmitter {
     register<T extends TsGenConfig = TsGenConfig>(name: string, tsGen: TsGenerator<T>): void;
     private initWatcher();
     private findInWatchDirs(p);
-    private generateTs(index, type?, file?);
-    private onChange(p, type);
+    private generateTs(index, event?, file?);
+    private onChange(p, event);
 }
