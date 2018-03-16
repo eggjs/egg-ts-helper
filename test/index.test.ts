@@ -1,9 +1,11 @@
+import * as d from 'debug';
 import * as del from 'del';
 import * as fs from 'fs';
 import * as mkdirp from 'mkdirp';
 import * as path from 'path';
 import * as assert from 'power-assert';
 import TsHelper from '../dist/';
+const debug = d('egg-ts-helper#index.test');
 
 function sleep(time) {
   return new Promise(res => setTimeout(res, time));
@@ -32,6 +34,7 @@ describe('index.ts', () => {
     const dts = path.resolve(__dirname, './fixtures/app/typings/app/service/index.d.ts');
     fs.writeFileSync(path.resolve(dir, 'test.ts'), '');
     fs.writeFileSync(path.resolve(dir, 'test-two.ts'), '');
+    debug('service file list %o', fs.readdirSync(dir));
 
     await sleep(2000);
 
