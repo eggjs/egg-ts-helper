@@ -85,6 +85,6 @@ describe('index.ts', () => {
 
     debug('watchDirs : %o', tsHelper.watchDirs);
     assert(tsHelper.watchNameList.length === 1);
-    assert(tsHelper.watchDirs[0].includes('app/test/proxy'));
+    assert(tsHelper.watchDirs[0].includes('proxy'));
   });
 });
