@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as mkdirp from 'mkdirp';
 import * as path from 'path';
 import * as assert from 'power-assert';
+const isWin = process.platform === 'win32';
 
 function sleep(time) {
   return new Promise(res => setTimeout(res, time));
@@ -11,7 +12,7 @@ function sleep(time) {
 
 function triggerBin(...args: string[]) {
   return spawn(
-    path.resolve(__dirname, '../node_modules/.bin/ts-node'),
+    path.resolve(__dirname, '../node_modules/.bin/ts-node' + (isWin ? '.cmd' : '')),
     [path.resolve(__dirname, '../dist/bin.js')].concat(args),
   );
 }

@@ -84,8 +84,6 @@ describe('index.ts', () => {
     });
 
     assert(tsHelper.watchNameList.length === 1);
-    assert(
-      tsHelper.watchDirs[0].includes(['app', 'test', 'proxy'].join(path.sep)),
-    );
+    assert(tsHelper.watchDirs[0].includes('app/test/proxy'));
   });
 });
