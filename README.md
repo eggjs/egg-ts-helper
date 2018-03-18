@@ -1,7 +1,5 @@
 # egg-ts-helper
 
-A simple tool for generating declaration files in [egg](https://eggjs.org) application, Injecting `controller`,`proxy`,`service` and `extend` to egg by [Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html)
-
 [![NPM version][npm-image]][npm-url]
 [![Build Status][travis-image]][travis-url]
 [![Appveyor status][appveyor-image]][appveyor-url]
@@ -15,6 +13,8 @@ A simple tool for generating declaration files in [egg](https://eggjs.org) appli
 [appveyor-image]: https://ci.appveyor.com/api/projects/status/github/whxaxes/egg-ts-helper?branch=master&svg=true
 [coveralls-url]: https://coveralls.io/r/whxaxes/egg-ts-helper
 [coveralls-image]: https://img.shields.io/coveralls/whxaxes/egg-ts-helper.svg
+
+A simple tool for generating declaration files in [egg](https://eggjs.org) application. Injecting `controller`,`proxy`,`service` and `extend` to egg by [Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html)
 
 
 ## Install
