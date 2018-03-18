@@ -1,6 +1,6 @@
 # egg-ts-helper
 
-Auto generated d.ts for egg controller, service, extend and proxy.
+A Simple tool for auto generating declaration files in egg application,  These declaration files could inject controller、proxy、service、extend to egg interface by [Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html)
 
 [![NPM version][npm-image]][npm-url]
 [![Build Status][travis-image]][travis-url]
@@ -47,10 +47,66 @@ Options:
    -i, --ignore           ignore dir, your can ignore multiple dirs with comma like: -i proxy,controller
 ```
 
-Watching Files
+## Demo
 
+see https://github.com/whxaxes/egg-boilerplate-d-ts
+
+It works in these directory : `app/controller`, `app/service`, `app/proxy`, `app/extend`.
+
+#### Controller
+
+(service, proxy are the same)
+
+ts
+
+```js
+// app/controller/home.ts
+import { Controller } from 'egg';
+
+export default class HomeController extends Controller {
+  public async index() {
+    this.ctx.body = 'ok';
+  }
+}
 ```
-$ ets -w
+
+typings
+
+```js
+// app/typings/app/controller/index.d.ts
+import Home from '../../../app/controller/home';
+
+declare module 'egg' {
+  interface IController {
+    home: Home;
+  }
+}
+```
+
+#### Extend
+
+ts
+
+```js
+// app/extend/context.ts
+export default {
+  doSomething() {
+    console.info('do something');
+  }
+};
+```
+
+typings
+
+```js
+// app/typings/app/controller/index.d.ts
+import ExtendObject from '../../../app/extend/context';
+
+declare module 'egg' {
+  interface Context {
+    doSomething: typeof ExtendObject.doSomething;
+  }
+}
 ```
 
 

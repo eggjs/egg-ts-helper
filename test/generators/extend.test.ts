@@ -49,6 +49,34 @@ describe('generators/extend.ts', () => {
     assert(item.content.includes('typeof ExtendObject.isNotCool'));
   });
 
+  it('should not generate dts with unknown interface', () => {
+    const result = extendGenerator(
+      {
+        ...defaultConfig.watchDirs.extend,
+        dir: path.resolve(appDir, './app/extend/'),
+        file: path.resolve(appDir, './app/extend/whatever.ts'),
+      },
+      tsHelper.config,
+    );
+
+    assert(!result);
+  });
+
+  it('should not generate dts with empty extension', () => {
+    const result = extendGenerator(
+      {
+        ...defaultConfig.watchDirs.extend,
+        dir: path.resolve(appDir, './app/extend/'),
+        file: path.resolve(appDir, './app/extend/request.ts'),
+      },
+      tsHelper.config,
+    );
+
+    assert(result);
+    assert(result.dist.includes('request.d.ts'));
+    assert(!result.content);
+  });
+
   it('should works without error with helper', () => {
     const result = extendGenerator(
       {

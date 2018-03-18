@@ -33,7 +33,7 @@ export default function(tsHelper: TsHelper) {
     }
 
     const tsList: GeneratorResult[] = [];
-    fileList.forEach(f => {
+    for (let f of fileList) {
       const basename = path.basename(f, '.ts');
       const interfaceName = config.interface[basename];
       if (!interfaceName) {
@@ -65,7 +65,7 @@ export default function(tsHelper: TsHelper) {
       const properties = findReturnProperties(ast);
       debug('find return properties : %o', properties);
       if (!properties || !properties.length) {
-        return;
+        return { dist };
       }
 
       let tsPath = path.relative(dtsDir, f).replace(/\/|\\/g, '/');
@@ -83,7 +83,7 @@ export default function(tsHelper: TsHelper) {
             .join('') +
           '  }\n}',
       });
-    });
+    }
 
     return tsList;
   });
