@@ -1,6 +1,6 @@
 # egg-ts-helper
 
-A Simple tool for auto generating declaration files in egg application,  These declaration files could inject controller、proxy、service、extend to egg interface by [Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html)
+A simple tool for generating declaration files in [egg](https://eggjs.org) application, Injecting `controller`,`proxy`,`service` and `extend` to egg by [Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html)
 
 [![NPM version][npm-image]][npm-url]
 [![Build Status][travis-image]][travis-url]
@@ -51,7 +51,7 @@ Options:
 
 see https://github.com/whxaxes/egg-boilerplate-d-ts
 
-It works in these directory : `app/controller`, `app/service`, `app/proxy`, `app/extend`.
+It works in these directories : `app/controller`, `app/service`, `app/proxy`, `app/extend`.
 
 #### Controller
 
