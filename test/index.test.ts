@@ -13,7 +13,7 @@ function sleep(time) {
 
 describe('index.ts', () => {
   before(() => {
-    del.sync(path.resolve(__dirname, './fixtures/app/typings'));
+    del.sync(path.resolve(__dirname, './fixtures/app/typings'), { force: true });
   });
 
   it('should works without error', async () => {
@@ -38,7 +38,7 @@ describe('index.ts', () => {
 
     await sleep(2000);
 
-    del.sync(dir);
+    del.sync(dir, { force: true });
     const content = fs.readFileSync(dts, { encoding: 'utf-8' });
     assert(content.includes('service/test/test'));
     assert(content.includes('service/test/test-two'));

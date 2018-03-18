@@ -33,7 +33,7 @@ function getOutput(...args: string[]) {
 
 describe('bin.ts', () => {
   before(() => {
-    del.sync(path.resolve(__dirname, './fixtures/app4/typings'));
+    del.sync(path.resolve(__dirname, './fixtures/app4/typings'), { force: true });
   });
 
   it('should works with -h correctly', async () => {
@@ -71,7 +71,7 @@ describe('bin.ts', () => {
 
     await sleep(2000);
 
-    del.sync(dir);
+    del.sync(dir, { force: true });
     const content = fs.readFileSync(dts, { encoding: 'utf-8' });
     assert(content.includes('service/test/test'));
     assert(content.includes('service/test/test-two'));
