@@ -20,21 +20,19 @@ A simple tool for generating declaration files in [egg](https://eggjs.org) appli
 ## Install
 
 ```
-npm i egg-ts-helper --save-dev
+npm i egg-ts-helper -g
 ```
 
 or
 
 ```
-yarn add egg-ts-helper --dev
+yarn global add egg-ts-helper
 ```
 
 ## Usage
 
-using npx
-
 ```
-$ npx ets -h
+$ ets -h
 
 Usage: ets [options]
 Options:
