@@ -35,7 +35,7 @@ export default function(tsHelper: TsHelper) {
 
     fileList.forEach(f => {
       f = f.substring(0, f.lastIndexOf('.'));
-      const props = f.split(path.sep).map(prop =>
+      const props = f.split('/').map(prop =>
         // transfer _ to uppercase
         prop.replace(/[_-][a-z]/gi, s => s.substring(1).toUpperCase()),
       );
