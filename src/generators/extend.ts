@@ -33,7 +33,7 @@ export default function(tsHelper: TsHelper) {
     }
 
     const tsList: GeneratorResult[] = [];
-    for (let f of fileList) {
+    fileList.forEach(f => {
       const basename = path.basename(f, '.ts');
       const interfaceName = config.interface[basename];
       if (!interfaceName) {
@@ -43,7 +43,7 @@ export default function(tsHelper: TsHelper) {
       const dist = path.resolve(dtsDir, `${basename}.d.ts`);
       f = path.resolve(config.dir, f);
       if (!fs.existsSync(f)) {
-        return { dist };
+        return tsList.push({ dist });
       }
 
       const content = fs.readFileSync(f, {
@@ -65,7 +65,7 @@ export default function(tsHelper: TsHelper) {
       const properties = findReturnProperties(ast);
       debug('find return properties : %o', properties);
       if (!properties || !properties.length) {
-        return { dist };
+        return tsList.push({ dist });
       }
 
       let tsPath = path.relative(dtsDir, f).replace(/\/|\\/g, '/');
@@ -76,14 +76,14 @@ export default function(tsHelper: TsHelper) {
         dist,
         content:
           `import ExtendObject from '${tsPath}';\n` +
-          'declare module \'egg\' {\n' +
+          `declare module \'${baseConfig.framework}\' {\n` +
           `  interface ${interfaceName} {\n` +
           properties
             .map(prop => `    ${prop}: typeof ExtendObject.${prop};\n`)
             .join('') +
           '  }\n}',
       });
-    }
+    });
 
     return tsList;
   });

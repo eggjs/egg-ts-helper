@@ -39,4 +39,21 @@ describe('generators/class.ts', () => {
     assert(result.content.includes('interface IController'));
     assert(result.content.includes('home: Home;'));
   });
+
+  it('should support appoint framework', () => {
+    const newAppDir = path.resolve(__dirname, '../fixtures/app2');
+    const result = classGenerator(
+      {
+        ...defaultConfig.watchDirs.extend,
+        dir: path.resolve(newAppDir, './app/extend/'),
+      },
+      new TsHelper({
+        cwd: newAppDir,
+        watch: false,
+        execAtInit: false,
+      }).config,
+    );
+
+    assert(result.content.includes('declare module \'larva\''));
+  });
 });

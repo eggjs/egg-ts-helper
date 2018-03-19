@@ -49,6 +49,25 @@ describe('generators/extend.ts', () => {
     assert(item.content.includes('typeof ExtendObject.isNotCool'));
   });
 
+  it('should support appoint framework', () => {
+    const newAppDir = path.resolve(__dirname, '../fixtures/app2');
+    const result = extendGenerator(
+      {
+        ...defaultConfig.watchDirs.extend,
+        dir: path.resolve(newAppDir, './app/extend/'),
+        file: path.resolve(newAppDir, './app/extend/application.ts'),
+      },
+      new TsHelper({
+        cwd: newAppDir,
+        watch: false,
+        execAtInit: false,
+      }).config,
+    );
+
+    const item = result[0];
+    assert(item.content.includes('declare module \'larva\''));
+  });
+
   it('should not generate dts with unknown interface', () => {
     const result = extendGenerator(
       {
@@ -59,7 +78,7 @@ describe('generators/extend.ts', () => {
       tsHelper.config,
     );
 
-    assert(!result);
+    assert(!result.length);
   });
 
   it('should not generate dts with empty extension', () => {
@@ -72,9 +91,9 @@ describe('generators/extend.ts', () => {
       tsHelper.config,
     );
 
-    assert(result);
-    assert(result.dist.includes('request.d.ts'));
-    assert(!result.content);
+    const item = result[0];
+    assert(item.dist.includes('request.d.ts'));
+    assert(!item.content);
   });
 
   it('should works without error with helper', () => {

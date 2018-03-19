@@ -2,7 +2,7 @@
 // Do not modify this file!!!!!!!!!
 
 import ExtendObject from '../../../app/extend/helper';
-declare module 'egg' {
+declare module '' {
   interface IHelper {
     isCool: typeof ExtendObject.isCool;
     isNotCool: typeof ExtendObject.isNotCool;

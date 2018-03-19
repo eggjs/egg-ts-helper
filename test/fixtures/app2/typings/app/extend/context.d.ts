@@ -2,7 +2,7 @@
 // Do not modify this file!!!!!!!!!
 
 import ExtendObject from '../../../app/extend/context';
-declare module '' {
+declare module 'larva' {
   interface Context {
     ctx: typeof ExtendObject.ctx;
     isProd: typeof ExtendObject.isProd;

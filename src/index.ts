@@ -133,6 +133,7 @@ export default class TsHelper extends EventEmitter {
         defaultConfig.framework;
     }
 
+    debug('framework is %s', config.framework);
     this.config = config as TsHelperConfig;
 
     // add build-in generators
