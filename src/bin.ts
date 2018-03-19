@@ -80,7 +80,7 @@ const tsHelper = new TsHelper({
   watchDirs,
 });
 
-if (watchFiles && !argOption.silent) {
+if (!argOption.silent) {
   tsHelper.on('update', p => {
     console.info(`[${packInfo.name}] ${p} generated`);
   });

@@ -18,7 +18,7 @@ function triggerBin(...args: string[]) {
 }
 
 function getOutput(...args: string[]) {
-  const ps = triggerBin(args);
+  const ps = triggerBin.apply(null, args);
   return new Promise(resolve => {
     let info = '';
     ps.stdout.on('data', data => {
@@ -45,6 +45,13 @@ describe('bin.ts', () => {
   it('should works with -v correctly', async () => {
     const data = await getOutput('-v');
     assert(data.match(/\d+\.\d+\.\d+/));
+  });
+
+  it('should works with -s correctly', async () => {
+    const data = await getOutput('-c', path.resolve(__dirname, './fixtures/app4'));
+    assert(data.includes('generated'));
+    const data2 = await getOutput('-s', '-c', path.resolve(__dirname, './fixtures/app4'));
+    assert(!data2.includes('generated'));
   });
 
   it('should works with -i correctly', async () => {
