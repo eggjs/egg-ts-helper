@@ -27,9 +27,10 @@ describe('index.ts', () => {
     await sleep(1000);
 
     assert(!!tsHelper.config);
-    assert(tsHelper.config.framework === 'egg');
+    assert(tsHelper.config.framework === 'larva');
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/app/controller/index.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/app/extend/context.d.ts')));
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/custom.d.ts')));
 
     const dts = path.resolve(__dirname, './fixtures/app/typings/app/service/index.d.ts');
     fs.writeFileSync(path.resolve(dir, 'test.ts'), '');

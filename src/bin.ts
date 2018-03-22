@@ -16,6 +16,14 @@ const options = [
     default: defaultConfig.cwd,
   },
   {
+    name: 'config',
+    alias: 'C',
+    desc:
+      'configuration file, The argument can be a file path to a valid JSON/JS configuration file.（default: cwd/tshelper.json）',
+    value: true,
+    valueName: 'path',
+  },
+  {
     name: 'framework',
     alias: 'f',
     desc: 'egg framework(default: egg)',
@@ -27,7 +35,15 @@ const options = [
     name: 'ignore',
     alias: 'i',
     desc:
-      'ignore dir, your can ignore multiple dirs with comma like: -i proxy,controller',
+      'ignore watchDirs, your can ignore multiple dirs with comma like: -i controller,service',
+    value: true,
+    valueName: 'dir',
+  },
+  {
+    name: 'enabled',
+    alias: 'e',
+    desc:
+      'enabled watchDirs, your can use multiple dirs with comma like: -e proxy,other',
     value: true,
     valueName: 'dir',
   },
@@ -52,10 +68,14 @@ options.forEach(item => {
 
 // show help info
 if (argOption.help) {
-  const optionInfo = helpTxtList.map(
-    (item, index) =>
-      `   ${item}${repeat(' ', maxLen - item.length)}   ${options[index].desc}`,
-  ).join('\n');
+  const optionInfo = helpTxtList
+    .map(
+      (item, index) =>
+        `   ${item}${repeat(' ', maxLen - item.length)}   ${
+          options[index].desc
+        }`,
+    )
+    .join('\n');
 
   console.info(`
 Usage: ets [options]
@@ -71,22 +91,24 @@ ${optionInfo}
 
 const watchFiles = argOption.watch;
 const watchDirs = {};
-argOption.ignore.split(',').forEach(key => (watchDirs[key] = false));
+argOption.ignore
+  .split(',')
+  .forEach(key => (watchDirs[key] = false));
+argOption.enabled
+  .split(',')
+  .forEach(key => (watchDirs[key] = true));
 
 const tsHelper = new TsHelper({
   cwd: argOption.cwd,
   framework: argOption.framework,
   watch: watchFiles,
   watchDirs,
+  configFile: argOption.config,
 });
 
 if (!argOption.silent) {
   tsHelper.on('update', p => {
-    console.info(`[${packInfo.name}] ${p} generated`);
-  });
-
-  tsHelper.on('change', p => {
-    console.info(`[${packInfo.name}] ${p} changed, trigger regenerating`);
+    console.info(`[${packInfo.name}] ${p} created`);
   });
 }
 

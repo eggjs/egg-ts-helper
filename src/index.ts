@@ -16,6 +16,7 @@ export interface WatchItem extends PlainObject {
   path: string;
   generator: string;
   trigger: string[];
+  enabled: boolean;
 }
 
 export interface TsHelperOption {
@@ -28,6 +29,7 @@ export interface TsHelperOption {
   autoRemoveJs?: boolean;
   throttle?: number;
   execAtInit?: boolean;
+  configFile?: string;
 }
 
 export type TsHelperConfig = typeof defaultConfig;
@@ -53,7 +55,13 @@ export const defaultConfig = {
   throttle: 500,
   watch: true,
   execAtInit: true,
-  watchDirs: {
+  watchDirs: {},
+  configFile: './tshelper.js',
+};
+
+// default watch dir
+export function getDefaultWatchDirs() {
+  return {
     extend: {
       path: 'app/extend',
       interface: {
@@ -65,6 +73,7 @@ export const defaultConfig = {
       },
       generator: 'extend',
       trigger: ['add', 'change', 'unlink'],
+      enabled: true,
     },
 
     controller: {
@@ -72,6 +81,7 @@ export const defaultConfig = {
       interface: 'IController',
       generator: 'class',
       trigger: ['add', 'unlink'],
+      enabled: true,
     },
 
     proxy: {
@@ -79,6 +89,7 @@ export const defaultConfig = {
       interface: 'IProxy',
       generator: 'class',
       trigger: ['add', 'unlink'],
+      enabled: false,
     },
 
     service: {
@@ -86,9 +97,10 @@ export const defaultConfig = {
       interface: 'IService',
       generator: 'class',
       trigger: ['add', 'unlink'],
+      enabled: true,
     },
-  },
-};
+  };
+}
 
 // preload generators
 const gd = path.resolve(__dirname, './generators');
@@ -109,50 +121,31 @@ export default class TsHelper extends EventEmitter {
 
   constructor(options: TsHelperOption = {}) {
     super();
-    const config = {
-      ...defaultConfig,
-      ...options,
-    };
 
-    // merge watchDirs
-    config.watchDirs = {
-      ...defaultConfig.watchDirs,
-      ...options.watchDirs,
-    };
-
-    // resolve config.typings to absolute url
-    config.typings = getAbsoluteUrlByCwd(config.typings, config.cwd);
-
-    // get framework name from option or package.json
-    const pkgInfoPath = path.resolve(config.cwd, './package.json');
-    if (fs.existsSync(pkgInfoPath)) {
-      const pkgInfo = require(pkgInfoPath);
-      config.framework =
-        options.framework ||
-        (pkgInfo.egg ? pkgInfo.egg.framework : null) ||
-        defaultConfig.framework;
-    }
+    const config = (this.config = this.mergeConfig(options));
 
     debug('framework is %s', config.framework);
-    this.config = config as TsHelperConfig;
 
     // add build-in generators
     generators.forEach(gen => gen(this));
 
     // cached watch list
-    this.watchNameList = Object.keys(this.config.watchDirs).filter(
-      key => !!this.config.watchDirs[key],
-    );
+    this.watchNameList = Object.keys(config.watchDirs).filter(key => {
+      const dir = config.watchDirs[key];
+      return Object.prototype.hasOwnProperty.call(dir, 'enabled')
+        ? dir.enabled
+        : true;
+    });
 
     // format watch dirs
     this.watchDirs = this.watchNameList.map(key => {
-      const item = this.config.watchDirs[key];
+      const item = config.watchDirs[key];
       const p = item.path.replace(/\/|\\/, path.sep);
       return getAbsoluteUrlByCwd(p, config.cwd);
     });
 
     // generate d.ts at init
-    if (this.config.execAtInit) {
+    if (config.execAtInit) {
       debug('exec at init');
       process.nextTick(() => {
         this.watchDirs.forEach((_, i) => this.generateTs(i));
@@ -171,6 +164,62 @@ export default class TsHelper extends EventEmitter {
     tsGen: TsGenerator<T>,
   ) {
     this.generators[name] = tsGen;
+  }
+
+  // configure
+  private mergeConfig(options: TsHelperOption): TsHelperConfig {
+    // base config
+    const config = { ...defaultConfig };
+
+    // merge local config
+    const localConfigFile = getAbsoluteUrlByCwd(
+      options.configFile || config.configFile,
+      options.cwd || config.cwd,
+    );
+
+    // read local config
+    if (fs.existsSync(localConfigFile)) {
+      let exp = require(localConfigFile);
+      if (typeof exp === 'function') {
+        exp = exp();
+      }
+      Object.assign(options, exp);
+    }
+
+    // merge local config and options to config
+    Object.assign(config, options, {
+      watchDirs: getDefaultWatchDirs(),
+    });
+
+    // merge watchDirs
+    if (options.watchDirs) {
+      const watchDirs = options.watchDirs;
+      Object.keys(watchDirs).forEach(key => {
+        const item = watchDirs[key];
+        if (typeof item === 'boolean') {
+          if (config.watchDirs[key]) {
+            config.watchDirs[key].enabled = item;
+          }
+        } else if (item) {
+          config.watchDirs[key] = item;
+        }
+      });
+    }
+
+    // resolve config.typings to absolute url
+    config.typings = getAbsoluteUrlByCwd(config.typings, config.cwd);
+
+    // get framework name from option or package.json
+    const pkgInfoPath = path.resolve(config.cwd, './package.json');
+    if (fs.existsSync(pkgInfoPath)) {
+      const pkgInfo = require(pkgInfoPath);
+      config.framework =
+        options.framework ||
+        (pkgInfo.egg ? pkgInfo.egg.framework : null) ||
+        defaultConfig.framework;
+    }
+
+    return config as TsHelperConfig;
   }
 
   // init watcher
@@ -228,8 +277,12 @@ export default class TsHelper extends EventEmitter {
       return;
     }
 
-    const generator = this.generators[generatorConfig.generator];
-    if (!generator) {
+    const generator =
+      typeof generatorConfig.generator === 'string'
+        ? this.generators[generatorConfig.generator]
+        : generatorConfig.generator;
+
+    if (typeof generator !== 'function') {
       throw new Error(`ts generator: ${generatorConfig.generator} not exist!!`);
     }
 
@@ -239,11 +292,11 @@ export default class TsHelper extends EventEmitter {
       const resultList = Array.isArray(result) ? result : [result];
       resultList.forEach(item => {
         if (item.content) {
-          debug('generated d.ts : %s', item.dist);
+          debug('created d.ts : %s', item.dist);
           mkdirp.sync(path.dirname(item.dist));
           fs.writeFileSync(
             item.dist,
-            '// This file was auto generated by ts-helper\n' +
+            '// This file was auto created by egg-ts-helper\n' +
               '// Do not modify this file!!!!!!!!!\n\n' +
               item.content,
           );

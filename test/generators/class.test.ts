@@ -7,6 +7,7 @@ import {
   default as TsHelper,
   defaultConfig,
   GeneratorResult,
+  getDefaultWatchDirs,
   TsGenerator,
 } from '../../dist/';
 
@@ -17,6 +18,7 @@ describe('generators/class.ts', () => {
     watch: false,
     execAtInit: false,
   });
+  const defaultWatchDirs = getDefaultWatchDirs();
 
   const classGenerator = tsHelper.generators.class as TsGenerator<
     any,
@@ -26,7 +28,7 @@ describe('generators/class.ts', () => {
   it('should works without error', () => {
     const result = classGenerator(
       {
-        ...defaultConfig.watchDirs.controller,
+        ...defaultWatchDirs.controller,
         dir: path.resolve(appDir, './app/controller/'),
       },
       tsHelper.config,
@@ -44,7 +46,7 @@ describe('generators/class.ts', () => {
     const newAppDir = path.resolve(__dirname, '../fixtures/app2');
     const result = classGenerator(
       {
-        ...defaultConfig.watchDirs.extend,
+        ...defaultWatchDirs.class,
         dir: path.resolve(newAppDir, './app/extend/'),
       },
       new TsHelper({

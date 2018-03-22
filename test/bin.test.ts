@@ -11,10 +11,14 @@ function sleep(time) {
 }
 
 function triggerBin(...args: string[]) {
-  return spawn(
+  const ps = spawn(
     path.resolve(__dirname, '../node_modules/.bin/ts-node' + (isWin ? '.cmd' : '')),
     [path.resolve(__dirname, '../dist/bin.js')].concat(args),
   );
+  ps.stderr.on('data', data => {
+    console.info(data.toString());
+  });
+  return ps;
 }
 
 function getOutput(...args: string[]) {
@@ -34,6 +38,7 @@ function getOutput(...args: string[]) {
 describe('bin.ts', () => {
   before(() => {
     del.sync(path.resolve(__dirname, './fixtures/app4/typings'), { force: true });
+    del.sync(path.resolve(__dirname, './fixtures/app5/typings'), { force: true });
   });
 
   it('should works with -h correctly', async () => {
@@ -49,9 +54,17 @@ describe('bin.ts', () => {
 
   it('should works with -s correctly', async () => {
     const data = await getOutput('-c', path.resolve(__dirname, './fixtures/app4'));
-    assert(data.includes('generated'));
+    assert(data.includes('created'));
     const data2 = await getOutput('-s', '-c', path.resolve(__dirname, './fixtures/app4'));
-    assert(!data2.includes('generated'));
+    assert(!data2.includes('created'));
+  });
+
+  it('should works with -e correctly', async () => {
+    triggerBin('-c', path.resolve(__dirname, './fixtures/app6'), '-e', 'proxy');
+    await sleep(2000);
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app6/typings/app/controller/index.d.ts')));
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app6/typings/app/proxy/index.d.ts')));
+    del.sync(path.resolve(__dirname, './fixtures/app6/typings'), { force: true });
   });
 
   it('should works with -i correctly', async () => {

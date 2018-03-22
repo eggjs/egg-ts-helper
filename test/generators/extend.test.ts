@@ -7,6 +7,7 @@ import {
   default as TsHelper,
   defaultConfig,
   GeneratorResult,
+  getDefaultWatchDirs,
   TsGenerator,
 } from '../../dist/';
 
@@ -21,6 +22,7 @@ describe('generators/extend.ts', () => {
     watch: false,
     execAtInit: false,
   });
+  const defaultWatchDirs = getDefaultWatchDirs();
 
   const extendGenerator = tsHelper.generators.extend as TsGenerator<
     any,
@@ -30,7 +32,7 @@ describe('generators/extend.ts', () => {
   it('should works without error', () => {
     const result = extendGenerator(
       {
-        ...defaultConfig.watchDirs.extend,
+        ...defaultWatchDirs.extend,
         dir: path.resolve(appDir, './app/extend/'),
         file: path.resolve(appDir, './app/extend/application.ts'),
       },
@@ -53,7 +55,7 @@ describe('generators/extend.ts', () => {
     const newAppDir = path.resolve(__dirname, '../fixtures/app2');
     const result = extendGenerator(
       {
-        ...defaultConfig.watchDirs.extend,
+        ...defaultWatchDirs.extend,
         dir: path.resolve(newAppDir, './app/extend/'),
         file: path.resolve(newAppDir, './app/extend/application.ts'),
       },
@@ -71,7 +73,7 @@ describe('generators/extend.ts', () => {
   it('should not generate dts with unknown interface', () => {
     const result = extendGenerator(
       {
-        ...defaultConfig.watchDirs.extend,
+        ...defaultWatchDirs.extend,
         dir: path.resolve(appDir, './app/extend/'),
         file: path.resolve(appDir, './app/extend/whatever.ts'),
       },
@@ -84,7 +86,7 @@ describe('generators/extend.ts', () => {
   it('should not generate dts with empty extension', () => {
     const result = extendGenerator(
       {
-        ...defaultConfig.watchDirs.extend,
+        ...defaultWatchDirs.extend,
         dir: path.resolve(appDir, './app/extend/'),
         file: path.resolve(appDir, './app/extend/request.ts'),
       },
@@ -99,7 +101,7 @@ describe('generators/extend.ts', () => {
   it('should works without error with helper', () => {
     const result = extendGenerator(
       {
-        ...defaultConfig.watchDirs.extend,
+        ...defaultWatchDirs.extend,
         dir: path.resolve(appDir, './app/extend/'),
         file: path.resolve(appDir, './app/extend/helper.ts'),
       },
