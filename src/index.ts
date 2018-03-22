@@ -67,6 +67,7 @@ export function getDefaultWatchDirs() {
       interface: {
         context: 'Context',
         application: 'Application',
+        agent: 'Application',
         request: 'Request',
         response: 'Response',
         helper: 'IHelper',

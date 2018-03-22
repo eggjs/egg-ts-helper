@@ -53,6 +53,7 @@ export declare function getDefaultWatchDirs(): {
         interface: {
             context: string;
             application: string;
+            agent: string;
             request: string;
             response: string;
             helper: string;

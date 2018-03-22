@@ -83,6 +83,20 @@ describe('generators/extend.ts', () => {
     assert(!result.length);
   });
 
+  it('should not exist while babylon parse error', () => {
+    const newAppDir = path.resolve(__dirname, '../fixtures/app2');
+    const result = extendGenerator(
+      {
+        ...defaultWatchDirs.extend,
+        dir: path.resolve(newAppDir, './app/extend/'),
+        file: path.resolve(newAppDir, './app/extend/agent.ts'),
+      },
+      tsHelper.config,
+    );
+
+    assert(!result.length);
+  });
+
   it('should not generate dts with empty extension', () => {
     const result = extendGenerator(
       {

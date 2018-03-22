@@ -51,16 +51,22 @@ export default function(tsHelper: TsHelper) {
       });
 
       // parse ts
-      const ast = babylon.parse(content, {
-        sourceType: 'module',
-        plugins: [
-          'typescript',
-          'exportNamespaceFrom',
-          'exportDefaultFrom',
-          'asyncGenerators',
-          'classProperties',
-        ] as any,
-      });
+      let ast;
+      try {
+        ast = babylon.parse(content, {
+          sourceType: 'module',
+          plugins: [
+            'typescript',
+            'exportNamespaceFrom',
+            'exportDefaultFrom',
+            'asyncGenerators',
+            'classProperties',
+          ] as any,
+        });
+      } catch (e) {
+        console.error(e);
+        return;
+      }
 
       const properties = findReturnProperties(ast);
       debug('find return properties : %o', properties);
