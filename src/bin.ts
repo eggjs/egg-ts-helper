@@ -62,8 +62,7 @@ const argOption = {} as any;
 options.forEach(item => {
   argOption[item.name] =
     findInArgv(!!item.value, `-${item.alias}`, `--${item.name}`) ||
-    item.default ||
-    '';
+    item.default;
 
   // collect help info
   const txt = `-${item.alias}, --${item.name}${
@@ -98,8 +97,8 @@ ${optionInfo}
 
 const watchFiles = argOption.watch;
 const watchDirs = {};
-argOption.ignore.split(',').forEach(key => (watchDirs[key] = false));
-argOption.enabled.split(',').forEach(key => (watchDirs[key] = true));
+(argOption.ignore || '').split(',').forEach(key => (watchDirs[key] = false));
+(argOption.enabled || '').split(',').forEach(key => (watchDirs[key] = true));
 
 // extra config
 const extraConfig = argOption.extra ? JSON.parse(argOption.extra) : {};
@@ -130,9 +129,9 @@ function findInArgv(hasValue: boolean, ...args: string[]) {
     if (index > 0) {
       if (hasValue) {
         const val = argv[index + 1];
-        return !val || val.startsWith('-') ? '' : val;
+        return !val || val.startsWith('-') ? undefined : val;
       } else {
-        return 'true';
+        return true;
       }
     }
   }

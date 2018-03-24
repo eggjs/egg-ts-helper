@@ -3,7 +3,7 @@
 
 import Home from '../../../app/controller/home';
 
-declare module 'larva' {
+declare module 'egg' {
   interface IController {
     home: Home;
   }

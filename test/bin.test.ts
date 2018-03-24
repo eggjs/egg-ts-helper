@@ -143,7 +143,21 @@ describe('bin.test.ts', () => {
     );
   });
 
-  it('should works with -w correctly', async () => {
+  it('should works without error', async () => {
+    triggerBin('-c', path.resolve(__dirname, './fixtures/app8'));
+    await sleep(1000);
+    const content = fs.readFileSync(
+      path.resolve(
+        __dirname,
+        './fixtures/app8/typings/app/controller/index.d.ts',
+      ),
+    ).toString();
+    assert(content.includes('declare module \'egg\''));
+    assert(content.includes('interface IController'));
+    assert(content.includes('home: Home'));
+  });
+
+  it('should works with -w and -e correctly', async () => {
     triggerBin(
       '-c',
       path.resolve(__dirname, './fixtures/app4'),

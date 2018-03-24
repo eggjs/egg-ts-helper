@@ -368,7 +368,7 @@ function mergeConfig(base: TsHelperConfig, ...args: TsHelperOption[]) {
           }
         });
       } else {
-        base[key] = opt[key];
+        base[key] = opt[key] === undefined ? base[key] : opt[key];
       }
     });
   });
