@@ -11,9 +11,9 @@ function sleep(time) {
   return new Promise(res => setTimeout(res, time));
 }
 
-describe('index.ts', () => {
+describe('index.test.ts', () => {
   before(() => {
-    del.sync(path.resolve(__dirname, './fixtures/app/typings'), { force: true });
+    del.sync(path.resolve(__dirname, './fixtures/*/typings'), { force: true });
   });
 
   it('should works without error', async () => {
@@ -65,6 +65,13 @@ describe('index.ts', () => {
     });
 
     assert(tsHelper.config.framework === 'larva');
+
+    tsHelper = new TsHelper({
+      cwd: path.resolve(__dirname, './fixtures/app4'),
+      watch: false,
+    });
+
+    assert(tsHelper.config.framework === 'chair');
   });
 
   it('should support rewrite by options.watchDirs', () => {
@@ -80,6 +87,7 @@ describe('index.ts', () => {
           path: 'app/test/proxy',
           interface: 'IProxy',
           generator: 'class',
+          enabled: true,
         },
       },
     });
@@ -87,5 +95,16 @@ describe('index.ts', () => {
     debug('watchDirs : %o', tsHelper.watchDirs);
     assert(tsHelper.watchNameList.length === 1);
     assert(tsHelper.watchDirs[0].includes('proxy'));
+  });
+
+  it('should support rewrite by package.json', () => {
+    const tsHelper = new TsHelper({
+      cwd: path.resolve(__dirname, './fixtures/app4'),
+      watch: false,
+      execAtInit: false,
+    });
+
+    assert(tsHelper.watchNameList.length === 1);
+    assert(tsHelper.watchDirs[0].includes('controller'));
   });
 });

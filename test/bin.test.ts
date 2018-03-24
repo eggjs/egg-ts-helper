@@ -35,10 +35,9 @@ function getOutput(...args: string[]) {
   });
 }
 
-describe('bin.ts', () => {
+describe('bin.test.ts', () => {
   before(() => {
-    del.sync(path.resolve(__dirname, './fixtures/app4/typings'), { force: true });
-    del.sync(path.resolve(__dirname, './fixtures/app5/typings'), { force: true });
+    del.sync(path.resolve(__dirname, './fixtures/*/typings'), { force: true });
   });
 
   it('should works with -h correctly', async () => {

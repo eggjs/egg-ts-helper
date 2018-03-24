@@ -11,19 +11,23 @@ import {
   TsGenerator,
 } from '../../dist/';
 
-describe('generators/class.ts', () => {
+describe('generators/class.test.ts', () => {
+  let tsHelper;
+  let classGenerator;
   const appDir = path.resolve(__dirname, '../fixtures/app');
-  const tsHelper = new TsHelper({
-    cwd: appDir,
-    watch: false,
-    execAtInit: false,
-  });
   const defaultWatchDirs = getDefaultWatchDirs();
 
-  const classGenerator = tsHelper.generators.class as TsGenerator<
-    any,
-    GeneratorResult
-  >;
+  before(() => {
+    tsHelper = new TsHelper({
+      cwd: appDir,
+      watch: false,
+      execAtInit: false,
+    });
+    classGenerator = tsHelper.generators.class as TsGenerator<
+      any,
+      GeneratorResult
+    >;
+  });
 
   it('should works without error', () => {
     const result = classGenerator(
@@ -35,7 +39,8 @@ describe('generators/class.ts', () => {
     );
 
     assert(
-      result.dist === path.resolve(appDir, './typings/app/controller/index.d.ts'),
+      result.dist ===
+        path.resolve(appDir, './typings/app/controller/index.d.ts'),
     );
     assert(result.content.includes('../../../app/controller/home'));
     assert(result.content.includes('interface IController'));

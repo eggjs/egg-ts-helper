@@ -4,6 +4,7 @@ import { EventEmitter } from 'events';
 import * as fs from 'fs';
 import * as mkdirp from 'mkdirp';
 import * as path from 'path';
+import * as utils from './utils';
 const debug = d('egg-ts-helper#index');
 
 declare global {
@@ -123,7 +124,7 @@ export default class TsHelper extends EventEmitter {
   constructor(options: TsHelperOption = {}) {
     super();
 
-    const config = (this.config = this.mergeConfig(options));
+    const config = (this.config = this.configure(options));
 
     debug('framework is %s', config.framework);
 
@@ -168,57 +169,34 @@ export default class TsHelper extends EventEmitter {
   }
 
   // configure
-  private mergeConfig(options: TsHelperOption): TsHelperConfig {
+  // options > configFile > package.json
+  private configure(options: TsHelperOption): TsHelperConfig {
     // base config
-    const config = { ...defaultConfig };
+    const config = { ...defaultConfig, watchDirs: getDefaultWatchDirs() };
+    const cwd = options.cwd || config.cwd;
+    const configFile = options.configFile || config.configFile;
+    const pkgInfo =
+      utils.requireFile(path.resolve(cwd, './package.json')) || {};
 
-    // merge local config
-    const localConfigFile = getAbsoluteUrlByCwd(
-      options.configFile || config.configFile,
-      options.cwd || config.cwd,
-    );
-
-    // read local config
-    if (fs.existsSync(localConfigFile)) {
-      let exp = require(localConfigFile);
-      if (typeof exp === 'function') {
-        exp = exp();
-      }
-      Object.assign(options, exp);
+    // read from package.json
+    if (pkgInfo.egg) {
+      config.framework = pkgInfo.egg.framework || defaultConfig.framework;
+      mergeConfig(config, pkgInfo.egg.tsHelper);
     }
+
+    // read from local file
+    mergeConfig(
+      config,
+      utils.requireFile(getAbsoluteUrlByCwd(configFile, cwd)),
+    );
+    debug('%o', config);
 
     // merge local config and options to config
-    Object.assign(config, options, {
-      watchDirs: getDefaultWatchDirs(),
-    });
-
-    // merge watchDirs
-    if (options.watchDirs) {
-      const watchDirs = options.watchDirs;
-      Object.keys(watchDirs).forEach(key => {
-        const item = watchDirs[key];
-        if (typeof item === 'boolean') {
-          if (config.watchDirs[key]) {
-            config.watchDirs[key].enabled = item;
-          }
-        } else if (item) {
-          config.watchDirs[key] = item;
-        }
-      });
-    }
+    mergeConfig(config, options);
+    debug('%o', options);
 
     // resolve config.typings to absolute url
-    config.typings = getAbsoluteUrlByCwd(config.typings, config.cwd);
-
-    // get framework name from option or package.json
-    const pkgInfoPath = path.resolve(config.cwd, './package.json');
-    if (fs.existsSync(pkgInfoPath)) {
-      const pkgInfo = require(pkgInfoPath);
-      config.framework =
-        options.framework ||
-        (pkgInfo.egg ? pkgInfo.egg.framework : null) ||
-        defaultConfig.framework;
-    }
+    config.typings = getAbsoluteUrlByCwd(config.typings, cwd);
 
     return config as TsHelperConfig;
   }
@@ -273,7 +251,10 @@ export default class TsHelper extends EventEmitter {
       this.watchNameList[index]
     ] as WatchItem;
 
-    if (event && !generatorConfig.trigger.includes(event)) {
+    if (
+      !generatorConfig.trigger ||
+      (event && !generatorConfig.trigger.includes(event))
+    ) {
       // check whether need to regenerate ts
       return;
     }
@@ -343,4 +324,36 @@ export default class TsHelper extends EventEmitter {
 
 function getAbsoluteUrlByCwd(p: string, cwd: string) {
   return path.isAbsolute(p) ? p : path.resolve(cwd, p);
+}
+
+// merge ts helper options
+function mergeConfig(base: TsHelperConfig, ...args: TsHelperOption[]) {
+  args.forEach(opt => {
+    if (!opt) {
+      return;
+    }
+
+    Object.keys(opt).forEach(key => {
+      if (key === 'watchDirs') {
+        const watchDirs = opt.watchDirs || {};
+
+        Object.keys(watchDirs).forEach(k => {
+          const item = watchDirs[k];
+          if (typeof item === 'boolean') {
+            if (base.watchDirs[k]) {
+              base.watchDirs[k].enabled = item;
+            }
+          } else if (item) {
+            if (base.watchDirs[k]) {
+              Object.assign(base.watchDirs[k], item);
+            } else {
+              base.watchDirs[k] = item;
+            }
+          }
+        });
+      } else {
+        base[key] = opt[key];
+      }
+    });
+  });
 }

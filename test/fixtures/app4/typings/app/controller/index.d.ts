@@ -3,7 +3,7 @@
 
 import Home from '../../../app/controller/home';
 
-declare module '' {
+declare module 'chair' {
   interface IController {
     home: Home;
   }

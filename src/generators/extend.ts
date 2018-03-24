@@ -3,9 +3,9 @@ import * as t from 'babel-types';
 import * as babylon from 'babylon';
 import * as d from 'debug';
 import * as fs from 'fs';
-import * as glob from 'glob';
 import * as path from 'path';
 import { default as TsHelper, GeneratorResult } from '../';
+import * as utils from '../utils';
 const debug = d('egg-ts-helper#generators_extend');
 
 export default function(tsHelper: TsHelper) {
@@ -15,17 +15,9 @@ export default function(tsHelper: TsHelper) {
       path.relative(baseConfig.cwd, config.dir),
     );
 
-    let fileList: string[];
-    if (!config.file) {
-      fileList = glob.sync('**/*.@(js|ts)', { cwd: config.dir });
-
-      // filter d.ts and the same name ts/js
-      fileList = fileList.filter(
-        f => !(f.endsWith('.d.ts') || f.endsWith('.js')),
-      );
-    } else {
-      fileList = config.file.endsWith('.ts') ? [config.file] : [];
-    }
+    const fileList = !config.file
+      ? utils.loadFiles(config.dir)
+      : config.file.endsWith('.ts') ? [config.file] : [];
 
     debug('file list : %o', fileList);
     if (!fileList.length) {

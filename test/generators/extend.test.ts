@@ -15,19 +15,23 @@ function sleep(time) {
   return new Promise(res => setTimeout(res, time));
 }
 
-describe('generators/extend.ts', () => {
+describe('generators/extend.test.ts', () => {
+  let tsHelper;
+  let extendGenerator;
   const appDir = path.resolve(__dirname, '../fixtures/app');
-  const tsHelper = new TsHelper({
-    cwd: appDir,
-    watch: false,
-    execAtInit: false,
-  });
   const defaultWatchDirs = getDefaultWatchDirs();
 
-  const extendGenerator = tsHelper.generators.extend as TsGenerator<
-    any,
-    GeneratorResult[]
-  >;
+  before(() => {
+    tsHelper = new TsHelper({
+      cwd: appDir,
+      watch: false,
+      execAtInit: false,
+    });
+    extendGenerator = tsHelper.generators.extend as TsGenerator<
+      any,
+      GeneratorResult[]
+    >;
+  });
 
   it('should works without error', () => {
     const result = extendGenerator(

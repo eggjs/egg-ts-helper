@@ -1,7 +1,7 @@
 import * as d from 'debug';
-import * as glob from 'glob';
 import * as path from 'path';
 import TsHelper from '../';
+import * as utils from '../utils';
 const debug = d('egg-ts-helper#generators_class');
 
 export default function(tsHelper: TsHelper) {
@@ -11,17 +11,8 @@ export default function(tsHelper: TsHelper) {
       path.relative(baseConfig.cwd, config.dir),
     );
 
-    let fileList = glob.sync('**/*.@(js|ts)', { cwd: config.dir });
+    const fileList = utils.loadFiles(config.dir);
     const dist = path.resolve(dtsDir, 'index.d.ts');
-
-    // filter d.ts and the same name ts/js
-    fileList = fileList.filter(f => {
-      return !(
-        f.endsWith('.d.ts') ||
-        (f.endsWith('.js') &&
-          fileList.includes(f.substring(0, f.length - 2) + 'ts'))
-      );
-    });
 
     debug('file list : %o', fileList);
     if (!fileList.length) {

@@ -1,0 +1,15 @@
+{
+  "name": "app",
+  "egg": {
+    "framework": "larva",
+    "tsHelper": {
+      "framework": "chair",
+      "watchDirs": {
+        "service": {
+          "enabled": false
+        },
+        "extend": false
+      }
+    }
+  }
+}
