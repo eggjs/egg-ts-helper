@@ -61,7 +61,7 @@ Options:
 | configFile | string | {cwd}/tshelper.js | configure file path |
 | watchDirs | object | | generator configuration |
 
-egg-ts-helper would watching `app/extend`,`app/controller`,`app/service` by default. The dts would recreated when the files changed under these folders.
+egg-ts-helper would watching `app/extend`,`app/controller`,`app/service` by default. The dts would recreated when the files under these folders was changed.
 
 you can disabled some folders by `-i` flag.
 
