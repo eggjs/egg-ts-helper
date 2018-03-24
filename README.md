@@ -40,12 +40,71 @@ Options:
    -v, --version            show version
    -w, --watch              watch file change
    -c, --cwd [path]         egg application base dir (default: process.cwd)
-   -C, --config [path]      configuration file, The argument can be a file path to a valid JSON/JS configuration file.（default: cwd/tshelper.json）
+   -C, --config [path]      configuration file, The argument can be a file path to a valid JSON/JS configuration file.（default: {cwd}/tshelper.js）
    -f, --framework [name]   egg framework(default: egg)
    -s, --silent             disabled log
    -i, --ignore [dir]       ignore watchDirs, your can ignore multiple dirs with comma like: -i controller,service
    -e, --enabled [dir]      enabled watchDirs, your can use multiple dirs with comma like: -e proxy,other
    -E, --extra [json]       extra config, value type was a json string
+```
+
+## Options
+
+| name | type | default | description |
+| --- | --- | --- | --- |
+| cwd | string | process.cwd | egg application base dir |
+| framework | string | egg | egg framework |
+| typings | string | {cwd}/typings | typings dir |
+| caseStyle | string | lower | egg case style(lower,upper,camel) |
+| watch | boolean | false | watch file change or not |
+| execAtInit | boolean | false | execute d.ts generation while instance was created |
+| configFile | string | {cwd}/tshelper.js | configure file path |
+| watchDirs | object | | generator configuration |
+
+egg-ts-helper would watching `app/extend`,`app/controller`,`app/service` by default. The dts would recreated when the files changed under these folders.
+
+you can disabled some folders by `-i` flag.
+
+```
+$ ets -i extend,controller
+```
+
+or configure in the config file
+
+```
+// {cwd}/tshelper.js
+
+module.exports = {
+  watchDirs: {
+    extend: false,
+    controller: false,
+  }
+}
+```
+
+or configure in package.json
+
+```
+// {cwd}/package.json
+
+{
+  "egg": {
+    "framework": "egg",
+    "tsHelper": {
+      "watchDirs": {
+        "extend": false
+      }
+    }
+  }
+}
+```
+
+## Register
+
+You can use register to start egg-ts-helper before starting egg application.
+
+```
+$ node -r egg-ts-helper/register index.js
 ```
 
 ## Demo

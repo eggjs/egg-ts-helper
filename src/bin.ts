@@ -19,7 +19,7 @@ const options = [
     name: 'config',
     alias: 'C',
     desc:
-      'configuration file, The argument can be a file path to a valid JSON/JS configuration file.（default: cwd/tshelper.json）',
+      'configuration file, The argument can be a file path to a valid JSON/JS configuration file.（default: {cwd}/tshelper.js',
     value: true,
     valueName: 'path',
   },
