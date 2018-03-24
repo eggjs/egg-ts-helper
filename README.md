@@ -29,6 +29,12 @@ or
 yarn global add egg-ts-helper
 ```
 
+## QuickStart
+
+```
+$ ets -w
+```
+
 ## Usage
 
 ```
