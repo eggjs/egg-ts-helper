@@ -93,11 +93,14 @@ export default class TsHelper extends EventEmitter {
     };
     private watcher;
     private tickerMap;
+    private watched;
     constructor(options?: TsHelperOption);
     register<T extends TsGenConfig = TsGenConfig>(name: string, tsGen: TsGenerator<T>): void;
+    build(): void;
+    watch(): void;
     private configure(options);
-    private initWatcher();
     private findInWatchDirs(p);
     private generateTs(index, event?, file?);
     private onChange(p, event);
 }
+export declare function createTsHelperInstance(options?: TsHelperOption): default;

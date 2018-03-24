@@ -22,6 +22,8 @@ describe('index.test.ts', () => {
 
     const tsHelper = new TsHelper({
       cwd: path.resolve(__dirname, './fixtures/app'),
+      watch: true,
+      execAtInit: true,
     });
 
     await sleep(1000);
@@ -77,8 +79,6 @@ describe('index.test.ts', () => {
   it('should support rewrite by options.watchDirs', () => {
     const tsHelper = new TsHelper({
       cwd: path.resolve(__dirname, './fixtures/app3'),
-      watch: false,
-      execAtInit: false,
       watchDirs: {
         extend: false,
         controller: false,
@@ -100,8 +100,6 @@ describe('index.test.ts', () => {
   it('should support rewrite by package.json', () => {
     const tsHelper = new TsHelper({
       cwd: path.resolve(__dirname, './fixtures/app4'),
-      watch: false,
-      execAtInit: false,
     });
 
     assert(tsHelper.watchNameList.length === 1);

@@ -54,8 +54,8 @@ export const defaultConfig = {
   caseStyle: 'lower',
   autoRemoveJs: true,
   throttle: 500,
-  watch: true,
-  execAtInit: true,
+  watch: false,
+  execAtInit: false,
   watchDirs: {},
   configFile: './tshelper.js',
 };
@@ -120,6 +120,7 @@ export default class TsHelper extends EventEmitter {
   readonly generators: { [key: string]: TsGenerator<any> } = {};
   private watcher: chokidar.FSWatcher;
   private tickerMap: PlainObject = {};
+  private watched: boolean = false;
 
   constructor(options: TsHelperOption = {}) {
     super();
@@ -149,14 +150,12 @@ export default class TsHelper extends EventEmitter {
     // generate d.ts at init
     if (config.execAtInit) {
       debug('exec at init');
-      process.nextTick(() => {
-        this.watchDirs.forEach((_, i) => this.generateTs(i));
-      });
+      this.build();
     }
 
     // start watching dirs
     if (config.watch) {
-      this.initWatcher();
+      this.watch();
     }
   }
 
@@ -166,6 +165,49 @@ export default class TsHelper extends EventEmitter {
     tsGen: TsGenerator<T>,
   ) {
     this.generators[name] = tsGen;
+  }
+
+  // build all dirs
+  build() {
+    this.watchDirs.forEach((_, i) => this.generateTs(i));
+  }
+
+  // init watcher
+  watch() {
+    if (this.watched) {
+      return;
+    }
+
+    const config = this.config;
+    // format watchDirs
+    const watchDirs = this.watchDirs.map(item => {
+      // glob only works with / in windows
+      return path.join(item, './**/*.(js|ts)').replace(/\/|\\/g, '/');
+    });
+
+    const watcher = (this.watcher = chokidar.watch(watchDirs, {
+      ignoreInitial: true,
+    }));
+
+    // listen watcher event
+    watcher.on('all', (event, p) => this.onChange(p, event));
+
+    // auto remove js while ts was deleted
+    if (config.autoRemoveJs) {
+      watcher.on('unlink', p => {
+        if (!p.endsWith('.ts')) {
+          return;
+        }
+
+        const jsPath = p.substring(0, p.lastIndexOf('.')) + '.js';
+        if (fs.existsSync(jsPath)) {
+          debug('auto remove js file %s', jsPath);
+          fs.unlinkSync(jsPath);
+        }
+      });
+    }
+
+    this.watched = true;
   }
 
   // configure
@@ -199,36 +241,6 @@ export default class TsHelper extends EventEmitter {
     config.typings = getAbsoluteUrlByCwd(config.typings, cwd);
 
     return config as TsHelperConfig;
-  }
-
-  // init watcher
-  private initWatcher() {
-    const config = this.config;
-    // format watchDirs
-    const watchDirs = this.watchDirs.map(item => {
-      // glob only works with / in windows
-      return path.join(item, './**/*.(js|ts)').replace(/\/|\\/g, '/');
-    });
-
-    const watcher = (this.watcher = chokidar.watch(watchDirs));
-
-    // listen watcher event
-    watcher.on('all', (event, p) => this.onChange(p, event));
-
-    // auto remove js while ts was deleted
-    if (config.autoRemoveJs) {
-      watcher.on('unlink', p => {
-        if (!p.endsWith('.ts')) {
-          return;
-        }
-
-        const jsPath = p.substring(0, p.lastIndexOf('.')) + '.js';
-        if (fs.existsSync(jsPath)) {
-          debug('auto remove js file %s', jsPath);
-          fs.unlinkSync(jsPath);
-        }
-      });
-    }
   }
 
   // find file path in watchDirs
@@ -320,6 +332,10 @@ export default class TsHelper extends EventEmitter {
       this.tickerMap[k] = null;
     }, this.config.throttle);
   }
+}
+
+export function createTsHelperInstance(options?: TsHelperOption) {
+  return new TsHelper(options);
 }
 
 function getAbsoluteUrlByCwd(p: string, cwd: string) {

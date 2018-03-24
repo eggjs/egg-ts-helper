@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 import * as packInfo from '../package.json';
-import { default as TsHelper, defaultConfig } from './';
+import { createTsHelperInstance, defaultConfig } from './';
 const argv = process.argv;
 const options = [
   { name: 'help', alias: 'h', desc: 'usage' },
@@ -47,6 +47,13 @@ const options = [
     value: true,
     valueName: 'dir',
   },
+  {
+    name: 'extra',
+    alias: 'E',
+    desc: 'extra config, value type was a json string',
+    value: true,
+    valueName: 'json',
+  },
 ];
 
 let maxLen = 0;
@@ -91,26 +98,27 @@ ${optionInfo}
 
 const watchFiles = argOption.watch;
 const watchDirs = {};
-argOption.ignore
-  .split(',')
-  .forEach(key => (watchDirs[key] = false));
-argOption.enabled
-  .split(',')
-  .forEach(key => (watchDirs[key] = true));
+argOption.ignore.split(',').forEach(key => (watchDirs[key] = false));
+argOption.enabled.split(',').forEach(key => (watchDirs[key] = true));
 
-const tsHelper = new TsHelper({
+// extra config
+const extraConfig = argOption.extra ? JSON.parse(argOption.extra) : {};
+
+// create instance
+createTsHelperInstance({
   cwd: argOption.cwd,
   framework: argOption.framework,
   watch: watchFiles,
   watchDirs,
   configFile: argOption.config,
-});
-
-if (!argOption.silent) {
-  tsHelper.on('update', p => {
-    console.info(`[${packInfo.name}] ${p} created`);
-  });
-}
+  ...extraConfig,
+})
+  .on('update', p => {
+    if (!argOption.silent) {
+      console.info(`[${packInfo.name}] ${p} created`);
+    }
+  })
+  .build();
 
 function repeat(str, times) {
   return Array(times + 1).join(str);
