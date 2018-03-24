@@ -31,6 +31,14 @@ yarn global add egg-ts-helper
 
 ## QuickStart
 
+Open your egg application, and execute the command
+
+```
+$ ets
+```
+
+Auto recreated d.ts while file changed
+
 ```
 $ ets -w
 ```
