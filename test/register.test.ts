@@ -26,7 +26,7 @@ describe('register.test.ts', () => {
 
     ps.stdout.on('data', data => {
       assert(data.toString() === 'done');
-      process.kill(ps.pid, 'SIGINT');
+      process.kill(ps.pid);
       done();
     });
   });

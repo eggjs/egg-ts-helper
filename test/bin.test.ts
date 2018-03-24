@@ -43,7 +43,7 @@ describe('bin.test.ts', () => {
 
   afterEach(() => {
     if (ps && !ps.killed) {
-      ps.kill('SIGHUP');
+      ps.kill();
     }
   });
 

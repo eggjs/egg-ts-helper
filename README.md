@@ -36,13 +36,16 @@ $ ets -h
 
 Usage: ets [options]
 Options:
-   -h, --help             usage
-   -v, --version          show version
-   -w, --watch            watch file change
-   -c, --cwd [path]       egg application base dir(default: process.cwd)
-   -f, --framework [name] egg framework(default: egg)
-   -s, --silent           no log
-   -i, --ignore           ignore dir, your can ignore multiple dirs with comma like: -i proxy,controller
+   -h, --help               usage
+   -v, --version            show version
+   -w, --watch              watch file change
+   -c, --cwd [path]         egg application base dir (default: process.cwd)
+   -C, --config [path]      configuration file, The argument can be a file path to a valid JSON/JS configuration file.（default: cwd/tshelper.json）
+   -f, --framework [name]   egg framework(default: egg)
+   -s, --silent             disabled log
+   -i, --ignore [dir]       ignore watchDirs, your can ignore multiple dirs with comma like: -i controller,service
+   -e, --enabled [dir]      enabled watchDirs, your can use multiple dirs with comma like: -e proxy,other
+   -E, --extra [json]       extra config, value type was a json string
 ```
 
 ## Demo
