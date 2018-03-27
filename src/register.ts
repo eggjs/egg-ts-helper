@@ -1,6 +1,12 @@
 import { fork } from 'child_process';
+import * as cluster from 'cluster';
 import * as path from 'path';
 import { createTsHelperInstance } from './';
+
+// only works in master
+if (cluster.isWorker) {
+  process.exit(0);
+}
 
 // fork a process to watch files change
 const ps = fork(path.resolve(__dirname, './bin'), ['-w'], {

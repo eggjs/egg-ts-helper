@@ -26,7 +26,8 @@
     ]
   },
   "files": [
-    "dist"
+    "dist",
+    "register.js"
   ],
   "author": "wanghx",
   "license": "MIT",
