@@ -1,10 +1,10 @@
 import * as d from 'debug';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as ts from 'typescript';
 import { default as TsHelper, GeneratorResult } from '../';
 import * as utils from '../utils';
 const debug = d('egg-ts-helper#generators_extend');
-import * as ts from 'typescript';
 
 export default function(tsHelper: TsHelper) {
   tsHelper.register('extend', (config, baseConfig) => {
