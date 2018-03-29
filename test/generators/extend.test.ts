@@ -10,6 +10,7 @@ import {
   getDefaultWatchDirs,
   TsGenerator,
 } from '../../dist/';
+import { findReturnPropertiesByTs } from '../../dist/generators/extend';
 
 function sleep(time) {
   return new Promise(res => setTimeout(res, time));
@@ -31,6 +32,28 @@ describe('generators/extend.test.ts', () => {
       any,
       GeneratorResult[]
     >;
+  });
+
+  it('should works with ts compiler', () => {
+    let array = findReturnPropertiesByTs(path.resolve(__dirname, '../fixtures/app2/app/extend/application.ts')) || [];
+    assert(array.includes('go'));
+    assert(array.includes('isCool'));
+    assert(array.includes('test-gg'));
+    assert(array.includes('test-ggs'));
+    assert(array.includes('isNotCool'));
+
+    array = findReturnPropertiesByTs(path.resolve(__dirname, '../fixtures/app2/app/extend/context.ts')) || [];
+    assert(array.includes('ctx'));
+    assert(array.includes('isProd'));
+    assert(array.includes('isAjax'));
+
+    array = findReturnPropertiesByTs(path.resolve(__dirname, '../fixtures/app2/app/extend/helper.ts')) || [];
+    assert(array.includes('isCool'));
+    assert(array.includes('isNotCool'));
+
+    array = findReturnPropertiesByTs(path.resolve(__dirname, '../fixtures/app5/app/extend/whatever.ts')) || [];
+    assert(array.includes('isCool'));
+    assert(array.includes('isNotCool'));
   });
 
   it('should works without error', () => {
@@ -80,20 +103,6 @@ describe('generators/extend.test.ts', () => {
         ...defaultWatchDirs.extend,
         dir: path.resolve(appDir, './app/extend/'),
         file: path.resolve(appDir, './app/extend/whatever.ts'),
-      },
-      tsHelper.config,
-    );
-
-    assert(!result.length);
-  });
-
-  it('should not exist while babylon parse error', () => {
-    const newAppDir = path.resolve(__dirname, '../fixtures/app2');
-    const result = extendGenerator(
-      {
-        ...defaultWatchDirs.extend,
-        dir: path.resolve(newAppDir, './app/extend/'),
-        file: path.resolve(newAppDir, './app/extend/agent.ts'),
       },
       tsHelper.config,
     );

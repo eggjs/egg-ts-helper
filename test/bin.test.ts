@@ -145,7 +145,7 @@ describe('bin.test.ts', () => {
 
   it('should works without error', async () => {
     triggerBin('-c', path.resolve(__dirname, './fixtures/app8'));
-    await sleep(2000);
+    await sleep(3000);
     const content = fs.readFileSync(
       path.resolve(
         __dirname,
