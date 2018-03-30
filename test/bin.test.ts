@@ -69,6 +69,11 @@ describe('bin.test.ts', () => {
     assert(!data2.includes('created'));
   });
 
+  it('should works with empty flags correctly', async () => {
+    const data = await getOutput();
+    assert(!data);
+  });
+
   it('should works with -e correctly', async () => {
     triggerBin('-c', path.resolve(__dirname, './fixtures/app6'), '-e', 'proxy');
     await sleep(2000);

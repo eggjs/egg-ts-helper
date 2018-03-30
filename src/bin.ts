@@ -1,11 +1,19 @@
 #! /usr/bin/env node
 
-import * as program from 'commander';
+import { Command } from 'commander';
 import * as glob from 'globby';
 import * as path from 'path';
 import * as packInfo from '../package.json';
 import { createTsHelperInstance, defaultConfig } from './';
 import { removeSameNameJs } from './utils';
+
+const noArgv = !process.argv.slice(2).length;
+const oldParseArgs = Command.prototype.parseArgs;
+Command.prototype.parseArgs = function(args: string[], unknown) {
+  return noArgv ? this : oldParseArgs.call(this, args, unknown);
+};
+
+const program = new Command();
 
 program
   .version(packInfo.version, '-v, --version')
@@ -20,7 +28,8 @@ program
   .option('-E, --extra [json]', 'Extra config, the value should be json string');
 
 let cmd: string | undefined;
-program.command('clean', 'Clean js file while it has the same name ts file')
+program
+  .command('clean', 'Clean js file while it has the same name ts file')
   .action(command => cmd = command);
 
 program.parse(process.argv);
