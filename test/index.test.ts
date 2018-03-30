@@ -24,6 +24,7 @@ describe('index.test.ts', () => {
       cwd: path.resolve(__dirname, './fixtures/app'),
       watch: true,
       execAtInit: true,
+      autoRemoveJs: false,
     });
 
     await sleep(1000);

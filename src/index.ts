@@ -194,17 +194,7 @@ export default class TsHelper extends EventEmitter {
 
     // auto remove js while ts was deleted
     if (config.autoRemoveJs) {
-      watcher.on('unlink', p => {
-        if (!p.endsWith('.ts')) {
-          return;
-        }
-
-        const jsPath = p.substring(0, p.lastIndexOf('.')) + '.js';
-        if (fs.existsSync(jsPath)) {
-          debug('auto remove js file %s', jsPath);
-          fs.unlinkSync(jsPath);
-        }
-      });
+      watcher.on('unlink', utils.removeSameNameJs);
     }
 
     this.watched = true;

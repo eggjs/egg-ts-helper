@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import * as path from 'path';
 import * as assert from 'power-assert';
 import * as utils from '../dist/utils';
@@ -19,5 +20,12 @@ describe('utils.test.ts', () => {
     assert(exp.hello);
     assert(exp2.hello);
     assert(exp3.hello);
+  });
+
+  it('should removeSameNameJs without error', () => {
+    assert(!utils.removeSameNameJs(path.resolve(__dirname, './fixtures/app9/test.d.ts')));
+    assert(!utils.removeSameNameJs(path.resolve(__dirname, './fixtures/app9/test2.js')));
+    fs.writeFileSync(path.resolve(__dirname, './fixtures/app9/test.js'), '');
+    assert(utils.removeSameNameJs(path.resolve(__dirname, './fixtures/app9/test.ts')));
   });
 });
