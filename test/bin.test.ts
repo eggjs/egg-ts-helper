@@ -17,9 +17,6 @@ describe('bin.test.ts', () => {
       'node',
       [path.resolve(__dirname, '../dist/bin.js')].concat(args),
     );
-    ps.stderr.on('data', data => {
-      console.info(data.toString());
-    });
     return ps;
   }
 
@@ -143,15 +140,37 @@ describe('bin.test.ts', () => {
     );
   });
 
-  it('should works without error', async () => {
+  it('should works with clean command correctly', async () => {
+    const appPath = path.resolve(__dirname, './fixtures/app9');
+    const p = spawn(
+      path.resolve(__dirname, '../node_modules/.bin/tsc' + (isWin ? '.cmd' : '')),
+      [],
+      { cwd: appPath },
+    );
+
+    await new Promise(resolve => p.on('exit', resolve));
+
+    assert(fs.existsSync(path.resolve(appPath, './test.js')));
+    assert(fs.existsSync(path.resolve(appPath, './app/test.js')));
+    assert(fs.existsSync(path.resolve(appPath, './app/app/test.js')));
+    await new Promise(resolve => triggerBin('clean', '-c', appPath).on('exit', resolve));
+    assert(fs.existsSync(path.resolve(appPath, './test2.js')));
+    assert(!fs.existsSync(path.resolve(appPath, './test.js')));
+    assert(!fs.existsSync(path.resolve(appPath, './app/test.js')));
+    assert(!fs.existsSync(path.resolve(appPath, './app/app/test.js')));
+  });
+
+  it('should created d.ts correctly', async () => {
     triggerBin('-c', path.resolve(__dirname, './fixtures/app8'));
     await sleep(3000);
-    const content = fs.readFileSync(
-      path.resolve(
-        __dirname,
-        './fixtures/app8/typings/app/controller/index.d.ts',
-      ),
-    ).toString();
+    const content = fs
+      .readFileSync(
+        path.resolve(
+          __dirname,
+          './fixtures/app8/typings/app/controller/index.d.ts',
+        ),
+      )
+      .toString();
     assert(content.includes('declare module \'egg\''));
     assert(content.includes('interface IController'));
     assert(content.includes('home: Home'));

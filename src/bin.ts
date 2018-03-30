@@ -1,138 +1,67 @@
 #! /usr/bin/env node
 
+import * as program from 'commander';
+import * as glob from 'globby';
+import * as path from 'path';
 import * as packInfo from '../package.json';
 import { createTsHelperInstance, defaultConfig } from './';
-const argv = process.argv;
-const options = [
-  { name: 'help', alias: 'h', desc: 'usage' },
-  { name: 'version', alias: 'v', desc: 'show version' },
-  { name: 'watch', alias: 'w', desc: 'watch file change' },
-  {
-    name: 'cwd',
-    alias: 'c',
-    desc: 'egg application base dir (default: process.cwd)',
-    value: true,
-    valueName: 'path',
-    default: defaultConfig.cwd,
-  },
-  {
-    name: 'config',
-    alias: 'C',
-    desc:
-      'configuration file, The argument can be a file path to a valid JSON/JS configuration file.（default: {cwd}/tshelper.js',
-    value: true,
-    valueName: 'path',
-  },
-  {
-    name: 'framework',
-    alias: 'f',
-    desc: 'egg framework(default: egg)',
-    value: true,
-    valueName: 'name',
-  },
-  { name: 'silent', alias: 's', desc: 'disabled log' },
-  {
-    name: 'ignore',
-    alias: 'i',
-    desc:
-      'ignore watchDirs, your can ignore multiple dirs with comma like: -i controller,service',
-    value: true,
-    valueName: 'dir',
-  },
-  {
-    name: 'enabled',
-    alias: 'e',
-    desc:
-      'enabled watchDirs, your can use multiple dirs with comma like: -e proxy,other',
-    value: true,
-    valueName: 'dir',
-  },
-  {
-    name: 'extra',
-    alias: 'E',
-    desc: 'extra config, value type was a json string',
-    value: true,
-    valueName: 'json',
-  },
-];
+import { removeSameNameJs } from './utils';
 
-let maxLen = 0;
-const helpTxtList: string[] = [];
-const argOption = {} as any;
-options.forEach(item => {
-  argOption[item.name] =
-    findInArgv(!!item.value, `-${item.alias}`, `--${item.name}`) ||
-    item.default;
+program
+  .version(packInfo.version, '-v, --version')
+  .usage('[commands] [options]')
+  .option('-w, --watch', 'Watching files, d.ts would recreated while file changed')
+  .option('-c, --cwd [path]', 'Egg application base dir (default: process.cwd)')
+  .option('-C, --config [path]', 'Configuration file, The argument can be a file path to a valid JSON/JS configuration file.（default: {cwd}/tshelper.js')
+  .option('-f, --framework [name]', 'Egg framework(default: egg)')
+  .option('-s, --silent', 'Running without output')
+  .option('-i, --ignore [dirs]', 'Ignore watchDirs, your can ignore multiple dirs with comma like: -i controller,service')
+  .option('-e, --enabled [dirs]', 'Enable watchDirs, your can enable multiple dirs with comma like: -e proxy,other')
+  .option('-E, --extra [json]', 'Extra config, the value should be json string');
 
-  // collect help info
-  const txt = `-${item.alias}, --${item.name}${
-    item.value ? ` [${item.valueName || 'value'}]` : ''
-  }`;
-  helpTxtList.push(txt);
-  maxLen = txt.length > maxLen ? txt.length : maxLen;
-});
+let cmd: string | undefined;
+program.command('clean', 'Clean js file while it has the same name ts file')
+  .action(command => cmd = command);
 
-// show help info
-if (argOption.help) {
-  const optionInfo = helpTxtList
-    .map(
-      (item, index) =>
-        `   ${item}${repeat(' ', maxLen - item.length)}   ${
-          options[index].desc
-        }`,
-    )
-    .join('\n');
+program.parse(process.argv);
 
-  console.info(`
-Usage: ets [options]
-Options:
-${optionInfo}
-`);
+const cwd = program.cwd || defaultConfig.cwd;
+if (cmd === 'clean') {
+  // clean same name js/ts
+  glob
+    .sync(['**/*.ts', '!**/*.d.ts', '!node_modules/**/*'], {
+      cwd,
+    })
+    .forEach(f => {
+      const jf = removeSameNameJs(path.resolve(cwd, f));
+      if (jf && !program.silent) {
+        console.info(`${jf} was deleted!`);
+      }
+    });
 
-  process.exit(0);
-} else if (argOption.version) {
-  console.info(packInfo.version);
-  process.exit(0);
+  process.exit(1);
 }
 
-const watchFiles = argOption.watch;
+const watchFiles = program.watch;
 const watchDirs = {};
-(argOption.ignore || '').split(',').forEach(key => (watchDirs[key] = false));
-(argOption.enabled || '').split(',').forEach(key => (watchDirs[key] = true));
+(program.ignore || '').split(',').forEach(key => (watchDirs[key] = false));
+(program.enabled || '').split(',').forEach(key => (watchDirs[key] = true));
 
 // extra config
-const extraConfig = argOption.extra ? JSON.parse(argOption.extra) : {};
+const extraConfig = program.extra ? JSON.parse(program.extra) : {};
 
 // create instance
 createTsHelperInstance({
-  cwd: argOption.cwd,
-  framework: argOption.framework,
+  cwd,
+  framework: program.framework,
   watch: watchFiles,
   watchDirs,
-  configFile: argOption.config,
+  configFile: program.config,
   ...extraConfig,
 })
   .on('update', p => {
-    if (!argOption.silent) {
+    if (!program.silent) {
       console.info(`[${packInfo.name}] ${p} created`);
     }
   })
   .build();
-
-function repeat(str, times) {
-  return Array(times + 1).join(str);
-}
-
-function findInArgv(hasValue: boolean, ...args: string[]) {
-  for (const arg of args) {
-    const index = argv.indexOf(arg);
-    if (index > 0) {
-      if (hasValue) {
-        const val = argv[index + 1];
-        return !val || val.startsWith('-') ? undefined : val;
-      } else {
-        return true;
-      }
-    }
-  }
-}

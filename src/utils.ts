@@ -2,8 +2,8 @@ import * as fs from 'fs';
 import * as glob from 'globby';
 
 // load ts/js files
-export function loadFiles(cwd) {
-  const fileList = glob.sync(['**/*.(js|ts)', '!**/*.d.ts'], {
+export function loadFiles(cwd: string, pattern: string = '**/*.(js|ts)') {
+  const fileList = glob.sync([pattern, '!**/*.d.ts'], {
     cwd,
   });
 
@@ -14,6 +14,19 @@ export function loadFiles(cwd) {
       fileList.includes(f.substring(0, f.length - 2) + 'ts')
     );
   });
+}
+
+// remove same name js
+export function removeSameNameJs(f: string) {
+  if (!f.endsWith('.ts') || f.endsWith('.d.ts')) {
+    return;
+  }
+
+  const jf = f.substring(0, f.length - 2) + 'js';
+  if (fs.existsSync(jf)) {
+    fs.unlinkSync(jf);
+    return jf;
+  }
 }
 
 // require modules
