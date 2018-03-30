@@ -9,3 +9,4 @@ run/
 *.lock
 .nyc_output
 *.log
+dist/
