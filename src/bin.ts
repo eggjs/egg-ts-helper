@@ -38,7 +38,7 @@ const cwd = program.cwd || defaultConfig.cwd;
 if (cmd === 'clean') {
   // clean same name js/ts
   glob
-    .sync(['**/*.ts', '!**/*.d.ts', '!node_modules/**/*'], {
+    .sync(['**/*.ts', '!**/*.d.ts', '!**/node_modules'], {
       cwd,
     })
     .forEach(f => {
