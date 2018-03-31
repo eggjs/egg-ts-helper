@@ -1,7 +1,5 @@
-import * as d from 'debug';
-import * as fs from 'fs';
-import * as path from 'path';
 import * as ts from 'typescript';
+import * as utils from '../utils';
 
 // export default function(tsHelper: TsHelper) {
 //   tsHelper.register('config', (config, baseConfig) => {
@@ -10,15 +8,18 @@ import * as ts from 'typescript';
 // }
 
 export function findObjects(f: string) {
-  const code = fs.readFileSync(f, {
-    encoding: 'utf-8',
-  });
-
-  let sourceFile;
-  try {
-    sourceFile = ts.createSourceFile(f, code, ts.ScriptTarget.ES2017, true);
-  } catch (e) {
-    console.error(e);
+  const sourceFile = utils.getSourceFile(f);
+  if (!sourceFile) {
     return;
   }
+
+  let exportElement;
+  utils.eachSourceFile(sourceFile, node => {
+    if (ts.isExportAssignment(node)) {
+      exportElement = node;
+      return false;
+    }
+  });
+
+  console.info(exportElement);
 }

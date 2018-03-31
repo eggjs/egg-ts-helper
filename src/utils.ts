@@ -46,7 +46,11 @@ export function getSourceFile(f: string) {
 
 // each ast node
 export function eachSourceFile(node: ts.Node, cb: (n: ts.Node) => any) {
-  cb(node);
+  const result = cb(node);
+  if (result === false) {
+    return;
+  }
+
   node.forEachChild((sub: ts.Node) => {
     eachSourceFile(sub, cb);
   });

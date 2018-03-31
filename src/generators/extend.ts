@@ -66,41 +66,43 @@ export default function(tsHelper: TsHelper) {
 // find properties from ts file.
 export function findReturnPropertiesByTs(f: string): string[] | void {
   const sourceFile = utils.getSourceFile(f);
+  if (!sourceFile) {
+    return;
+  }
+
   const cache = new Map();
   let exp;
 
-  handleNode(sourceFile);
-  function handleNode(node: ts.Node) {
-    if (node.parent === sourceFile) {
-      // find node in root scope
-
-      if (ts.isVariableStatement(node)) {
-        // const exportData = {};
-        // export exportData
-        const declarations = node.declarationList.declarations;
-        declarations.forEach(declaration => {
-          if (ts.isIdentifier(declaration.name)) {
-            cache.set(declaration.name.escapedText, declaration.initializer);
-          }
-        });
-      } else if (ts.isExportAssignment(node)) {
-        // export default {}
-        exp = node.expression;
-      } else if (
-        ts.isExpressionStatement(node) &&
-        ts.isBinaryExpression(node.expression)
-      ) {
-        // let exportData;
-        // exportData = {};
-        // export exportData
-        if (ts.isIdentifier(node.expression.left)) {
-          cache.set(node.expression.left.escapedText, node.expression.right);
-        }
-      }
+  utils.eachSourceFile(sourceFile, node => {
+    if (node.parent !== sourceFile) {
+      return;
     }
 
-    ts.forEachChild(node, handleNode);
-  }
+    // find node in root scope
+    if (ts.isVariableStatement(node)) {
+      // const exportData = {};
+      // export exportData
+      const declarations = node.declarationList.declarations;
+      declarations.forEach(declaration => {
+        if (ts.isIdentifier(declaration.name)) {
+          cache.set(declaration.name.escapedText, declaration.initializer);
+        }
+      });
+    } else if (ts.isExportAssignment(node)) {
+      // export default {}
+      exp = node.expression;
+    } else if (
+      ts.isExpressionStatement(node) &&
+      ts.isBinaryExpression(node.expression)
+    ) {
+      // let exportData;
+      // exportData = {};
+      // export exportData
+      if (ts.isIdentifier(node.expression.left)) {
+        cache.set(node.expression.left.escapedText, node.expression.right);
+      }
+    }
+  });
 
   if (!exp) {
     return;
