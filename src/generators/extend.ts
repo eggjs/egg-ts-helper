@@ -65,18 +65,7 @@ export default function(tsHelper: TsHelper) {
 
 // find properties from ts file.
 export function findReturnPropertiesByTs(f: string): string[] | void {
-  const code = fs.readFileSync(f, {
-    encoding: 'utf-8',
-  });
-
-  let sourceFile;
-  try {
-    sourceFile = ts.createSourceFile(f, code, ts.ScriptTarget.ES2017, true);
-  } catch (e) {
-    console.error(e);
-    return;
-  }
-
+  const sourceFile = utils.getSourceFile(f);
   const cache = new Map();
   let exp;
 

@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as glob from 'globby';
+import * as ts from 'typescript';
 
 // load ts/js files
 export function loadFiles(cwd: string, pattern: string = '**/*.(js|ts)') {
@@ -27,6 +28,28 @@ export function removeSameNameJs(f: string) {
     fs.unlinkSync(jf);
     return jf;
   }
+}
+
+// parse ts file to ast
+export function getSourceFile(f: string) {
+  const code = fs.readFileSync(f, {
+    encoding: 'utf-8',
+  });
+
+  try {
+    return ts.createSourceFile(f, code, ts.ScriptTarget.ES2017, true);
+  } catch (e) {
+    console.error(e);
+    return;
+  }
+}
+
+// each ast node
+export function eachSourceFile(node: ts.Node, cb: (n: ts.Node) => any) {
+  cb(node);
+  node.forEachChild((sub: ts.Node) => {
+    eachSourceFile(sub, cb);
+  });
 }
 
 // require modules
