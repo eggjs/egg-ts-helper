@@ -3,36 +3,11 @@ import * as fs from 'fs';
 import * as mkdirp from 'mkdirp';
 import * as path from 'path';
 import * as assert from 'power-assert';
-import {
-  default as TsHelper,
-  defaultConfig,
-  GeneratorResult,
-  getDefaultWatchDirs,
-  TsGenerator,
-} from '../../dist/';
 import { findReturnPropertiesByTs } from '../../dist/generators/extend';
-
-function sleep(time) {
-  return new Promise(res => setTimeout(res, time));
-}
+import { triggerGenerator } from './utils';
 
 describe('generators/extend.test.ts', () => {
-  let tsHelper;
-  let extendGenerator;
   const appDir = path.resolve(__dirname, '../fixtures/app');
-  const defaultWatchDirs = getDefaultWatchDirs();
-
-  before(() => {
-    tsHelper = new TsHelper({
-      cwd: appDir,
-      watch: false,
-      execAtInit: false,
-    });
-    extendGenerator = tsHelper.generators.extend as TsGenerator<
-      any,
-      GeneratorResult[]
-    >;
-  });
 
   it('should works with ts compiler', () => {
     let array = findReturnPropertiesByTs(path.resolve(__dirname, '../fixtures/app2/app/extend/application.ts')) || [];
@@ -57,15 +32,7 @@ describe('generators/extend.test.ts', () => {
   });
 
   it('should works without error', () => {
-    const result = extendGenerator(
-      {
-        ...defaultWatchDirs.extend,
-        dir: path.resolve(appDir, './app/extend/'),
-        file: path.resolve(appDir, './app/extend/application.ts'),
-      },
-      tsHelper.config,
-    );
-
+    const result = triggerGenerator('extend', appDir, 'application.ts');
     const item = result[0];
     assert(
       item.dist ===
@@ -80,61 +47,25 @@ describe('generators/extend.test.ts', () => {
 
   it('should support appoint framework', () => {
     const newAppDir = path.resolve(__dirname, '../fixtures/app2');
-    const result = extendGenerator(
-      {
-        ...defaultWatchDirs.extend,
-        dir: path.resolve(newAppDir, './app/extend/'),
-        file: path.resolve(newAppDir, './app/extend/application.ts'),
-      },
-      new TsHelper({
-        cwd: newAppDir,
-        watch: false,
-        execAtInit: false,
-      }).config,
-    );
-
+    const result = triggerGenerator('extend', newAppDir, 'application.ts');
     const item = result[0];
     assert(item.content.includes('declare module \'larva\''));
   });
 
   it('should not generate dts with unknown interface', () => {
-    const result = extendGenerator(
-      {
-        ...defaultWatchDirs.extend,
-        dir: path.resolve(appDir, './app/extend/'),
-        file: path.resolve(appDir, './app/extend/whatever.ts'),
-      },
-      tsHelper.config,
-    );
-
+    const result = triggerGenerator('extend', appDir, 'whatever.ts');
     assert(!result.length);
   });
 
   it('should not generate dts with empty extension', () => {
-    const result = extendGenerator(
-      {
-        ...defaultWatchDirs.extend,
-        dir: path.resolve(appDir, './app/extend/'),
-        file: path.resolve(appDir, './app/extend/request.ts'),
-      },
-      tsHelper.config,
-    );
-
+    const result = triggerGenerator('extend', appDir, 'request.ts');
     const item = result[0];
     assert(item.dist.includes('request.d.ts'));
     assert(!item.content);
   });
 
   it('should works without error with helper', () => {
-    const result = extendGenerator(
-      {
-        ...defaultWatchDirs.extend,
-        dir: path.resolve(appDir, './app/extend/'),
-        file: path.resolve(appDir, './app/extend/helper.ts'),
-      },
-      tsHelper.config,
-    );
-
+    const result = triggerGenerator('extend', appDir, 'helper.ts');
     const item = result[0];
     assert(item.content.includes('../../../app/extend/helper'));
     assert(item.content.includes('interface IHelper'));

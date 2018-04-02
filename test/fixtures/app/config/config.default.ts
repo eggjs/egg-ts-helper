@@ -1,6 +1,6 @@
-import { EggAppConfig } from 'egg';
+export const view = '123';
 
-export default (appInfo: EggAppConfig) => {
+export default appInfo => {
   const config: any = {};
 
   // should change to your own

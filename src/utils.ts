@@ -3,8 +3,8 @@ import * as glob from 'globby';
 import * as ts from 'typescript';
 
 // load ts/js files
-export function loadFiles(cwd: string, pattern: string = '**/*.(js|ts)') {
-  const fileList = glob.sync([pattern, '!**/*.d.ts'], {
+export function loadFiles(cwd: string, pattern?: string) {
+  const fileList = glob.sync([pattern || '**/*.(js|ts)', '!**/*.d.ts'], {
     cwd,
   });
 
@@ -15,6 +15,24 @@ export function loadFiles(cwd: string, pattern: string = '**/*.(js|ts)') {
       fileList.includes(f.substring(0, f.length - 2) + 'ts')
     );
   });
+}
+
+// get moduleName by file path
+export function getModuleObjByPath(f: string) {
+  const props = f.split('/').map(prop =>
+    // transfer _ to uppercase
+    prop.replace(/[._-][a-z]/gi, s => s.substring(1).toUpperCase()),
+  );
+
+  // composing moduleName
+  const moduleName = props
+    .map(prop => prop[0].toUpperCase() + prop.substring(1))
+    .join('');
+
+  return {
+    props,
+    moduleName,
+  };
 }
 
 // remove same name js

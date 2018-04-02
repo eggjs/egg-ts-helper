@@ -16,15 +16,16 @@ declare global {
 export interface WatchItem extends PlainObject {
   path: string;
   generator: string;
-  trigger: string[];
   enabled: boolean;
+  trigger?: string[];
+  pattern?: string;
 }
 
 export interface TsHelperOption {
   cwd?: string;
   framework?: string;
   typings?: string;
-  watchDirs?: { [key: string]: WatchItem };
+  watchDirs?: { [key: string]: WatchItem | boolean; };
   caseStyle?: string;
   watch?: boolean;
   autoRemoveJs?: boolean;
@@ -36,6 +37,7 @@ export interface TsHelperOption {
 export type TsHelperConfig = typeof defaultConfig;
 export type TsGenConfig = {
   dir: string;
+  dtsDir: string;
   file?: string;
 } & WatchItem;
 export interface GeneratorResult {
@@ -92,6 +94,19 @@ export function getDefaultWatchDirs() {
       generator: 'class',
       trigger: ['add', 'unlink'],
       enabled: false,
+    },
+
+    config: {
+      path: 'config',
+      pattern: 'config*',
+      interface: {
+        inserts: ['Application', 'Context', 'Controller', 'Service'],
+        property: 'config',
+        base: 'EggAppConfig',
+      },
+      generator: 'config',
+      trigger: ['add', 'unlink', 'change'],
+      enabled: true,
     },
 
     service: {
@@ -270,7 +285,8 @@ export default class TsHelper extends EventEmitter {
       throw new Error(`ts generator: ${generatorConfig.generator} not exist!!`);
     }
 
-    const result = generator({ ...generatorConfig, dir, file }, config);
+    const dtsDir = path.resolve(config.typings, path.relative(config.cwd, dir));
+    const result = generator({ ...generatorConfig, dir, file, dtsDir }, config);
     debug('generate ts file result : %o', result);
     if (result) {
       const resultList = Array.isArray(result) ? result : [result];

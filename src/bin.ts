@@ -48,7 +48,7 @@ if (cmd === 'clean') {
       }
     });
 
-  process.exit(1);
+  process.exit(0);
 }
 
 const watchFiles = program.watch;

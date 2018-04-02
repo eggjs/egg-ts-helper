@@ -1,8 +1,52 @@
 import * as path from 'path';
-import { findObjects } from '../../dist/generators/config';
+import * as assert from 'power-assert';
+import { GeneratorResult } from '../../dist/';
+import { checkConfigReturnType } from '../../dist/generators/config';
+import { triggerGenerator } from './utils';
 
-describe.only('generators/config.test.ts', () => {
-  it('should works without error', () => {
-    findObjects(path.resolve(__dirname, '../fixtures/app/app/config/config.default.ts'));
+describe('generators/config.test.ts', () => {
+  const appDir = path.resolve(__dirname, '../fixtures/app');
+
+  it.only('should works without error', () => {
+    const result = triggerGenerator<GeneratorResult>('config', appDir);
+    assert(result.content);
+    assert(result.content.includes(`import ExportConfigDefault from '../../config/config.default';`));
+    assert(result.content.includes(`import ExportConfigLocal from '../../config/config.local';`));
+    assert(result.content.includes(`import * as ExportConfigProd from '../../config/config.prod';`));
+    assert(result.content.includes(`type ConfigDefault = ReturnType<typeof ExportConfigDefault>;`));
+    assert(result.content.includes(`type ConfigLocal = typeof ExportConfigLocal;`));
+    assert(result.content.includes(`type ConfigProd = typeof ExportConfigProd;`));
+    assert(result.content.includes(`type NewEggAppConfig = EggAppConfig & ConfigDefault & ConfigLocal & ConfigProd;`));
+    assert(result.content.includes(`declare module 'larva'`));
+    assert(result.content.includes(`config: NewEggAppConfig;`));
+    assert(result.content.match(/Application|Context|Controller|Service/));
+  });
+
+  it('should works without error with file changed', () => {
+    triggerGenerator<GeneratorResult>('config', appDir);
+    const result = triggerGenerator<GeneratorResult>('config', appDir, 'config.default');
+    assert(result.content);
+    assert(result.content.includes(`import ExportConfigDefault from '../../config/config.default';`));
+    assert(result.content.includes(`import ExportConfigLocal from '../../config/config.local';`));
+    assert(result.content.includes(`import * as ExportConfigProd from '../../config/config.prod';`));
+    assert(result.content.includes(`type ConfigDefault = ReturnType<typeof ExportConfigDefault>;`));
+    assert(result.content.includes(`type ConfigLocal = typeof ExportConfigLocal;`));
+    assert(result.content.includes(`type ConfigProd = typeof ExportConfigProd;`));
+    assert(result.content.includes(`type NewEggAppConfig = EggAppConfig & ConfigDefault & ConfigLocal & ConfigProd;`));
+    assert(result.content.includes(`declare module 'larva'`));
+    assert(result.content.includes(`config: NewEggAppConfig;`));
+    assert(result.content.match(/Application|Context|Controller|Service/));
+  });
+
+  it('should works without config.ts', () => {
+    const result = triggerGenerator<GeneratorResult>('config', path.resolve(__dirname, '../fixtures/app2'));
+    assert(result.content);
+    assert(result.content.includes(`import ExportConfig from '../../config/config';`));
+    assert(result.content.includes(`type NewEggAppConfig = EggAppConfig & Config`));
+  });
+
+  it('should works without empty config.ts', () => {
+    const result = triggerGenerator<GeneratorResult>('config', path.resolve(__dirname, '../fixtures/app4'));
+    assert(!result.content);
   });
 });

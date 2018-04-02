@@ -6,13 +6,8 @@ const debug = d('egg-ts-helper#generators_class');
 
 export default function(tsHelper: TsHelper) {
   tsHelper.register('class', (config, baseConfig) => {
-    const dtsDir = path.resolve(
-      baseConfig.typings,
-      path.relative(baseConfig.cwd, config.dir),
-    );
-
-    const fileList = utils.loadFiles(config.dir);
-    const dist = path.resolve(dtsDir, 'index.d.ts');
+    const fileList = utils.loadFiles(config.dir, config.pattern);
+    const dist = path.resolve(config.dtsDir, 'index.d.ts');
 
     debug('file list : %o', fileList);
     if (!fileList.length) {
@@ -26,27 +21,23 @@ export default function(tsHelper: TsHelper) {
 
     fileList.forEach(f => {
       f = f.substring(0, f.lastIndexOf('.'));
-      const props = f.split('/').map(prop =>
-        // transfer _ to uppercase
-        prop.replace(/[_-][a-z]/gi, s => s.substring(1).toUpperCase()),
-      );
-
-      // composing moduleName
-      const moduleName = props
-        .map(prop => prop[0].toUpperCase() + prop.substring(1))
-        .join('');
+      const obj = utils.getModuleObjByPath(f);
       const tsPath = path
-        .relative(dtsDir, path.join(config.dir, f))
+        .relative(config.dtsDir, path.join(config.dir, f))
         .replace(/\/|\\/g, '/');
-      debug('import %s from %s', moduleName, tsPath);
-      importStr += `import ${moduleName} from '${tsPath}';\n`;
+      debug('import %s from %s', obj.moduleName, tsPath);
+      importStr += `import ${obj.moduleName} from '${tsPath}';\n`;
 
       // create mapping
       let collector = interfaceMap;
-      while (props.length) {
-        const name = camelProp(props.shift() as string, baseConfig.caseStyle);
-        if (!props.length) {
-          collector[name] = moduleName;
+      while (obj.props.length) {
+        const name = camelProp(
+          obj.props.shift() as string,
+          baseConfig.caseStyle,
+        );
+
+        if (!obj.props.length) {
+          collector[name] = obj.moduleName;
         } else {
           collector = collector[name] = collector[name] || {};
         }

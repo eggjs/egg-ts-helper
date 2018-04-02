@@ -8,17 +8,19 @@ const debug = d('egg-ts-helper#generators_extend');
 
 export default function(tsHelper: TsHelper) {
   tsHelper.register('extend', (config, baseConfig) => {
-    const dtsDir = path.resolve(
-      baseConfig.typings,
-      path.relative(baseConfig.cwd, config.dir),
-    );
-
     const fileList = !config.file
-      ? utils.loadFiles(config.dir)
+      ? utils.loadFiles(config.dir, config.pattern)
       : config.file.endsWith('.ts') ? [config.file] : [];
 
     debug('file list : %o', fileList);
     if (!fileList.length) {
+      if (!config.file) {
+        // clean files
+        return Object.keys(config.interface).map(key => ({
+          dist: path.resolve(config.dtsDir, `${key}.d.ts`),
+        }));
+      }
+
       return;
     }
 
@@ -30,7 +32,7 @@ export default function(tsHelper: TsHelper) {
         return;
       }
 
-      const dist = path.resolve(dtsDir, `${basename}.d.ts`);
+      const dist = path.resolve(config.dtsDir, `${basename}.d.ts`);
       f = path.resolve(config.dir, f);
       if (!fs.existsSync(f)) {
         return tsList.push({ dist });
@@ -42,7 +44,7 @@ export default function(tsHelper: TsHelper) {
         return tsList.push({ dist });
       }
 
-      let tsPath = path.relative(dtsDir, f).replace(/\/|\\/g, '/');
+      let tsPath = path.relative(config.dtsDir, f).replace(/\/|\\/g, '/');
       tsPath = tsPath.substring(0, tsPath.lastIndexOf('.'));
 
       debug('import extendObject from %s', tsPath);
