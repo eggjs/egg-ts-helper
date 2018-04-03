@@ -94,6 +94,12 @@ export function findReturnPropertiesByTs(f: string): string[] | void {
       // export default {}
       exp = node.expression;
     } else if (
+      utils.modifierHas(node, ts.SyntaxKind.ExportKeyword) &&
+      utils.modifierHas(node, ts.SyntaxKind.DefaultKeyword)
+    ) {
+      // export default
+      exp = node;
+    } else if (
       ts.isExpressionStatement(node) &&
       ts.isBinaryExpression(node.expression)
     ) {

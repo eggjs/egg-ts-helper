@@ -1,7 +1,8 @@
 const exportApp = {
   get go(this: any) {
     this.fucker = 'go';
-  }
+    return this.fucker;
+  },
 
   isCool() {
     const val = '123';

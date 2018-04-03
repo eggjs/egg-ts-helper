@@ -62,6 +62,11 @@ export function getSourceFile(f: string) {
   }
 }
 
+// check kind in node.modifiers.
+export function modifierHas(node: ts.Node, kind) {
+  return node.modifiers && node.modifiers.find(mod => kind === mod.kind);
+}
+
 // each ast node
 export function eachSourceFile(node: ts.Node, cb: (n: ts.Node) => any) {
   const result = cb(node);

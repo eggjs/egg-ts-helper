@@ -82,16 +82,21 @@ export default function(tsHelper: TsHelper) {
         `${declarationList.join('\n')}\n` +
         `type ${newType} = ${base} & ${moduleList.join(' & ')};\n\n` +
         `declare module '${baseConfig.framework}' {\n` +
-        inserts.map(prop => (
-          `  interface ${prop} {\n` +
-          `    ${property}: ${newType};\n` +
-          `  }\n`
-        )).join('\n') +
+        inserts
+          .map(prop => {
+            return (
+              `  interface ${prop} {\n` +
+              `    ${property}: ${newType};\n` +
+              `  }\n`
+            );
+          })
+          .join('\n') +
         `}`,
     };
   });
 }
 
+// check config return type.
 export function checkConfigReturnType(f: string) {
   const sourceFile = utils.getSourceFile(f);
   if (!sourceFile) {
@@ -99,7 +104,7 @@ export function checkConfigReturnType(f: string) {
   }
 
   let hasExport = false;
-  let exportElement: ts.ExportAssignment | undefined;
+  let exportElement: ts.Node | undefined;
   utils.eachSourceFile(sourceFile, node => {
     if (node.parent !== sourceFile) {
       return;
@@ -107,19 +112,21 @@ export function checkConfigReturnType(f: string) {
 
     if (ts.isExportAssignment(node)) {
       // has export default ...
-      exportElement = node;
+      exportElement = node.expression;
       return false;
-    } else if (
-      node.modifiers &&
-      node.modifiers.find(mod => mod.kind === ts.SyntaxKind.ExportKeyword)
-    ) {
+    } else if (utils.modifierHas(node, ts.SyntaxKind.ExportKeyword)) {
+      if (utils.modifierHas(node, ts.SyntaxKind.DefaultKeyword)) {
+        exportElement = node;
+        return;
+      }
+
       // has export
       hasExport = true;
     }
   });
 
   if (exportElement) {
-    return ts.isFunctionLike(exportElement.expression)
+    return ts.isFunctionLike(exportElement)
       ? EXPORT_DEFAULT_FUNCTION
       : EXPORT_DEFAULT;
   } else if (hasExport) {
