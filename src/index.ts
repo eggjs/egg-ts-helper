@@ -315,7 +315,7 @@ export default class TsHelper extends EventEmitter {
     debug('%s trigger change', p);
 
     // istanbul ignore next
-    if (p.endsWith('d.ts')) {
+    if (p.endsWith('.d.ts')) {
       return;
     }
 

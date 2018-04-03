@@ -4,7 +4,10 @@ import * as path from 'path';
 import { createTsHelperInstance } from './';
 
 // only works in master
-if (cluster.isMaster) {
+if (
+  cluster.isMaster &&
+  !process.argv.find(item => item.includes('agent_worker.js'))
+) {
   // fork a process to watch files change
   const ps = fork(path.resolve(__dirname, './bin'), ['-w'], {
     execArgv: [],
