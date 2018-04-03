@@ -215,10 +215,6 @@ declare module 'egg' {
     config: NewEggAppConfig;
   }
 
-  interface Context {
-    config: NewEggAppConfig;
-  }
-
   interface Controller {
     config: NewEggAppConfig;
   }

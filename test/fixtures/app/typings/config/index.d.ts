@@ -15,10 +15,6 @@ declare module 'larva' {
     config: NewEggAppConfig;
   }
 
-  interface Context {
-    config: NewEggAppConfig;
-  }
-
   interface Controller {
     config: NewEggAppConfig;
   }

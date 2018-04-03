@@ -100,7 +100,7 @@ export function getDefaultWatchDirs() {
       path: 'config',
       pattern: 'config*',
       interface: {
-        inserts: ['Application', 'Context', 'Controller', 'Service'],
+        inserts: ['Application', 'Controller', 'Service'],
         property: 'config',
         base: 'EggAppConfig',
       },

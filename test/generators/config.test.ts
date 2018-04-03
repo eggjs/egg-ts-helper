@@ -19,7 +19,7 @@ describe('generators/config.test.ts', () => {
     assert(result.content.includes(`EggAppConfig & ConfigDefault & ConfigLocal & ConfigProd;`));
     assert(result.content.includes(`declare module 'larva'`));
     assert(result.content.includes(`config: NewEggAppConfig;`));
-    assert(result.content.match(/Application|Context|Controller|Service/));
+    assert(result.content.match(/Application|Controller|Service/));
   });
 
   it('should works without error with file changed', () => {
@@ -35,7 +35,7 @@ describe('generators/config.test.ts', () => {
     assert(result.content.includes(`EggAppConfig & ConfigDefault & ConfigLocal & ConfigProd;`));
     assert(result.content.includes(`declare module 'larva'`));
     assert(result.content.includes(`config: NewEggAppConfig;`));
-    assert(result.content.match(/Application|Context|Controller|Service/));
+    assert(result.content.match(/Application|Controller|Service/));
   });
 
   it('should works while file was not exist', () => {
