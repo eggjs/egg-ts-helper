@@ -25,7 +25,7 @@ export interface TsHelperOption {
   cwd?: string;
   framework?: string;
   typings?: string;
-  watchDirs?: { [key: string]: WatchItem | boolean; };
+  watchDirs?: { [key: string]: WatchItem | boolean };
   caseStyle?: string;
   watch?: boolean;
   autoRemoveJs?: boolean;
