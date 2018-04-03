@@ -8,17 +8,19 @@ const debug = d('egg-ts-helper#generators_extend');
 
 export default function(tsHelper: TsHelper) {
   tsHelper.register('extend', (config, baseConfig) => {
-    const dtsDir = path.resolve(
-      baseConfig.typings,
-      path.relative(baseConfig.cwd, config.dir),
-    );
-
     const fileList = !config.file
-      ? utils.loadFiles(config.dir)
+      ? utils.loadFiles(config.dir, config.pattern)
       : config.file.endsWith('.ts') ? [config.file] : [];
 
     debug('file list : %o', fileList);
     if (!fileList.length) {
+      if (!config.file) {
+        // clean files
+        return Object.keys(config.interface).map(key => ({
+          dist: path.resolve(config.dtsDir, `${key}.d.ts`),
+        }));
+      }
+
       return;
     }
 
@@ -30,7 +32,7 @@ export default function(tsHelper: TsHelper) {
         return;
       }
 
-      const dist = path.resolve(dtsDir, `${basename}.d.ts`);
+      const dist = path.resolve(config.dtsDir, `${basename}.d.ts`);
       f = path.resolve(config.dir, f);
       if (!fs.existsSync(f)) {
         return tsList.push({ dist });
@@ -42,7 +44,7 @@ export default function(tsHelper: TsHelper) {
         return tsList.push({ dist });
       }
 
-      let tsPath = path.relative(dtsDir, f).replace(/\/|\\/g, '/');
+      let tsPath = path.relative(config.dtsDir, f).replace(/\/|\\/g, '/');
       tsPath = tsPath.substring(0, tsPath.lastIndexOf('.'));
 
       debug('import extendObject from %s', tsPath);
@@ -65,53 +67,50 @@ export default function(tsHelper: TsHelper) {
 
 // find properties from ts file.
 export function findReturnPropertiesByTs(f: string): string[] | void {
-  const code = fs.readFileSync(f, {
-    encoding: 'utf-8',
-  });
-
-  let sourceFile;
-  try {
-    sourceFile = ts.createSourceFile(f, code, ts.ScriptTarget.ES2017, true);
-  } catch (e) {
-    console.error(e);
+  const sourceFile = utils.getSourceFile(f);
+  if (!sourceFile) {
     return;
   }
 
   const cache = new Map();
   let exp;
 
-  handleNode(sourceFile);
-  function handleNode(node: ts.Node) {
-    if (node.parent === sourceFile) {
-      // find node in root scope
-
-      if (ts.isVariableStatement(node)) {
-        // const exportData = {};
-        // export exportData
-        const declarations = node.declarationList.declarations;
-        declarations.forEach(declaration => {
-          if (ts.isIdentifier(declaration.name)) {
-            cache.set(declaration.name.escapedText, declaration.initializer);
-          }
-        });
-      } else if (ts.isExportAssignment(node)) {
-        // export default {}
-        exp = node.expression;
-      } else if (
-        ts.isExpressionStatement(node) &&
-        ts.isBinaryExpression(node.expression)
-      ) {
-        // let exportData;
-        // exportData = {};
-        // export exportData
-        if (ts.isIdentifier(node.expression.left)) {
-          cache.set(node.expression.left.escapedText, node.expression.right);
-        }
-      }
+  utils.eachSourceFile(sourceFile, node => {
+    if (node.parent !== sourceFile) {
+      return;
     }
 
-    ts.forEachChild(node, handleNode);
-  }
+    // find node in root scope
+    if (ts.isVariableStatement(node)) {
+      // const exportData = {};
+      // export exportData
+      const declarations = node.declarationList.declarations;
+      declarations.forEach(declaration => {
+        if (ts.isIdentifier(declaration.name)) {
+          cache.set(declaration.name.escapedText, declaration.initializer);
+        }
+      });
+    } else if (ts.isExportAssignment(node)) {
+      // export default {}
+      exp = node.expression;
+    } else if (
+      utils.modifierHas(node, ts.SyntaxKind.ExportKeyword) &&
+      utils.modifierHas(node, ts.SyntaxKind.DefaultKeyword)
+    ) {
+      // export default
+      exp = node;
+    } else if (
+      ts.isExpressionStatement(node) &&
+      ts.isBinaryExpression(node.expression)
+    ) {
+      // let exportData;
+      // exportData = {};
+      // export exportData
+      if (ts.isIdentifier(node.expression.left)) {
+        cache.set(node.expression.left.escapedText, node.expression.right);
+      }
+    }
+  });
 
   if (!exp) {
     return;

@@ -48,18 +48,24 @@ $ ets -w
 ```
 $ ets -h
 
-Usage: ets [options]
-Options:
-   -h, --help               usage
-   -v, --version            show version
-   -w, --watch              watch file change
-   -c, --cwd [path]         egg application base dir (default: process.cwd)
-   -C, --config [path]      configuration file, The argument can be a file path to a valid JSON/JS configuration file.（default: {cwd}/tshelper.js）
-   -f, --framework [name]   egg framework(default: egg)
-   -s, --silent             disabled log
-   -i, --ignore [dir]       ignore watchDirs, your can ignore multiple dirs with comma like: -i controller,service
-   -e, --enabled [dir]      enabled watchDirs, your can use multiple dirs with comma like: -e proxy,other
-   -E, --extra [json]       extra config, value type was a json string
+  Usage: ets [commands] [options]
+
+  Options:
+
+    -v, --version           output the version number
+    -w, --watch             Watching files, d.ts would recreated while file changed
+    -c, --cwd [path]        Egg application base dir (default: process.cwd)
+    -C, --config [path]     Configuration file, The argument can be a file path to a valid JSON/JS configuration file.（default: {cwd}/tshelper.js
+    -f, --framework [name]  Egg framework(default: egg)
+    -s, --silent            Running without output
+    -i, --ignore [dirs]     Ignore watchDirs, your can ignore multiple dirs with comma like: -i controller,service
+    -e, --enabled [dirs]    Enable watchDirs, your can enable multiple dirs with comma like: -e proxy,other
+    -E, --extra [json]      Extra config, the value should be json string
+    -h, --help              output usage information
+
+  Commands:
+
+    clean                   Clean js file while it has the same name ts file
 ```
 
 ## Options
@@ -75,7 +81,7 @@ Options:
 | configFile | string | {cwd}/tshelper.js | configure file path |
 | watchDirs | object | | generator configuration |
 
-egg-ts-helper would watching `app/extend`,`app/controller`,`app/service` by default. The dts would recreated when the files under these folders was changed.
+egg-ts-helper would watching `app/extend`,`app/controller`,`app/service`, `app/config` by default. The dts would recreated when the files under these folders was changed.
 
 you can disabled some folders by `-i` flag.
 
@@ -125,7 +131,7 @@ $ node -r egg-ts-helper/register index.js
 
 see https://github.com/whxaxes/egg-boilerplate-d-ts
 
-It works in these directories : `app/controller`, `app/service`, `app/proxy`, `app/extend`.
+It works in these directories : `app/controller`, `app/service`, `app/proxy`, `app/extend`, `app/config`.
 
 #### Controller
 
@@ -183,4 +189,42 @@ declare module 'egg' {
 }
 ```
 
+#### Config
 
+ts
+
+```js
+// config/config.default.ts
+export default function() {
+  return {
+    keys: '123456'
+  }
+}
+```
+
+typings
+
+```js
+import { EggAppConfig } from 'egg';
+import ExportConfigDefault from '../../config/config.default';
+type ConfigDefault = ReturnType<typeof ExportConfigDefault>;
+type NewEggAppConfig = EggAppConfig & ConfigDefault;
+
+declare module 'egg' {
+  interface Application {
+    config: NewEggAppConfig;
+  }
+
+  interface Context {
+    config: NewEggAppConfig;
+  }
+
+  interface Controller {
+    config: NewEggAppConfig;
+  }
+
+  interface Service {
+    config: NewEggAppConfig;
+  }
+}
+```
