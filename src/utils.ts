@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as glob from 'globby';
+import * as path from 'path';
 import * as ts from 'typescript';
 
 // load ts/js files
@@ -15,6 +16,22 @@ export function loadFiles(cwd: string, pattern?: string) {
       fileList.includes(f.substring(0, f.length - 2) + 'ts')
     );
   });
+}
+
+// clean same name js/ts
+export function cleanJs(cwd: string) {
+  const fileList: string[] = [];
+  glob
+    .sync(['**/*.ts', '!**/*.d.ts', '!**/node_modules'], { cwd })
+    .forEach(f => {
+      const jf = removeSameNameJs(path.resolve(cwd, f));
+      if (jf) { fileList.push(jf); }
+    });
+
+  if (fileList.length) {
+    console.info(`[egg-ts-helper] These file was deleted because of the same name ts file was exist!\n`);
+    console.info('  ' + fileList.join('\n  ') + '\n');
+  }
 }
 
 // get moduleName by file path

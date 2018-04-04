@@ -1,11 +1,9 @@
 #! /usr/bin/env node
 
 import { Command } from 'commander';
-import * as glob from 'globby';
-import * as path from 'path';
 import * as packInfo from '../package.json';
 import { createTsHelperInstance, defaultConfig } from './';
-import { removeSameNameJs } from './utils';
+import { cleanJs } from './utils';
 
 const noArgv = !process.argv.slice(2).length;
 const oldParseArgs = Command.prototype.parseArgs;
@@ -34,20 +32,10 @@ program
 
 program.parse(process.argv);
 
+// clean js file.
 const cwd = program.cwd || defaultConfig.cwd;
 if (cmd === 'clean') {
-  // clean same name js/ts
-  glob
-    .sync(['**/*.ts', '!**/*.d.ts', '!**/node_modules'], {
-      cwd,
-    })
-    .forEach(f => {
-      const jf = removeSameNameJs(path.resolve(cwd, f));
-      if (jf && !program.silent) {
-        console.info(`${jf} was deleted!`);
-      }
-    });
-
+  cleanJs(cwd);
   process.exit(0);
 }
 

@@ -121,10 +121,16 @@ or configure in package.json
 
 ## Register
 
-You can use register to start egg-ts-helper before starting egg application.
+You can require register to start egg-ts-helper before starting egg application with [egg-bin](https://github.com/eggjs/egg-bin).
 
 ```
-$ node -r egg-ts-helper/register index.js
+$ egg-bin dev -r egg-ts-helper/register
+```
+
+debugging
+
+```
+$ egg-bin debug -r egg-ts-helper/register
 ```
 
 ## Demo
