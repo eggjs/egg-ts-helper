@@ -29,7 +29,7 @@ export function cleanJs(cwd: string) {
     });
 
   if (fileList.length) {
-    console.info(`[egg-ts-helper] These file was deleted because of the same name ts file was exist!\n`);
+    console.info(`[egg-ts-helper] These file was deleted because the same name ts file was exist!\n`);
     console.info('  ' + fileList.join('\n  ') + '\n');
   }
 }
