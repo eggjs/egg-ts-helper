@@ -4,6 +4,10 @@ const exportApp = {
     return this.fucker;
   },
 
+  set go(val) {
+    this._go = val;
+  },
+
   isCool() {
     const val = '123';
     console.info(val + 'is Cool');

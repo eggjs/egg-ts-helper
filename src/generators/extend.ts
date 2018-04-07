@@ -124,26 +124,35 @@ export function findReturnPropertiesByTs(f: string): string[] | void {
 
   // parse object;
   if (ts.isObjectLiteralExpression(exp)) {
-    return exp.properties
-      .map(prop => {
+    const properties: string[] = [];
+    exp.properties
+      .forEach(prop => {
         if (!prop.name) {
           return;
         }
 
+        let propName: string | undefined;
         if (ts.isIdentifier(prop.name)) {
           // { name: value }
-          return prop.name.escapedText;
+          propName = prop.name.escapedText as string;
         } else if (ts.isStringLiteral(prop.name)) {
           // { 'name': value }
-          return prop.name.text;
+          propName = prop.name.text;
         } else if (
           ts.isComputedPropertyName(prop.name) &&
           ts.isStringLiteral(prop.name.expression)
         ) {
           // { ['name']: value }
-          return prop.name.expression.text;
+          propName = prop.name.expression.text;
+        } else {
+          return;
         }
-      })
-      .filter(str => !!str) as string[];
+
+        if (propName && !properties.includes(propName)) {
+          properties.push(propName);
+        }
+      });
+
+    return properties;
   }
 }

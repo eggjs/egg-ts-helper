@@ -52,6 +52,15 @@ describe('generators/extend.test.ts', () => {
     assert(item.content.includes('declare module \'larva\''));
   });
 
+  it('should not create property repeatability', () => {
+    const newAppDir = path.resolve(__dirname, '../fixtures/app2');
+    const result = triggerGenerator('extend', newAppDir, 'application.ts');
+    const item = result[0];
+    const matches = item.content.match(/go: typeof/);
+    assert(matches);
+    assert(matches.length === 1);
+  });
+
   it('should not generate dts with unknown interface', () => {
     const result = triggerGenerator('extend', appDir, 'whatever.ts');
     assert(!result.length);
