@@ -1,4 +1,4 @@
-import { fork } from 'child_process';
+import { exec, fork } from 'child_process';
 import * as cluster from 'cluster';
 import * as path from 'path';
 import { createTsHelperInstance } from './';
@@ -17,7 +17,11 @@ if (
   // kill child process while process exit
   function close() {
     if (!ps.killed) {
-      ps.kill('SIGHUP');
+      if (process.platform === 'win32') {
+        exec('taskkill /pid ' + ps.pid + ' /T /F');
+      } else {
+        ps.kill('SIGHUP');
+      }
     }
   }
 
