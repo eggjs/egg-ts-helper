@@ -84,6 +84,8 @@ describe('index.test.ts', () => {
         extend: false,
         controller: false,
         service: false,
+        plugin: false,
+        config: false,
         proxy: {
           path: 'app/test/proxy',
           interface: 'IProxy',
@@ -94,7 +96,7 @@ describe('index.test.ts', () => {
     });
 
     debug('watchDirs : %o', tsHelper.watchDirs);
-    assert(tsHelper.watchNameList.length === 2);
+    assert(tsHelper.watchNameList.length === 1);
     assert(tsHelper.watchDirs[0].includes('proxy'));
   });
 
@@ -103,7 +105,7 @@ describe('index.test.ts', () => {
       cwd: path.resolve(__dirname, './fixtures/app4'),
     });
 
-    assert(tsHelper.watchNameList.length === 2);
+    assert(tsHelper.watchNameList.length === 3);
     assert(tsHelper.watchDirs[0].includes('controller'));
   });
 });

@@ -109,6 +109,14 @@ export function getDefaultWatchDirs() {
       enabled: true,
     },
 
+    plugin: {
+      path: 'config',
+      pattern: 'plugin*',
+      generator: 'plugin',
+      trigger: ['add', 'unlink', 'change'],
+      enabled: true,
+    },
+
     service: {
       path: 'app/service',
       interface: 'IService',

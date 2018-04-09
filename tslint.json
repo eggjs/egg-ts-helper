@@ -4,7 +4,7 @@
     "quotemark": [true, "single", "jsx-double"],
     "no-console": [true, "dir", "log", "warn"],
     "space-before-function-paren": false,
-    "interface-name": [true, "no-prefix"],
+    "interface-name": false,
     "arrow-parens": [true, "ban-single-arg-parens"],
     "adjacent-overload-signatures": true,
     "member-access": [false],
@@ -20,7 +20,7 @@
     "max-line-length": false,
     "variable-name": false,
     "align": [true, "statements"],
-    "interface-name": false,
+    "no-conditional-assignment": false,
     "no-implicit-dependencies": false
   }
 }
