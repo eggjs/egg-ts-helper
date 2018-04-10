@@ -103,6 +103,12 @@ export function findReturnPropertiesByTs(f: string): string[] | void {
       ts.isExpressionStatement(node) &&
       ts.isBinaryExpression(node.expression)
     ) {
+      // module.exports = xxx;
+      if (utils.isModuleExports(node.expression.left)) {
+        exp = node.expression.right;
+        return;
+      }
+
       // let exportData;
       // exportData = {};
       // export exportData
@@ -125,33 +131,32 @@ export function findReturnPropertiesByTs(f: string): string[] | void {
   // parse object;
   if (ts.isObjectLiteralExpression(exp)) {
     const properties: string[] = [];
-    exp.properties
-      .forEach(prop => {
-        if (!prop.name) {
-          return;
-        }
+    exp.properties.forEach(prop => {
+      if (!prop.name) {
+        return;
+      }
 
-        let propName: string | undefined;
-        if (ts.isIdentifier(prop.name)) {
-          // { name: value }
-          propName = prop.name.escapedText as string;
-        } else if (ts.isStringLiteral(prop.name)) {
-          // { 'name': value }
-          propName = prop.name.text;
-        } else if (
-          ts.isComputedPropertyName(prop.name) &&
-          ts.isStringLiteral(prop.name.expression)
-        ) {
-          // { ['name']: value }
-          propName = prop.name.expression.text;
-        } else {
-          return;
-        }
+      let propName: string | undefined;
+      if (ts.isIdentifier(prop.name)) {
+        // { name: value }
+        propName = prop.name.escapedText as string;
+      } else if (ts.isStringLiteral(prop.name)) {
+        // { 'name': value }
+        propName = prop.name.text;
+      } else if (
+        ts.isComputedPropertyName(prop.name) &&
+        ts.isStringLiteral(prop.name.expression)
+      ) {
+        // { ['name']: value }
+        propName = prop.name.expression.text;
+      } else {
+        return;
+      }
 
-        if (propName && !properties.includes(propName)) {
-          properties.push(propName);
-        }
-      });
+      if (propName && !properties.includes(propName)) {
+        properties.push(propName);
+      }
+    });
 
     return properties;
   }

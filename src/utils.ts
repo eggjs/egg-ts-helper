@@ -25,11 +25,15 @@ export function cleanJs(cwd: string) {
     .sync(['**/*.ts', '!**/*.d.ts', '!**/node_modules'], { cwd })
     .forEach(f => {
       const jf = removeSameNameJs(path.resolve(cwd, f));
-      if (jf) { fileList.push(jf); }
+      if (jf) {
+        fileList.push(jf);
+      }
     });
 
   if (fileList.length) {
-    console.info(`[egg-ts-helper] These file was deleted because the same name ts file was exist!\n`);
+    console.info(
+      `[egg-ts-helper] These file was deleted because the same name ts file was exist!\n`,
+    );
     console.info('  ' + fileList.join('\n  ') + '\n');
   }
 }
@@ -77,6 +81,22 @@ export function getSourceFile(f: string) {
     console.error(e);
     return;
   }
+}
+
+// check whether node was module.exports
+export function isModuleExports(node: ts.Node) {
+  if (ts.isPropertyAccessExpression(node)) {
+    const obj = node.expression;
+    const prop = node.name;
+    return (
+      ts.isIdentifier(obj) &&
+      obj.escapedText === 'module' &&
+      ts.isIdentifier(prop) &&
+      prop.escapedText === 'exports'
+    );
+  }
+
+  return false;
 }
 
 // check kind in node.modifiers.

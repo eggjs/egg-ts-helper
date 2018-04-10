@@ -22,11 +22,13 @@ describe('generators/extend.test.ts', () => {
     assert(array.includes('isProd'));
     assert(array.includes('isAjax'));
 
-    array = findReturnPropertiesByTs(path.resolve(__dirname, '../fixtures/app2/app/extend/helper.ts')) || [];
+    array = findReturnPropertiesByTs(path.resolve(__dirname, '../fixtures/app5/app/extend/whatever.ts')) || [];
     assert(array.includes('isCool'));
     assert(array.includes('isNotCool'));
+  });
 
-    array = findReturnPropertiesByTs(path.resolve(__dirname, '../fixtures/app5/app/extend/whatever.ts')) || [];
+  it('should works with module.exports', () => {
+    const array = findReturnPropertiesByTs(path.resolve(__dirname, '../fixtures/app2/app/extend/helper.ts')) || [];
     assert(array.includes('isCool'));
     assert(array.includes('isNotCool'));
   });

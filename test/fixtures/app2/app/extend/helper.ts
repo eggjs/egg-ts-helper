@@ -1,6 +1,4 @@
-let helper;
-
-helper = {
+module.exports = {
   isCool() {
     console.info('is Cool');
   },
@@ -9,5 +7,3 @@ helper = {
     console.info('is not Cool');
   },
 };
-
-export default helper;
