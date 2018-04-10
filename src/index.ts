@@ -98,7 +98,7 @@ export function getDefaultWatchDirs() {
 
     config: {
       path: 'config',
-      pattern: 'config*',
+      pattern: 'config*.(ts|js)',
       interface: {
         inserts: ['Application', 'Controller', 'Service'],
         property: 'config',
@@ -111,7 +111,7 @@ export function getDefaultWatchDirs() {
 
     plugin: {
       path: 'config',
-      pattern: 'plugin*',
+      pattern: 'plugin*.(ts|js)',
       generator: 'plugin',
       trigger: ['add', 'unlink', 'change'],
       enabled: true,
@@ -141,9 +141,10 @@ export default class TsHelper extends EventEmitter {
   readonly watchDirs: string[];
   readonly watchNameList: string[];
   readonly generators: { [key: string]: TsGenerator<any> } = {};
-  private watcher: chokidar.FSWatcher;
+  private watchers: chokidar.FSWatcher[] = [];
   private tickerMap: PlainObject = {};
   private watched: boolean = false;
+  private cacheDist: PlainObject = {};
 
   constructor(options: TsHelperOption = {}) {
     super();
@@ -155,7 +156,7 @@ export default class TsHelper extends EventEmitter {
     // add build-in generators
     generators.forEach(gen => gen(this));
 
-    // cached watch list
+    // cached watching name list
     this.watchNameList = Object.keys(config.watchDirs).filter(key => {
       const dir = config.watchDirs[key];
       return Object.prototype.hasOwnProperty.call(dir, 'enabled')
@@ -163,7 +164,7 @@ export default class TsHelper extends EventEmitter {
         : true;
     });
 
-    // format watch dirs
+    // format watching dirs
     this.watchDirs = this.watchNameList.map(key => {
       const item = config.watchDirs[key];
       const p = item.path.replace(/\/|\\/, path.sep);
@@ -201,24 +202,29 @@ export default class TsHelper extends EventEmitter {
       return;
     }
 
-    const config = this.config;
-    // format watchDirs
-    const watchDirs = this.watchDirs.map(item => {
+    // create watcher for each dir
+    this.watchDirs.forEach((item, index) => {
+      const conf = this.config.watchDirs[this.watchNameList[index]];
+
       // glob only works with / in windows
-      return path.join(item, './**/*.(js|ts)').replace(/\/|\\/g, '/');
+      const watchGlob = path
+        .join(item, conf.pattern || '**/*.(js|ts)')
+        .replace(/\/|\\/g, '/');
+
+      const watcher = chokidar.watch(watchGlob, {
+        ignoreInitial: true,
+      });
+
+      // listen watcher event
+      watcher.on('all', (event, p) => this.onChange(p, event, index));
+
+      // auto remove js while ts was deleted
+      if (this.config.autoRemoveJs) {
+        watcher.on('unlink', utils.removeSameNameJs);
+      }
+
+      this.watchers.push(watcher);
     });
-
-    const watcher = (this.watcher = chokidar.watch(watchDirs, {
-      ignoreInitial: true,
-    }));
-
-    // listen watcher event
-    watcher.on('all', (event, p) => this.onChange(p, event));
-
-    // auto remove js while ts was deleted
-    if (config.autoRemoveJs) {
-      watcher.on('unlink', utils.removeSameNameJs);
-    }
 
     this.watched = true;
   }
@@ -256,25 +262,11 @@ export default class TsHelper extends EventEmitter {
     return config as TsHelperConfig;
   }
 
-  // find file path in watchDirs
-  private findInWatchDirs(p: string) {
-    for (let i = 0; i < this.watchDirs.length; i++) {
-      if (p.indexOf(this.watchDirs[i]) < 0) {
-        continue;
-      }
-
-      return i;
-    }
-
-    return -1;
-  }
-
   private generateTs(index: number, event?: string, file?: string) {
     const config = this.config;
     const dir = this.watchDirs[index];
-    const generatorConfig = config.watchDirs[
-      this.watchNameList[index]
-    ] as WatchItem;
+    const watchName = this.watchNameList[index];
+    const generatorConfig = config.watchDirs[watchName] as WatchItem;
 
     if (
       !generatorConfig.trigger ||
@@ -296,36 +288,41 @@ export default class TsHelper extends EventEmitter {
     const dtsDir = path.resolve(config.typings, path.relative(config.cwd, dir));
     const result = generator({ ...generatorConfig, dir, file, dtsDir }, config);
     debug('generate ts file result : %o', result);
-    if (result) {
-      const resultList = Array.isArray(result) ? result : [result];
-      resultList.forEach(item => {
-        if (item.content) {
-          debug('created d.ts : %s', item.dist);
-          mkdirp.sync(path.dirname(item.dist));
-          fs.writeFileSync(
-            item.dist,
-            '// This file was auto created by egg-ts-helper\n' +
-              '// Do not modify this file!!!!!!!!!\n\n' +
-              item.content,
-          );
-          this.emit('update', item.dist);
-        } else if (fs.existsSync(item.dist)) {
-          debug('remove d.ts : %s', item.dist);
-          fs.unlinkSync(item.dist);
-          this.emit('remove', item.dist);
-        }
-      });
+    if (!result) {
+      return;
     }
+
+    const resultList = Array.isArray(result) ? result : [result];
+    resultList.forEach(item => {
+      if (
+        this.cacheDist[item.dist] &&
+        this.cacheDist[item.dist].content === item.content
+      ) {
+        return;
+      }
+
+      this.cacheDist[item.dist] = item;
+      if (item.content) {
+        debug('created d.ts : %s', item.dist);
+        mkdirp.sync(path.dirname(item.dist));
+        fs.writeFileSync(
+          item.dist,
+          '// This file was auto created by egg-ts-helper\n' +
+            '// Do not modify this file!!!!!!!!!\n\n' +
+            item.content,
+        );
+        this.emit('update', item.dist, file);
+      } else if (fs.existsSync(item.dist)) {
+        debug('remove d.ts : %s', item.dist);
+        fs.unlinkSync(item.dist);
+        this.emit('remove', item.dist, file);
+      }
+    });
   }
 
   // trigger while file changed
-  private onChange(p: string, event: string) {
+  private onChange(p: string, event: string, index: number) {
     debug('%s trigger change', p);
-
-    // istanbul ignore next
-    if (p.endsWith('.d.ts')) {
-      return;
-    }
 
     const k = p.substring(0, p.lastIndexOf('.'));
     if (this.tickerMap[k]) {
@@ -334,12 +331,6 @@ export default class TsHelper extends EventEmitter {
 
     // throttle 500ms
     this.tickerMap[k] = setTimeout(() => {
-      const index = this.findInWatchDirs(p);
-      // istanbul ignore next
-      if (index < 0) {
-        return;
-      }
-
       debug('trigger change event in %s', index);
       this.emit('change', p);
       this.generateTs(index, event, p);

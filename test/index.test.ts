@@ -27,12 +27,14 @@ describe('index.test.ts', () => {
       autoRemoveJs: false,
     });
 
-    await sleep(1000);
+    await sleep(2000);
 
     assert(!!tsHelper.config);
     assert(tsHelper.config.framework === 'larva');
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/app/controller/index.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/app/extend/context.d.ts')));
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/index.d.ts')));
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/plugin.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/custom.d.ts')));
 
     const dts = path.resolve(__dirname, './fixtures/app/typings/app/service/index.d.ts');
@@ -52,6 +54,83 @@ describe('index.test.ts', () => {
     await sleep(2000);
 
     assert(!fs.existsSync(dts));
+  });
+
+  it('should works without error while config file changed', async () => {
+    const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
+    mkdirp.sync(dir);
+
+    const tsHelper = new TsHelper({
+      cwd: path.resolve(__dirname, './fixtures/app'),
+      watch: true,
+      execAtInit: true,
+      autoRemoveJs: false,
+    });
+
+    await sleep(2000);
+
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/index.d.ts')));
+
+    const defaultConfigPath = path.resolve(__dirname, './fixtures/app/config/config.default.ts');
+    const baseConfig = fs.readFileSync(defaultConfigPath);
+    const localConfigPath = path.resolve(__dirname, './fixtures/app/config/config.local.ts');
+    const localConfig = fs.readFileSync(localConfigPath);
+
+    fs.writeFile(defaultConfigPath, baseConfig + '\n\n', () => {
+      fs.writeFile(defaultConfigPath, baseConfig + '\n', () => { /* do nothing */ });
+      fs.writeFile(localConfigPath, baseConfig, () => { /* do nothing */ });
+    });
+
+    await new Promise(resolve => {
+      function cb(_, p) {
+        if (p === defaultConfigPath) {
+          throw new Error('should not update config.default.ts');
+        } else if (p === localConfigPath) {
+          tsHelper.removeListener('update', cb);
+          resolve();
+        }
+      }
+
+      tsHelper.on('update', cb);
+    });
+
+    fs.writeFileSync(defaultConfigPath, baseConfig);
+    fs.writeFileSync(localConfigPath, localConfig);
+  });
+
+  it('should works without error while plugin file changed', async () => {
+    const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
+    mkdirp.sync(dir);
+
+    const tsHelper = new TsHelper({
+      cwd: path.resolve(__dirname, './fixtures/app'),
+      watch: true,
+      execAtInit: true,
+      autoRemoveJs: false,
+    });
+
+    await sleep(2000);
+
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/plugin.d.ts')));
+
+    const defaultPluginPath = path.resolve(__dirname, './fixtures/app/config/plugin.default.ts');
+    const basePlugin = fs.readFileSync(defaultPluginPath);
+    const pluginPath = path.resolve(__dirname, './fixtures/app/config/plugin.ts');
+    const pluginText = fs.readFileSync(pluginPath);
+
+    fs.writeFile(defaultPluginPath, pluginText, () => { /* do nothing */ });
+    await new Promise(resolve => {
+      function cb(_, p) {
+        if (p === defaultPluginPath) {
+          tsHelper.removeListener('update', cb);
+          resolve();
+        }
+      }
+
+      tsHelper.on('update', cb);
+    });
+
+    fs.writeFileSync(defaultPluginPath, basePlugin);
   });
 
   it('should support read framework by package.json', () => {
