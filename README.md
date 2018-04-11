@@ -145,7 +145,7 @@ It works in these directories : `app/controller`, `app/service`, `app/proxy`, `a
 
 ts
 
-```js
+```typescript
 // app/controller/home.ts
 import { Controller } from 'egg';
 
@@ -158,7 +158,7 @@ export default class HomeController extends Controller {
 
 typings
 
-```js
+```typescript
 // app/typings/app/controller/index.d.ts
 import Home from '../../../app/controller/home';
 
@@ -173,7 +173,7 @@ declare module 'egg' {
 
 ts
 
-```js
+```typescript
 // app/extend/context.ts
 export default {
   doSomething() {
@@ -184,7 +184,7 @@ export default {
 
 typings
 
-```js
+```typescript
 // app/typings/app/controller/index.d.ts
 import ExtendObject from '../../../app/extend/context';
 
@@ -199,7 +199,7 @@ declare module 'egg' {
 
 ts
 
-```js
+```typescript
 // config/config.default.ts
 export default function() {
   return {
@@ -210,7 +210,8 @@ export default function() {
 
 typings
 
-```js
+```typescript
+// app/typings/config/index.d.ts
 import { EggAppConfig } from 'egg';
 import ExportConfigDefault from '../../config/config.default';
 type ConfigDefault = ReturnType<typeof ExportConfigDefault>;
@@ -231,3 +232,30 @@ declare module 'egg' {
 }
 ```
 
+#### Plugin
+
+ts
+
+```typescript
+// config/plugin.ts
+export default {
+  cors: {
+    enable: true,
+    package: 'egg-cors',
+  },
+  static: {
+    enable: true,
+    package: 'egg-static',
+  }
+}
+```
+
+typings
+
+```typescript
+// app/typings/config/plugin.d.ts
+
+// it's only import the package was exist under the node_modules
+import 'egg-cors';
+import 'egg-static';
+```
