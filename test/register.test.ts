@@ -6,6 +6,7 @@ import * as assert from 'power-assert';
 
 describe('register.test.ts', () => {
   beforeEach(() => {
+    del.sync(path.resolve(__dirname, '../.cache'));
     del.sync(path.resolve(__dirname, './fixtures/app8/typings'), {
       force: true,
     });

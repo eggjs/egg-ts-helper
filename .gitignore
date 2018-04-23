@@ -10,3 +10,4 @@ run/
 .nyc_output
 *.log
 dist/
+.cache

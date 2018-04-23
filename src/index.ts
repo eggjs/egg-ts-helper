@@ -211,9 +211,7 @@ export default class TsHelper extends EventEmitter {
         .join(item, conf.pattern || '**/*.(js|ts)')
         .replace(/\/|\\/g, '/');
 
-      const watcher = chokidar.watch(watchGlob, {
-        ignoreInitial: true,
-      });
+      const watcher = chokidar.watch(watchGlob);
 
       // listen watcher event
       watcher.on('all', (event, p) => this.onChange(p, event, index));
