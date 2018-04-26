@@ -44,6 +44,30 @@ export default function(tsHelper: TsHelper) {
       }
     });
 
+    // composing all the interface
+    const composeInterface = (
+      obj: PlainObject,
+      indent: string = '',
+    ): string => {
+      let str = '';
+
+      Object.keys(obj).forEach(key => {
+        const val = obj[key];
+        if (typeof val === 'string') {
+          str += `${indent + key}: ${
+            config.interfaceHandle ? config.interfaceHandle(val) : val
+          };\n`;
+        } else {
+          const newVal = composeInterface(val, indent + '  ');
+          if (newVal) {
+            str += `${indent + key}: {\n${newVal + indent}};\n`;
+          }
+        }
+      });
+
+      return str;
+    };
+
     return {
       dist,
       content:
@@ -55,24 +79,6 @@ export default function(tsHelper: TsHelper) {
         '}\n',
     };
   });
-}
-
-function composeInterface(obj: PlainObject, indent: string = ''): string {
-  let str = '';
-
-  Object.keys(obj).forEach(key => {
-    const val = obj[key];
-    if (typeof val === 'string') {
-      str += `${indent + key}: ${val};\n`;
-    } else {
-      const newVal = composeInterface(val, indent + '  ');
-      if (newVal) {
-        str += `${indent + key}: {\n${newVal + indent}};\n`;
-      }
-    }
-  });
-
-  return str;
 }
 
 // like egg-core/file-loader
@@ -88,6 +94,7 @@ function camelProp(property: string, caseStyle: string): string {
       break;
     case 'camel':
     default:
+      break;
   }
 
   return first + property.substring(1);

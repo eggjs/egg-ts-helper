@@ -162,6 +162,7 @@ describe('index.test.ts', () => {
       watchDirs: {
         extend: false,
         controller: false,
+        middleware: false,
         service: false,
         plugin: false,
         config: false,
@@ -184,7 +185,7 @@ describe('index.test.ts', () => {
       cwd: path.resolve(__dirname, './fixtures/app4'),
     });
 
-    assert(tsHelper.watchNameList.length === 3);
+    assert(tsHelper.watchNameList.length === 4);
     assert(tsHelper.watchDirs[0].includes('controller'));
   });
 });

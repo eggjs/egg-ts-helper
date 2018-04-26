@@ -20,6 +20,17 @@ describe('generators/class.test.ts', () => {
     assert(result.content.includes('home: Home;'));
   });
 
+  it('should works with middleware without error', () => {
+    const result = triggerGenerator<GeneratorResult>('middleware', appDir);
+    assert(
+      result.dist ===
+        path.resolve(appDir, './typings/app/middleware/index.d.ts'),
+    );
+    assert(result.content.includes('../../../app/middleware/uuid'));
+    assert(result.content.includes('interface IMiddleware'));
+    assert(result.content.includes('uuid: ReturnType<typeof Uuid>;'));
+  });
+
   it('should support appoint framework', () => {
     const newAppDir = path.resolve(__dirname, '../fixtures/app2');
     const result = triggerGenerator<GeneratorResult>('controller', newAppDir);

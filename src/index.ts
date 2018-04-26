@@ -88,6 +88,15 @@ export function getDefaultWatchDirs() {
       enabled: true,
     },
 
+    middleware: {
+      path: 'app/middleware',
+      interface: 'IMiddleware',
+      interfaceHandle: val => `ReturnType<typeof ${val}>`,
+      generator: 'class',
+      trigger: ['add', 'unlink'],
+      enabled: true,
+    },
+
     proxy: {
       path: 'app/proxy',
       interface: 'IProxy',
