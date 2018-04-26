@@ -45,8 +45,6 @@ function register() {
         ps.kill('SIGHUP');
       }
     }
-
-    fs.unlinkSync(cacheFileDir);
   }
 
   process.on('exit', close);
