@@ -1,4 +1,10 @@
 
+1.7.0 / 2018-05-07
+==================
+
+  * fix: lint fix
+  * feat: support auto created d.ts for middleware
+
 1.6.1 / 2018-04-23
 ==================
 
