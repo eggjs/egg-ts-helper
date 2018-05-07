@@ -81,7 +81,7 @@ $ ets -h
 | configFile | string | {cwd}/tshelper.js | configure file path |
 | watchDirs | object | | generator configuration |
 
-egg-ts-helper would watching `app/extend`,`app/controller`,`app/service`, `app/config` by default. The dts would recreated when the files under these folders was changed.
+egg-ts-helper would watching `app/extend`,`app/controller`,`app/service`, `app/config`, `app/middleware` by default. The dts would recreated when the files under these folders was changed.
 
 you can disabled some folders by `-i` flag.
 
@@ -137,7 +137,7 @@ $ egg-bin debug -r egg-ts-helper/register
 
 see https://github.com/whxaxes/egg-boilerplate-d-ts
 
-It works in these directories : `app/controller`, `app/service`, `app/proxy`, `app/extend`, `app/config`.
+It works in these directories : `app/controller`, `app/service`, `app/proxy`, `app/extend`, `app/config`, `app/middleware`.
 
 #### Controller
 
