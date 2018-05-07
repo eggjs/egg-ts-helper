@@ -22,7 +22,7 @@ describe('bin.test.ts', () => {
 
   function getOutput(...args: string[]) {
     ps = triggerBin.apply(null, args);
-    return new Promise(resolve => {
+    return new Promise<string>(resolve => {
       let info = '';
       ps.stdout.on('data', data => {
         info += data.toString();
