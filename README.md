@@ -232,6 +232,34 @@ declare module 'egg' {
 }
 ```
 
+#### Middleware
+
+ts
+
+```typescript
+// app/middlware/uuid.ts
+
+export default function() {
+  return async (context, next) => {
+    await next();
+  };
+}
+```
+
+typings
+
+```typescript
+// typings/middleware/index.d.ts
+
+import Uuid from '../../../app/middleware/uuid';
+
+declare module 'larva' {
+  interface IMiddleware {
+    uuid: ReturnType<typeof Uuid>;
+  }
+}
+```
+
 #### Plugin
 
 ts
