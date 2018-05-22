@@ -28,7 +28,7 @@ describe('generators/class.test.ts', () => {
     );
     assert(result.content.includes('../../../app/middleware/uuid'));
     assert(result.content.includes('interface IMiddleware'));
-    assert(result.content.includes('uuid: ReturnType<typeof Uuid>;'));
+    assert(result.content.includes('uuid: typeof Uuid;'));
   });
 
   it('should support appoint framework', () => {

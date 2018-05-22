@@ -91,7 +91,7 @@ export function getDefaultWatchDirs() {
     middleware: {
       path: 'app/middleware',
       interface: 'IMiddleware',
-      interfaceHandle: val => `ReturnType<typeof ${val}>`,
+      interfaceHandle: val => `typeof ${val}`,
       generator: 'class',
       trigger: ['add', 'unlink'],
       enabled: true,

@@ -5,6 +5,6 @@ import Uuid from '../../../app/middleware/uuid';
 
 declare module 'larva' {
   interface IMiddleware {
-    uuid: ReturnType<typeof Uuid>;
+    uuid: typeof Uuid;
   }
 }
