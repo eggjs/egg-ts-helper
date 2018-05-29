@@ -31,9 +31,9 @@ export default function(tsHelper: TsHelper) {
       // create mapping
       let collector = interfaceMap;
       while (obj.props.length) {
-        const name = camelProp(
+        const name = utils.camelProp(
           obj.props.shift() as string,
-          baseConfig.caseStyle,
+          config.caseStyle || baseConfig.caseStyle,
         );
 
         if (!obj.props.length) {
@@ -72,30 +72,11 @@ export default function(tsHelper: TsHelper) {
       dist,
       content:
         `${importStr}\n` +
-        `declare module '${baseConfig.framework}' {\n` +
+        `declare module '${config.framework || baseConfig.framework}' {\n` +
         `  interface ${config.interface} {\n` +
         composeInterface(interfaceMap, '    ') +
         '  }\n' +
         '}\n',
     };
   });
-}
-
-// like egg-core/file-loader
-function camelProp(property: string, caseStyle: string): string {
-  let first = property[0];
-  // istanbul ignore next
-  switch (caseStyle) {
-    case 'lower':
-      first = first.toLowerCase();
-      break;
-    case 'upper':
-      first = first.toUpperCase();
-      break;
-    case 'camel':
-    default:
-      break;
-  }
-
-  return first + property.substring(1);
 }

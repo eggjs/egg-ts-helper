@@ -105,6 +105,17 @@ export function getDefaultWatchDirs() {
       enabled: false,
     },
 
+    model: {
+      path: 'app/model',
+      generator: 'class',
+      framework: 'sequelize',
+      interface: 'Sequelize',
+      caseStyle: 'upper',
+      interfaceHandle: val => `ReturnType<typeof ${val}>`,
+      trigger: ['add', 'unlink'],
+      enabled: true,
+    },
+
     config: {
       path: 'config',
       pattern: 'config*.(ts|js)',

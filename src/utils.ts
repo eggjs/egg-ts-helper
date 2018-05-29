@@ -40,20 +40,22 @@ export function cleanJs(cwd: string) {
 
 // get moduleName by file path
 export function getModuleObjByPath(f: string) {
-  const props = f.split('/').map(prop =>
-    // transfer _ to uppercase
-    prop.replace(/[._-][a-z]/gi, s => s.substring(1).toUpperCase()),
-  );
+  const props = f.split('/').map(formatProp);
 
   // composing moduleName
   const moduleName = props
-    .map(prop => prop[0].toUpperCase() + prop.substring(1))
+    .map(prop => camelProp(prop, 'upper'))
     .join('');
 
   return {
     props,
     moduleName,
   };
+}
+
+// format property
+export function formatProp(prop: string) {
+  return prop.replace(/[._-][a-z]/gi, s => s.substring(1).toUpperCase());
 }
 
 // remove same name js
@@ -132,4 +134,23 @@ export function requireFile(url) {
   }
 
   return exp;
+}
+
+// like egg-core/file-loader
+export function camelProp(property: string, caseStyle: string): string {
+  let first = property[0];
+  // istanbul ignore next
+  switch (caseStyle) {
+    case 'lower':
+      first = first.toLowerCase();
+      break;
+    case 'upper':
+      first = first.toUpperCase();
+      break;
+    case 'camel':
+    default:
+      break;
+  }
+
+  return first + property.substring(1);
 }
