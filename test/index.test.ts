@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as mkdirp from 'mkdirp';
 import * as path from 'path';
 import * as assert from 'power-assert';
-import TsHelper from '../dist/';
+import { default as TsHelper, getDefaultWatchDirs } from '../dist/';
 const debug = d('egg-ts-helper#index.test');
 
 function sleep(time) {
@@ -33,6 +33,8 @@ describe('index.test.ts', () => {
     assert(tsHelper.config.framework === 'larva');
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/app/controller/index.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/app/extend/context.d.ts')));
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/app/middleware/index.d.ts')));
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/app/model/index.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/index.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/plugin.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/custom.d.ts')));
@@ -157,22 +159,24 @@ describe('index.test.ts', () => {
   });
 
   it('should support rewrite by options.watchDirs', () => {
-    const tsHelper = new TsHelper({
-      cwd: path.resolve(__dirname, './fixtures/app3'),
-      watchDirs: {
-        extend: false,
-        controller: false,
-        middleware: false,
-        service: false,
-        plugin: false,
-        config: false,
-        proxy: {
+    const watchDirs = getDefaultWatchDirs();
+    Object.keys(watchDirs).forEach(key => {
+      if (key === 'proxy') {
+        watchDirs[key] = {
+          ...watchDirs[key],
           path: 'app/test/proxy',
           interface: 'IProxy',
           generator: 'class',
           enabled: true,
-        },
-      },
+        };
+      } else {
+        watchDirs[key] = false;
+      }
+    });
+
+    const tsHelper = new TsHelper({
+      cwd: path.resolve(__dirname, './fixtures/app3'),
+      watchDirs,
     });
 
     debug('watchDirs : %o', tsHelper.watchDirs);
@@ -181,11 +185,12 @@ describe('index.test.ts', () => {
   });
 
   it('should support rewrite by package.json', () => {
+    const watchDirs = getDefaultWatchDirs();
     const tsHelper = new TsHelper({
       cwd: path.resolve(__dirname, './fixtures/app4'),
     });
-
-    assert(tsHelper.watchNameList.length === 4);
+    const len = Object.keys(watchDirs).filter(k => watchDirs[k].enabled).length;
+    assert(tsHelper.watchNameList.length === len - 2);
     assert(tsHelper.watchDirs[0].includes('controller'));
   });
 });

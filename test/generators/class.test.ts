@@ -31,6 +31,19 @@ describe('generators/class.test.ts', () => {
     assert(result.content.includes('uuid: typeof Uuid;'));
   });
 
+  it('should works with model without error', () => {
+    const result = triggerGenerator<GeneratorResult>('model', appDir);
+    assert(
+      result.dist ===
+        path.resolve(appDir, './typings/app/model/index.d.ts'),
+    );
+    assert(result.content.includes('../../../app/model/User'));
+    assert(result.content.includes('declare module \'sequelize\''));
+    assert(result.content.includes('interface Sequelize'));
+    assert(result.content.includes('User: ReturnType<typeof User>;'));
+    assert(result.content.includes('Person: ReturnType<typeof Person>;'));
+  });
+
   it('should support appoint framework', () => {
     const newAppDir = path.resolve(__dirname, '../fixtures/app2');
     const result = triggerGenerator<GeneratorResult>('controller', newAppDir);
