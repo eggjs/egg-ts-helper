@@ -290,6 +290,8 @@ import 'egg-static';
 
 #### Model
 
+> Only support egg-sequelize now.
+
 ts
 
 ```typescript
