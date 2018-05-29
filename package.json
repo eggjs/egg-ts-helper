@@ -1,6 +1,6 @@
 {
   "name": "egg-ts-helper",
-  "version": "1.7.1",
+  "version": "1.8.0",
   "description": "egg typescript helper",
   "bin": {
     "ets": "dist/bin.js"
@@ -44,9 +44,6 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
-    "@types/babel-traverse": "^6.25.3",
-    "@types/babel-types": "^7.0.1",
-    "@types/babylon": "^6.16.2",
     "@types/chokidar": "^1.7.4",
     "@types/commander": "^2.12.2",
     "@types/debug": "^0.0.30",
