@@ -81,7 +81,7 @@ $ ets -h
 | configFile | string | {cwd}/tshelper.js | configure file path |
 | watchDirs | object | | generator configuration |
 
-egg-ts-helper would watching `app/extend`,`app/controller`,`app/service`, `app/config`, `app/middleware` by default. The dts would recreated when the files under these folders was changed.
+egg-ts-helper would watching `app/extend`,`app/controller`,`app/service`, `app/config`, `app/middleware`, `app/model` by default. The dts would recreated when the files under these folders was changed.
 
 you can disabled some folders by `-i` flag.
 
@@ -137,7 +137,7 @@ $ egg-bin debug -r egg-ts-helper/register
 
 see https://github.com/whxaxes/egg-boilerplate-d-ts
 
-It works in these directories : `app/controller`, `app/service`, `app/proxy`, `app/extend`, `app/config`, `app/middleware`.
+It works in these directories : `app/controller`, `app/service`, `app/proxy`, `app/extend`, `app/config`, `app/model`, `app/middleware`.
 
 #### Controller
 
@@ -281,9 +281,42 @@ export default {
 typings
 
 ```typescript
-// app/typings/config/plugin.d.ts
+// typings/config/plugin.d.ts
 
 // it's only import the package was exist under the node_modules
 import 'egg-cors';
 import 'egg-static';
+```
+
+#### Model
+
+ts
+
+```typescript
+// app/model/User.ts
+
+import { Application } from 'egg';
+
+export default (app: Application) => {
+  const { STRING } = app.Sequelize;
+  const User = app.model.define('user', {
+    name: STRING(30),
+  });
+
+  return User;
+};
+```
+
+typings
+
+```typescript
+// typings/app/model/index.d.ts
+
+import User from '../../../app/model/User';
+
+declare module 'sequelize' {
+  interface Sequelize {
+    User: ReturnType<typeof User>;
+  }
+}
 ```
