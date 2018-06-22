@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as mkdirp from 'mkdirp';
 import * as path from 'path';
 import * as assert from 'power-assert';
+import { defaultConfig, getDefaultWatchDirs } from '../../dist';
 import { findReturnPropertiesByTs } from '../../dist/generators/extend';
 import { triggerGenerator } from './utils';
 
@@ -52,6 +53,18 @@ describe('generators/extend.test.ts', () => {
     const result = triggerGenerator('extend', newAppDir, 'application.ts');
     const item = result[0];
     assert(item.content.includes('declare module \'larva\''));
+  });
+
+  it('should works without extend directory', () => {
+    const newAppDir = path.resolve(__dirname, '../fixtures/app8');
+    const result = triggerGenerator('extend', newAppDir, 'application.ts');
+    assert(result.length === 1);
+  });
+
+  it('should works without forwarding file', () => {
+    const newAppDir = path.resolve(__dirname, '../fixtures/app8');
+    const result = triggerGenerator('extend', newAppDir);
+    assert(result.length === Object.keys(getDefaultWatchDirs().extend.interface).length);
   });
 
   it('should not create property repeatability', () => {

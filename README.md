@@ -77,6 +77,7 @@ $ ets -h
 | typings | string | {cwd}/typings | typings dir |
 | caseStyle | string | lower | egg case style(lower,upper,camel) |
 | watch | boolean | false | watch file change or not |
+| watchOptions | object | undefined | chokidar [options](https://github.com/paulmillr/chokidar#api) |
 | execAtInit | boolean | false | execute d.ts generation while instance was created |
 | configFile | string | {cwd}/tshelper.js | configure file path |
 | watchDirs | object | | generator configuration |

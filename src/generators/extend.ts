@@ -13,15 +13,11 @@ export default function(tsHelper: TsHelper) {
       : config.file.endsWith('.ts') ? [config.file] : [];
 
     debug('file list : %o', fileList);
-    if (!fileList.length) {
-      if (!config.file) {
-        // clean files
-        return Object.keys(config.interface).map(key => ({
-          dist: path.resolve(config.dtsDir, `${key}.d.ts`),
-        }));
-      }
-
-      return;
+    if (!fileList.length && !config.file) {
+      // clean files
+      return Object.keys(config.interface).map(key => ({
+        dist: path.resolve(config.dtsDir, `${key}.d.ts`),
+      }));
     }
 
     const tsList: GeneratorResult[] = [];

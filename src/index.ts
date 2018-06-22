@@ -28,6 +28,7 @@ export interface TsHelperOption {
   watchDirs?: { [key: string]: WatchItem | boolean };
   caseStyle?: string;
   watch?: boolean;
+  watchOptions?: chokidar.WatchOptions;
   autoRemoveJs?: boolean;
   throttle?: number;
   execAtInit?: boolean;
@@ -57,6 +58,7 @@ export const defaultConfig = {
   autoRemoveJs: true,
   throttle: 500,
   watch: false,
+  watchOptions: undefined,
   execAtInit: false,
   watchDirs: {},
   configFile: './tshelper.js',
@@ -231,7 +233,7 @@ export default class TsHelper extends EventEmitter {
         .join(item, conf.pattern || '**/*.(js|ts)')
         .replace(/\/|\\/g, '/');
 
-      const watcher = chokidar.watch(watchGlob);
+      const watcher = chokidar.watch(watchGlob, this.config.watchOptions);
 
       // listen watcher event
       watcher.on('all', (event, p) => this.onChange(p, event, index));

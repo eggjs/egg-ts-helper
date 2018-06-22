@@ -58,6 +58,45 @@ describe('index.test.ts', () => {
     assert(!fs.existsSync(dts));
   });
 
+  it('should works with polling watcher', async () => {
+    const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
+    mkdirp.sync(dir);
+
+    const tsHelper = new TsHelper({
+      cwd: path.resolve(__dirname, './fixtures/app'),
+      watch: true,
+      watchOptions: {
+        usePolling: true,
+      },
+      execAtInit: true,
+      autoRemoveJs: false,
+    });
+
+    await sleep(2000);
+
+    assert(!!tsHelper.config);
+    assert(tsHelper.config.framework === 'larva');
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/app/controller/index.d.ts')));
+
+    const dts = path.resolve(__dirname, './fixtures/app/typings/app/service/index.d.ts');
+    fs.writeFileSync(path.resolve(dir, 'test.ts'), '');
+    fs.writeFileSync(path.resolve(dir, 'test-two.ts'), '');
+    debug('service file list %o', fs.readdirSync(dir));
+
+    await sleep(2000);
+
+    del.sync(dir, { force: true });
+    const content = fs.readFileSync(dts, { encoding: 'utf-8' });
+    assert(content.includes('service/test/test'));
+    assert(content.includes('service/test/test-two'));
+    assert(content.includes('test: TestTest'));
+    assert(content.includes('testTwo: TestTestTwo'));
+
+    await sleep(2000);
+
+    assert(!fs.existsSync(dts));
+  });
+
   it('should works without error while config file changed', async () => {
     const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
     mkdirp.sync(dir);
@@ -98,6 +137,8 @@ describe('index.test.ts', () => {
 
     fs.writeFileSync(defaultConfigPath, baseConfig);
     fs.writeFileSync(localConfigPath, localConfig);
+
+    await sleep(100);
   });
 
   it('should works without error while plugin file changed', async () => {
