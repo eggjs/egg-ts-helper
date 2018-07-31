@@ -11,6 +11,7 @@ describe('generators/plugin.test.ts', () => {
     assert(result.dist);
     assert(result.content.match(/egg-cors/g).length === 1);
     assert(result.content.includes('import \'egg-yoyo\''));
+    assert(!result.content.includes('import \'egg-unknown\''));
     assert(!result.content.includes('import \'egg-view-vue-ssr\''));
   });
 

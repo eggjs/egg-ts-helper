@@ -7,6 +7,10 @@ export default {
     enable: true,
     package: 'egg-cors',
   },
+  unknown: {
+    enable: true,
+    package: 'egg-unknown',
+  },
   yoyo: {
     enable: true,
     package: 'egg-yoyo',

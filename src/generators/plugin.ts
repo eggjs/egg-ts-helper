@@ -34,7 +34,6 @@ export default function(tsHelper: TsHelper) {
             importList.push(packageName);
           } else {
             debug('package \'%s\' not found in %s', packageName, baseConfig.cwd);
-            return;
           }
 
           fileContent = fileContent.substring(
