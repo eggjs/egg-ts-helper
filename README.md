@@ -122,20 +122,22 @@ or configure in package.json
 
 ## Extend
 
-`egg-ts-helper` can not only support the base loader( controller, middleware ... ), but also support to configure your own loader.
+`egg-ts-helper` not only support the base loader( controller, middleware ... ), but also support to configure your own loader.
 
 ### Use build-in generator
 
-for example. If I want to auto generated the d.ts for `egg-mongodb`. configuring watchDirs in `{cwd}/tshelper.js` and use `class` generator
+for example. If I want to auto create the d.ts for `egg-mongodb`. configuring watchDirs in `{cwd}/tshelper.js` and use `class` generator
 
 ```typescript
+// ./tshelper.js
+
 module.exports = {
   watchDirs: {
     model: {
       path: 'app/model', // dir path
-      pattern: '**/*.(ts|js)', // glob pattern, default is **/*.(ts|js). it doesn't need to configure normally.
+      // pattern: '**/*.(ts|js)', // glob pattern, default is **/*.(ts|js). it doesn't need to configure normally.
       generator: 'class', // generator name
-      framework: '@ali/larva', // framework name
+      framework: 'larva', // framework name
       interface: 'IModel',  // interface name
       caseStyle: 'upper', // caseStyle for loader
       interfaceHandle: val => `ReturnType<typeof ${val}>`, // interfaceHandle
@@ -157,9 +159,28 @@ declare module '{ framework }' {
 }
 ```
 
+and don't forget to declare IModel to egg.
+
+```typescript
+// typings/index.d.ts
+import { PlainObject } from 'egg';
+
+declare module 'egg' {
+  interface Application {
+    model: IModel
+  }
+
+  interface IModel extends PlainObject {
+  }
+}
+```
+
+
 ### Define custom generator
 
 ```javascript
+// ./tshelper.js
+
 // custom generator
 function myGenerator(config, baseConfig) {
   // config.dir       dir
@@ -179,14 +200,12 @@ module.exports = {
   watchDirs: {
     model: {
       path: 'app/model',
-      pattern: '**/*.(ts|js)',
       generator: myGenerator,
       trigger: ['add', 'unlink'],
     }
   }
 }
 ```
-
 
 ## Register
 
