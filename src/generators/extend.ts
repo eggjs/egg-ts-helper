@@ -9,7 +9,7 @@ const debug = d('egg-ts-helper#generators_extend');
 export default function(tsHelper: TsHelper) {
   tsHelper.register('extend', (config, baseConfig) => {
     const fileList = !config.file
-      ? utils.loadFiles(config.dir, config.pattern)
+      ? config.fileList
       : config.file.endsWith('.ts') ? [config.file] : [];
 
     debug('file list : %o', fileList);

@@ -6,6 +6,7 @@ import {
   getDefaultWatchDirs,
   TsGenerator,
 } from '../../dist/';
+import { loadFiles } from '../../dist/utils';
 
 export function triggerGenerator<
   T extends GeneratorResult[] | GeneratorResult = GeneratorResult[]
@@ -20,15 +21,17 @@ export function triggerGenerator<
   const watchDir = defaultWatchDirs[name];
   const generator = tsHelper.generators[watchDir.generator] as TsGenerator<any, T>;
   const dir = path.resolve(appDir, watchDir.path);
+  const dtsDir = path.resolve(
+    tsHelper.config.typings,
+    path.relative(tsHelper.config.cwd, dir),
+  );
   return generator(
     {
       ...watchDir,
       dir,
       file: file ? path.resolve(dir, file) : '',
-      dtsDir: path.resolve(
-        tsHelper.config.typings,
-        path.relative(tsHelper.config.cwd, dir),
-      ),
+      fileList: loadFiles(dir, watchDir.pattern),
+      dtsDir,
     },
     tsHelper.config,
   );

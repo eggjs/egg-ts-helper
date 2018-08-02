@@ -53,7 +53,7 @@ $ ets -h
   Options:
 
     -v, --version           output the version number
-    -w, --watch             Watching files, d.ts would recreated while file changed
+    -w, --watch             Watching files, d.ts will recreate after file has changed
     -c, --cwd [path]        Egg application base dir (default: process.cwd)
     -C, --config [path]     Configuration file, The argument can be a file path to a valid JSON/JS configuration file.（default: {cwd}/tshelper.js
     -f, --framework [name]  Egg framework(default: egg)
@@ -65,7 +65,7 @@ $ ets -h
 
   Commands:
 
-    clean                   Clean js file while it has the same name ts file
+    clean                   Clean js file when it has the same name ts file
 ```
 
 ## Options
@@ -119,6 +119,74 @@ or configure in package.json
   }
 }
 ```
+
+## Extend
+
+`egg-ts-helper` can not only support the base loader( controller, middleware ... ), but also support to configure your own loader.
+
+### Use build-in generator
+
+for example. If I want to auto generated the d.ts for `egg-mongodb`. configuring watchDirs in `{cwd}/tshelper.js` and use `class` generator
+
+```typescript
+module.exports = {
+  watchDirs: {
+    model: {
+      path: 'app/model', // dir path
+      pattern: '**/*.(ts|js)', // glob pattern, default is **/*.(ts|js). it doesn't need to configure normally.
+      generator: 'class', // generator name
+      framework: '@ali/larva', // framework name
+      interface: 'IModel',  // interface name
+      caseStyle: 'upper', // caseStyle for loader
+      interfaceHandle: val => `ReturnType<typeof ${val}>`, // interfaceHandle
+      trigger: ['add', 'unlink'], // recreate d.ts when receive these events, all events: ['add', 'unlink', 'change']
+    }
+  }
+}
+```
+
+the configuration can create d.ts like below.
+
+```
+import Station from '../../../app/model/station';
+
+declare module '{ framework }' {
+  interface { interface } {
+    Station: { interfaceHandle ? interfaceHandle('Station') : Station };
+  }
+}
+```
+
+### Define custom generator
+
+```javascript
+// custom generator
+function myGenerator(config, baseConfig) {
+  // config.dir       dir
+  // config.dtsDir    d.ts dir
+  // config.file      changed file
+  // config.fileList  file list
+  console.info(config);
+  console.info(baseConfig);
+
+  return {
+    dist: 'd.ts file url',
+    content: 'd.ts content'
+  }
+}
+
+module.exports = {
+  watchDirs: {
+    model: {
+      path: 'app/model',
+      pattern: '**/*.(ts|js)',
+      generator: myGenerator,
+      trigger: ['add', 'unlink'],
+    }
+  }
+}
+```
+
 
 ## Register
 

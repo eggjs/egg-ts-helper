@@ -19,7 +19,7 @@ const cache: { [key: string]: ImportItem } = {};
 
 export default function(tsHelper: TsHelper) {
   tsHelper.register('config', (config, baseConfig) => {
-    const fileList = utils.loadFiles(config.dir, config.pattern);
+    const fileList = config.fileList;
     const dist = path.resolve(config.dtsDir, 'index.d.ts');
     if (!fileList.length) {
       return { dist };

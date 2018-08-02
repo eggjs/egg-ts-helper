@@ -39,6 +39,7 @@ export type TsHelperConfig = typeof defaultConfig;
 export type TsGenConfig = {
   dir: string;
   dtsDir: string;
+  fileList: string[],
   file?: string;
 } & WatchItem;
 export interface GeneratorResult {
@@ -306,7 +307,23 @@ export default class TsHelper extends EventEmitter {
     }
 
     const dtsDir = path.resolve(config.typings, path.relative(config.cwd, dir));
-    const result = generator({ ...generatorConfig, dir, file, dtsDir }, config);
+    let _fileList: string[] | undefined;
+    const newConfig = {
+      ...generatorConfig,
+      dir,
+      file,
+      dtsDir,
+
+      get fileList() {
+        if (!_fileList) {
+          _fileList = utils.loadFiles(dir, generatorConfig.pattern);
+        }
+        return _fileList;
+      },
+    };
+
+    // execute generator
+    const result = generator(newConfig, config);
     debug('generate ts file result : %o', result);
     if (!result) {
       return;

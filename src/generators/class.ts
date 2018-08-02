@@ -6,7 +6,7 @@ const debug = d('egg-ts-helper#generators_class');
 
 export default function(tsHelper: TsHelper) {
   tsHelper.register('class', (config, baseConfig) => {
-    const fileList = utils.loadFiles(config.dir, config.pattern);
+    const fileList = config.fileList;
     const dist = path.resolve(config.dtsDir, 'index.d.ts');
 
     debug('file list : %o', fileList);

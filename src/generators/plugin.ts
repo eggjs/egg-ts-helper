@@ -2,7 +2,6 @@ import * as d from 'debug';
 import * as fs from 'fs';
 import * as path from 'path';
 import TsHelper from '..';
-import * as utils from '../utils';
 const debug = d('egg-ts-helper#generators_plugin');
 
 const cache: { [key: string]: string[] } = {};
@@ -10,7 +9,7 @@ const pluginRegex = /package\:\s*(?:'|")([^'"]+)(?:'|")/;
 
 export default function(tsHelper: TsHelper) {
   tsHelper.register('plugin', (config, baseConfig) => {
-    const fileList = utils.loadFiles(config.dir, config.pattern);
+    const fileList = config.fileList;
     const dist = path.resolve(config.dtsDir, 'plugin.d.ts');
     if (!fileList.length) {
       return { dist };
