@@ -118,6 +118,15 @@ export function eachSourceFile(node: ts.Node, cb: (n: ts.Node) => any) {
   });
 }
 
+// check whether module is exist
+export function moduleExist(mod) {
+  try {
+    return require.resolve(mod);
+  } catch (e) {
+    return;
+  }
+}
+
 // require modules
 export function requireFile(url) {
   if (!fs.existsSync(url)) {

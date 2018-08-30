@@ -38,8 +38,7 @@ describe('generators/class.test.ts', () => {
         path.resolve(appDir, './typings/app/model/index.d.ts'),
     );
     assert(result.content.includes('../../../app/model/User'));
-    assert(result.content.includes('declare module \'sequelize\''));
-    assert(result.content.includes('interface Sequelize'));
+    assert(result.content.includes('interface IModel'));
     assert(result.content.includes('User: ReturnType<typeof User>;'));
     assert(result.content.includes('Person: ReturnType<typeof Person>;'));
   });

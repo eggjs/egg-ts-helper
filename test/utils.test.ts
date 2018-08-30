@@ -28,4 +28,9 @@ describe('utils.test.ts', () => {
     fs.writeFileSync(path.resolve(__dirname, './fixtures/app9/test.js'), '');
     assert(utils.removeSameNameJs(path.resolve(__dirname, './fixtures/app9/test.ts')));
   });
+
+  it('should check module exist without error', () => {
+    assert(!!utils.moduleExist('chokidar'));
+    assert(!utils.moduleExist('egg-sequelize'));
+  });
 });

@@ -30,11 +30,9 @@ describe('index.test.ts', () => {
     await sleep(2000);
 
     assert(!!tsHelper.config);
-    assert(tsHelper.config.framework === 'larva');
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/app/controller/index.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/app/extend/context.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/app/middleware/index.d.ts')));
-    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/app/model/index.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/index.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/plugin.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/custom.d.ts')));
@@ -75,7 +73,6 @@ describe('index.test.ts', () => {
     await sleep(2000);
 
     assert(!!tsHelper.config);
-    assert(tsHelper.config.framework === 'larva');
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/app/controller/index.d.ts')));
 
     const dts = path.resolve(__dirname, './fixtures/app/typings/app/service/index.d.ts');
@@ -118,8 +115,12 @@ describe('index.test.ts', () => {
     const localConfig = fs.readFileSync(localConfigPath);
 
     fs.writeFile(defaultConfigPath, baseConfig + '\n\n', () => {
-      fs.writeFile(defaultConfigPath, baseConfig + '\n', () => { /* do nothing */ });
-      fs.writeFile(localConfigPath, baseConfig, () => { /* do nothing */ });
+      fs.writeFile(defaultConfigPath, baseConfig + '\n', () => {
+        /* do nothing */
+      });
+      fs.writeFile(localConfigPath, baseConfig, () => {
+        /* do nothing */
+      });
     });
 
     await new Promise(resolve => {
@@ -161,7 +162,9 @@ describe('index.test.ts', () => {
     const pluginPath = path.resolve(__dirname, './fixtures/app/config/plugin.ts');
     const pluginText = fs.readFileSync(pluginPath);
 
-    fs.writeFile(defaultPluginPath, pluginText, () => { /* do nothing */ });
+    fs.writeFile(defaultPluginPath, pluginText, () => {
+      /* do nothing */
+    });
     await new Promise(resolve => {
       function cb(_, p) {
         if (p === defaultPluginPath) {
@@ -176,35 +179,12 @@ describe('index.test.ts', () => {
     fs.writeFileSync(defaultPluginPath, basePlugin);
   });
 
-  it('should support read framework by package.json', () => {
-    let tsHelper = new TsHelper({
-      cwd: path.resolve(__dirname, './fixtures/app3'),
-      watch: false,
-    });
-
-    assert(tsHelper.config.framework === 'egg');
-
-    tsHelper = new TsHelper({
-      cwd: path.resolve(__dirname, './fixtures/app2'),
-      watch: false,
-    });
-
-    assert(tsHelper.config.framework === 'larva');
-
-    tsHelper = new TsHelper({
-      cwd: path.resolve(__dirname, './fixtures/app4'),
-      watch: false,
-    });
-
-    assert(tsHelper.config.framework === 'chair');
-  });
-
   it('should support rewrite by options.watchDirs', () => {
     const watchDirs = getDefaultWatchDirs();
     Object.keys(watchDirs).forEach(key => {
       if (key === 'proxy') {
         watchDirs[key] = {
-          ...watchDirs[key],
+          ...(watchDirs[key] as any),
           path: 'app/test/proxy',
           interface: 'IProxy',
           generator: 'class',
@@ -225,12 +205,30 @@ describe('index.test.ts', () => {
     assert(tsHelper.watchDirs[0].includes('proxy'));
   });
 
+  it('should support read framework by package.json', () => {
+    let tsHelper = new TsHelper({
+      cwd: path.resolve(__dirname, './fixtures/app3'),
+      watch: false,
+    });
+    assert(tsHelper.config.framework === 'egg');
+    tsHelper = new TsHelper({
+      cwd: path.resolve(__dirname, './fixtures/app2'),
+      watch: false,
+    });
+    assert(tsHelper.config.framework === 'larva');
+    tsHelper = new TsHelper({
+      cwd: path.resolve(__dirname, './fixtures/app4'),
+      watch: false,
+    });
+    assert(tsHelper.config.framework === 'chair');
+  });
+
   it('should support rewrite by package.json', () => {
     const watchDirs = getDefaultWatchDirs();
     const tsHelper = new TsHelper({
       cwd: path.resolve(__dirname, './fixtures/app4'),
     });
-    const len = Object.keys(watchDirs).filter(k => watchDirs[k].enabled).length;
+    const len = Object.keys(watchDirs).filter(k => (watchDirs[k] as any).enabled).length;
     assert(tsHelper.watchNameList.length === len - 2);
     assert(tsHelper.watchDirs[0].includes('controller'));
   });

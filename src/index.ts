@@ -67,87 +67,102 @@ export const defaultConfig = {
 
 // default watch dir
 export function getDefaultWatchDirs() {
-  return {
-    extend: {
-      path: 'app/extend',
-      interface: {
-        context: 'Context',
-        application: 'Application',
-        agent: 'Application',
-        request: 'Request',
-        response: 'Response',
-        helper: 'IHelper',
-      },
-      generator: 'extend',
-      trigger: ['add', 'change', 'unlink'],
-      enabled: true,
-    },
+  const watchConfig: { [key: string]: WatchItem | boolean } = {};
 
-    controller: {
-      path: 'app/controller',
-      interface: 'IController',
-      generator: 'class',
-      trigger: ['add', 'unlink'],
-      enabled: true,
+  // extend
+  watchConfig.extend = {
+    path: 'app/extend',
+    interface: {
+      context: 'Context',
+      application: 'Application',
+      agent: 'Application',
+      request: 'Request',
+      response: 'Response',
+      helper: 'IHelper',
     },
-
-    middleware: {
-      path: 'app/middleware',
-      interface: 'IMiddleware',
-      interfaceHandle: val => `typeof ${val}`,
-      generator: 'class',
-      trigger: ['add', 'unlink'],
-      enabled: true,
-    },
-
-    proxy: {
-      path: 'app/proxy',
-      interface: 'IProxy',
-      generator: 'class',
-      trigger: ['add', 'unlink'],
-      enabled: false,
-    },
-
-    model: {
-      path: 'app/model',
-      generator: 'class',
-      framework: 'sequelize',
-      interface: 'Sequelize',
-      caseStyle: 'upper',
-      interfaceHandle: val => `ReturnType<typeof ${val}>`,
-      trigger: ['add', 'unlink'],
-      enabled: true,
-    },
-
-    config: {
-      path: 'config',
-      pattern: 'config*.(ts|js)',
-      interface: {
-        inserts: ['Application', 'Controller', 'Service'],
-        property: 'config',
-        base: 'EggAppConfig',
-      },
-      generator: 'config',
-      trigger: ['add', 'unlink', 'change'],
-      enabled: true,
-    },
-
-    plugin: {
-      path: 'config',
-      pattern: 'plugin*.(ts|js)',
-      generator: 'plugin',
-      trigger: ['add', 'unlink', 'change'],
-      enabled: true,
-    },
-
-    service: {
-      path: 'app/service',
-      interface: 'IService',
-      generator: 'class',
-      trigger: ['add', 'unlink'],
-      enabled: true,
-    },
+    generator: 'extend',
+    trigger: ['add', 'change', 'unlink'],
+    enabled: true,
   };
+
+  // controller
+  watchConfig.controller = {
+    path: 'app/controller',
+    interface: 'IController',
+    generator: 'class',
+    trigger: ['add', 'unlink'],
+    enabled: true,
+  };
+
+  // middleware
+  watchConfig.middleware = {
+    path: 'app/middleware',
+    interface: 'IMiddleware',
+    interfaceHandle: val => `typeof ${val}`,
+    generator: 'class',
+    trigger: ['add', 'unlink'],
+    enabled: true,
+  };
+
+  // proxy
+  watchConfig.proxy = {
+    path: 'app/proxy',
+    interface: 'IProxy',
+    generator: 'class',
+    trigger: ['add', 'unlink'],
+    enabled: false,
+  };
+
+  // model
+  watchConfig.model = {
+    path: 'app/model',
+    generator: 'class',
+    interface: 'IModel',
+    caseStyle: 'upper',
+    interfaceHandle: val => `ReturnType<typeof ${val}>`,
+    trigger: ['add', 'unlink'],
+    enabled: false,
+  };
+
+  if (utils.moduleExist('egg-sequelize')) {
+    watchConfig.model.enabled = true;
+    watchConfig.model.interface = 'Sequelize';
+    watchConfig.model.framework = 'sequelize';
+  }
+
+  // config
+  watchConfig.config = {
+    path: 'config',
+    pattern: 'config*.(ts|js)',
+    interface: {
+      inserts: ['Application', 'Controller', 'Service'],
+      property: 'config',
+      base: 'EggAppConfig',
+    },
+    generator: 'config',
+    trigger: ['add', 'unlink', 'change'],
+    enabled: true,
+  };
+
+  // plugin
+  watchConfig.plugin = {
+    path: 'config',
+    pattern: 'plugin*.(ts|js)',
+    generator: 'plugin',
+    trigger: ['add', 'unlink', 'change'],
+    enabled: true,
+  };
+
+  // service
+  watchConfig.service = {
+    path: 'app/service',
+    interface: 'IService',
+    generator: 'class',
+    trigger: ['add', 'unlink'],
+    enabled: true,
+  };
+
+  return watchConfig;
 }
 
 // preload generators
@@ -257,12 +272,11 @@ export default class TsHelper extends EventEmitter {
     const config = { ...defaultConfig, watchDirs: getDefaultWatchDirs() };
     const cwd = options.cwd || config.cwd;
     const configFile = options.configFile || config.configFile;
-    const pkgInfo =
-      utils.requireFile(path.resolve(cwd, './package.json')) || {};
+    const pkgInfo = utils.requireFile(path.resolve(cwd, './package.json')) || {};
+    config.framework = options.framework || defaultConfig.framework;
 
     // read from package.json
     if (pkgInfo.egg) {
-      config.framework = pkgInfo.egg.framework || defaultConfig.framework;
       mergeConfig(config, pkgInfo.egg.tsHelper);
     }
 
