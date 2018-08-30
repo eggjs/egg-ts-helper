@@ -121,11 +121,10 @@ export function getDefaultWatchDirs() {
     caseStyle: 'upper',
     interfaceHandle: val => `ReturnType<typeof ${val}>`,
     trigger: ['add', 'unlink'],
-    enabled: false,
+    enabled: true,
   };
 
   if (utils.moduleExist('egg-sequelize')) {
-    watchConfig.model.enabled = true;
     watchConfig.model.interface = 'Sequelize';
     watchConfig.model.framework = 'sequelize';
   }
