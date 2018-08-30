@@ -1,4 +1,11 @@
 
+1.10.0 / 2018-08-30
+===================
+
+  * feat: model.enabled default to true
+  * feat: add model check and only read framework from tsHelper.framework
+  * docs: update docs
+
 1.9.0 / 2018-06-22
 ==================
 
