@@ -2,6 +2,7 @@ import * as d from 'debug';
 import * as fs from 'fs';
 import * as path from 'path';
 import TsHelper from '..';
+import * as utils from '../utils';
 const debug = d('egg-ts-helper#generators_plugin');
 
 const cache: { [key: string]: string[] } = {};
@@ -27,8 +28,7 @@ export default function(tsHelper: TsHelper) {
 
         while ((matches = fileContent.match(pluginRegex))) {
           const packageName = matches[1];
-          const packagePath = path.resolve(baseConfig.cwd, 'node_modules/' + packageName);
-          if (fs.existsSync(packagePath)) {
+          if (utils.moduleExist(packageName, baseConfig.cwd)) {
             list.push(packageName);
             importList.push(packageName);
           } else {

@@ -1,5 +1,4 @@
 --require ts-node/register
---require source-map-support/register
 --require espower-typescript/guess
 --recursive
 test/**/*.test.ts

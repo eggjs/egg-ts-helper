@@ -66,7 +66,7 @@ export const defaultConfig = {
 };
 
 // default watch dir
-export function getDefaultWatchDirs() {
+export function getDefaultWatchDirs(opt?: TsHelperOption) {
   const watchConfig: { [key: string]: WatchItem | boolean } = {};
 
   // extend
@@ -124,7 +124,7 @@ export function getDefaultWatchDirs() {
     enabled: true,
   };
 
-  if (utils.moduleExist('egg-sequelize')) {
+  if (utils.moduleExist('egg-sequelize', (opt || {}).cwd)) {
     watchConfig.model.interface = 'Sequelize';
     watchConfig.model.framework = 'sequelize';
   }
@@ -268,7 +268,7 @@ export default class TsHelper extends EventEmitter {
   // options > configFile > package.json
   private configure(options: TsHelperOption): TsHelperConfig {
     // base config
-    const config = { ...defaultConfig, watchDirs: getDefaultWatchDirs() };
+    const config = { ...defaultConfig, watchDirs: getDefaultWatchDirs(options) };
     const cwd = options.cwd || config.cwd;
     const configFile = options.configFile || config.configFile;
     const pkgInfo = utils.requireFile(path.resolve(cwd, './package.json')) || {};

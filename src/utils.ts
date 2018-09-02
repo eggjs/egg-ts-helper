@@ -119,9 +119,10 @@ export function eachSourceFile(node: ts.Node, cb: (n: ts.Node) => any) {
 }
 
 // check whether module is exist
-export function moduleExist(mod) {
+export function moduleExist(mod: string, cwd?: string) {
+  const nodeModulePath = path.resolve(cwd || process.cwd(), 'node_modules', mod);
   try {
-    return require.resolve(mod);
+    return fs.existsSync(nodeModulePath) || require.resolve(mod);
   } catch (e) {
     return;
   }
