@@ -24,11 +24,11 @@ describe('bin.test.ts', () => {
     ps = triggerBin.apply(null, args);
     return new Promise<string>(resolve => {
       let info = '';
-      ps.stdout.on('data', data => {
+      ps!.stdout.on('data', data => {
         info += data.toString();
       });
 
-      ps.on('close', () => {
+      ps!.on('close', () => {
         resolve(info);
       });
     });

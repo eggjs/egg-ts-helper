@@ -1,4 +1,0 @@
---require ts-node/register
---require espower-typescript/guess
---recursive
-test/**/*.test.ts

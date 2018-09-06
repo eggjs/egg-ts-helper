@@ -1,9 +1,6 @@
-import * as del from 'del';
-import * as fs from 'fs';
-import * as mkdirp from 'mkdirp';
 import * as path from 'path';
 import * as assert from 'power-assert';
-import { defaultConfig, getDefaultWatchDirs } from '../../dist';
+import { getDefaultWatchDirs, WatchItem } from '../../dist';
 import { findReturnPropertiesByTs } from '../../dist/generators/extend';
 import { triggerGenerator } from './utils';
 
@@ -42,17 +39,17 @@ describe('generators/extend.test.ts', () => {
         path.resolve(appDir, './typings/app/extend/application.d.ts'),
     );
 
-    assert(item.content.includes('../../../app/extend/application'));
-    assert(item.content.includes('interface Application'));
-    assert(item.content.includes('typeof ExtendObject.isCool'));
-    assert(item.content.includes('typeof ExtendObject.isNotCool'));
+    assert(item.content!.includes('../../../app/extend/application'));
+    assert(item.content!.includes('interface Application'));
+    assert(item.content!.includes('typeof ExtendObject.isCool'));
+    assert(item.content!.includes('typeof ExtendObject.isNotCool'));
   });
 
   it('should support appoint framework', () => {
     const newAppDir = path.resolve(__dirname, '../fixtures/app2');
     const result = triggerGenerator('extend', newAppDir, 'application.ts');
     const item = result[0];
-    assert(item.content.includes('declare module \'larva\''));
+    assert(item.content!.includes('declare module \'larva\''));
   });
 
   it('should works without extend directory', () => {
@@ -64,16 +61,16 @@ describe('generators/extend.test.ts', () => {
   it('should works without forwarding file', () => {
     const newAppDir = path.resolve(__dirname, '../fixtures/app8');
     const result = triggerGenerator('extend', newAppDir);
-    assert(result.length === Object.keys(getDefaultWatchDirs().extend.interface).length);
+    assert(result.length === Object.keys((getDefaultWatchDirs().extend as WatchItem).interface).length);
   });
 
   it('should not create property repeatability', () => {
     const newAppDir = path.resolve(__dirname, '../fixtures/app2');
     const result = triggerGenerator('extend', newAppDir, 'application.ts');
     const item = result[0];
-    const matches = item.content.match(/go: typeof/);
+    const matches = item.content!.match(/go: typeof/);
     assert(matches);
-    assert(matches.length === 1);
+    assert(matches!.length === 1);
   });
 
   it('should not generate dts with unknown interface', () => {
@@ -91,9 +88,9 @@ describe('generators/extend.test.ts', () => {
   it('should works without error with helper', () => {
     const result = triggerGenerator('extend', appDir, 'helper.ts');
     const item = result[0];
-    assert(item.content.includes('../../../app/extend/helper'));
-    assert(item.content.includes('interface IHelper'));
-    assert(item.content.includes('typeof ExtendObject.isCool'));
-    assert(item.content.includes('typeof ExtendObject.isNotCool'));
+    assert(item.content!.includes('../../../app/extend/helper'));
+    assert(item.content!.includes('interface IHelper'));
+    assert(item.content!.includes('typeof ExtendObject.isCool'));
+    assert(item.content!.includes('typeof ExtendObject.isNotCool'));
   });
 });

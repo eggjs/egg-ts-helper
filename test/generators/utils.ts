@@ -1,16 +1,18 @@
 import * as path from 'path';
 import {
   default as TsHelper,
-  defaultConfig,
   GeneratorResult,
   getDefaultWatchDirs,
   TsGenerator,
+  WatchItem,
 } from '../../dist/';
 import { loadFiles } from '../../dist/utils';
 
-export function triggerGenerator<
-  T extends GeneratorResult[] | GeneratorResult = GeneratorResult[]
->(name: string, appDir: string, file?: string) {
+export function triggerGenerator<T extends GeneratorResult[] | GeneratorResult = GeneratorResult[]>(
+  name: string,
+  appDir: string,
+  file?: string,
+) {
   const defaultWatchDirs = getDefaultWatchDirs();
   const tsHelper = new TsHelper({
     cwd: appDir,
@@ -18,13 +20,11 @@ export function triggerGenerator<
     execAtInit: false,
   });
 
-  const watchDir = defaultWatchDirs[name];
+  const watchDir = defaultWatchDirs[name] as WatchItem;
   const generator = tsHelper.generators[watchDir.generator] as TsGenerator<any, T>;
   const dir = path.resolve(appDir, watchDir.path);
-  const dtsDir = path.resolve(
-    tsHelper.config.typings,
-    path.relative(tsHelper.config.cwd, dir),
-  );
+  const dtsDir = path.resolve(tsHelper.config.typings, path.relative(tsHelper.config.cwd, dir));
+
   return generator(
     {
       ...watchDir,

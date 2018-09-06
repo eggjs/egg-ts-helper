@@ -1,6 +1,5 @@
 import { spawn } from 'child_process';
 import * as del from 'del';
-import * as fs from 'fs';
 import * as path from 'path';
 import * as assert from 'power-assert';
 
