@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 import { Command } from 'commander';
-import * as packInfo from '../package.json';
+import packInfo from '../package.json';
 import { createTsHelperInstance, defaultConfig } from './';
 import { cleanJs } from './utils';
 

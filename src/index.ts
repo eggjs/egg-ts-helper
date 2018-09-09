@@ -359,6 +359,7 @@ export default class TsHelper extends EventEmitter {
           item.dist,
           '// This file was auto created by egg-ts-helper\n' +
             '// Do not modify this file!!!!!!!!!\n\n' +
+            `import '${config.framework}'; // Make sure ts to import ${config.framework} declaration at first\n` +
             item.content,
         );
         this.emit('update', item.dist, file);
