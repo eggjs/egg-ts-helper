@@ -22,11 +22,10 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "inlineSourceMap": true,
-    "importHelpers": true,
-    "resolveJsonModule": true
+    "importHelpers": true
   },
   "include": [
-    "src/**/*",
+    "./src/**/*",
     "typings/**/*"
   ]
 }

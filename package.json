@@ -14,7 +14,7 @@
     "check": "npm run build && npm run lint",
     "test": "npm run check && npm run test-local",
     "test-local": "egg-bin test --ts",
-    "cov": "npm run check && egg-bin cov"
+    "cov": "npm run check && egg-bin cov --ts"
   },
   "keywords": [
     "egg",
@@ -53,8 +53,11 @@
     "@types/mocha": "^5.0.0",
     "@types/node": "^9.4.5",
     "@types/power-assert": "^1.4.29",
+    "coffee": "^5.1.0",
     "del": "^3.0.0",
+    "egg": "^2.10.0",
     "egg-bin": "^4.3.7",
+    "runscript": "^1.3.0",
     "tslint": "^5.9.1"
   }
 }

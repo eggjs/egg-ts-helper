@@ -4,7 +4,6 @@ import * as fs from 'fs';
 import * as mkdirp from 'mkdirp';
 import * as path from 'path';
 import * as assert from 'power-assert';
-const isWin = process.platform === 'win32';
 
 function sleep(time) {
   return new Promise(res => setTimeout(res, time));
@@ -13,10 +12,7 @@ function sleep(time) {
 describe('bin.test.ts', () => {
   let ps: ChildProcess | undefined;
   function triggerBin(...args: string[]) {
-    ps = spawn(
-      'node',
-      [path.resolve(__dirname, '../dist/bin.js')].concat(args),
-    );
+    ps = spawn('node', [path.resolve(__dirname, '../dist/bin.js')].concat(args));
     return ps;
   }
 
@@ -56,16 +52,9 @@ describe('bin.test.ts', () => {
   });
 
   it('should works with -s correctly', async () => {
-    const data = await getOutput(
-      '-c',
-      path.resolve(__dirname, './fixtures/app4'),
-    );
+    const data = await getOutput('-c', path.resolve(__dirname, './fixtures/app4'));
     assert(data.includes('created'));
-    const data2 = await getOutput(
-      '-s',
-      '-c',
-      path.resolve(__dirname, './fixtures/app4'),
-    );
+    const data2 = await getOutput('-s', '-c', path.resolve(__dirname, './fixtures/app4'));
     assert(!data2.includes('created'));
   });
 
@@ -77,84 +66,28 @@ describe('bin.test.ts', () => {
   it('should works with -e correctly', async () => {
     triggerBin('-c', path.resolve(__dirname, './fixtures/app6'), '-e', 'proxy');
     await sleep(2000);
-    assert(
-      fs.existsSync(
-        path.resolve(
-          __dirname,
-          './fixtures/app6/typings/app/controller/index.d.ts',
-        ),
-      ),
-    );
-    assert(
-      fs.existsSync(
-        path.resolve(__dirname, './fixtures/app6/typings/app/proxy/index.d.ts'),
-      ),
-    );
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app6/typings/app/controller/index.d.ts')));
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app6/typings/app/proxy/index.d.ts')));
     del.sync(path.resolve(__dirname, './fixtures/app6/typings'), {
       force: true,
     });
   });
 
   it('should works with -i correctly', async () => {
-    triggerBin(
-      '-c',
-      path.resolve(__dirname, './fixtures/app5'),
-      '-i',
-      'controller,service',
-    );
+    triggerBin('-c', path.resolve(__dirname, './fixtures/app5'), '-i', 'controller,service');
     await sleep(2000);
-    assert(
-      !fs.existsSync(
-        path.resolve(
-          __dirname,
-          './fixtures/app5/typings/app/controller/index.d.ts',
-        ),
-      ),
-    );
-    assert(
-      !fs.existsSync(
-        path.resolve(
-          __dirname,
-          './fixtures/app5/typings/app/service/index.d.ts',
-        ),
-      ),
-    );
-    assert(
-      fs.existsSync(
-        path.resolve(
-          __dirname,
-          './fixtures/app5/typings/app/extend/context.d.ts',
-        ),
-      ),
-    );
-    assert(
-      fs.existsSync(
-        path.resolve(
-          __dirname,
-          './fixtures/app5/typings/app/extend/application.d.ts',
-        ),
-      ),
-    );
-    assert(
-      fs.existsSync(
-        path.resolve(
-          __dirname,
-          './fixtures/app5/typings/app/extend/helper.d.ts',
-        ),
-      ),
-    );
+    assert(!fs.existsSync(path.resolve(__dirname, './fixtures/app5/typings/app/controller/index.d.ts')));
+    assert(!fs.existsSync(path.resolve(__dirname, './fixtures/app5/typings/app/service/index.d.ts')));
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app5/typings/app/extend/context.d.ts')));
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app5/typings/app/extend/application.d.ts')));
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app5/typings/app/extend/helper.d.ts')));
   });
 
   it('should works with clean command correctly', async () => {
     const appPath = path.resolve(__dirname, './fixtures/app9');
-    const p = spawn(
-      path.resolve(__dirname, '../node_modules/.bin/tsc' + (isWin ? '.cmd' : '')),
-      [],
-      { cwd: appPath },
-    );
-
-    await new Promise(resolve => p.on('exit', resolve));
-
+    const p = spawn('tsc', [], { cwd: appPath });
+    await sleep(3000);
+    p.kill('SIGINT');
     assert(fs.existsSync(path.resolve(appPath, './test.js')));
     assert(fs.existsSync(path.resolve(appPath, './app/test.js')));
     assert(fs.existsSync(path.resolve(appPath, './app/app/test.js')));
@@ -169,12 +102,7 @@ describe('bin.test.ts', () => {
     triggerBin('-c', path.resolve(__dirname, './fixtures/app8'));
     await sleep(3000);
     const content = fs
-      .readFileSync(
-        path.resolve(
-          __dirname,
-          './fixtures/app8/typings/app/controller/index.d.ts',
-        ),
-      )
+      .readFileSync(path.resolve(__dirname, './fixtures/app8/typings/app/controller/index.d.ts'))
       .toString();
     assert(content.includes('declare module \'egg\''));
     assert(content.includes('interface IController'));
@@ -182,30 +110,14 @@ describe('bin.test.ts', () => {
   });
 
   it('should works with -w and -e correctly', async () => {
-    triggerBin(
-      '-c',
-      path.resolve(__dirname, './fixtures/app4'),
-      '-w',
-      '-e',
-      'service',
-    );
+    triggerBin('-c', path.resolve(__dirname, './fixtures/app4'), '-w', '-e', 'service');
 
     await sleep(2000);
     const dir = path.resolve(__dirname, './fixtures/app4/app/service/test');
     mkdirp.sync(dir);
 
-    assert(
-      fs.existsSync(
-        path.resolve(
-          __dirname,
-          './fixtures/app4/typings/app/controller/index.d.ts',
-        ),
-      ),
-    );
-    const dts = path.resolve(
-      __dirname,
-      './fixtures/app4/typings/app/service/index.d.ts',
-    );
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app4/typings/app/controller/index.d.ts')));
+    const dts = path.resolve(__dirname, './fixtures/app4/typings/app/service/index.d.ts');
     fs.writeFileSync(path.resolve(dir, 'test.ts'), '');
     fs.writeFileSync(path.resolve(dir, 'test-two.ts'), '');
 

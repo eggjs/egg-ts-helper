@@ -1,10 +1,11 @@
+import { spawn } from 'child_process';
 import * as d from 'debug';
 import * as del from 'del';
 import * as fs from 'fs';
 import * as mkdirp from 'mkdirp';
 import * as path from 'path';
 import * as assert from 'power-assert';
-import { default as TsHelper, getDefaultWatchDirs } from '../dist/';
+import { createTsHelperInstance, getDefaultWatchDirs } from '../dist/';
 const debug = d('egg-ts-helper#index.test');
 
 function sleep(time) {
@@ -20,7 +21,7 @@ describe('index.test.ts', () => {
     const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
     mkdirp.sync(dir);
 
-    const tsHelper = new TsHelper({
+    const tsHelper = createTsHelperInstance({
       cwd: path.resolve(__dirname, './fixtures/app'),
       watch: true,
       execAtInit: true,
@@ -60,7 +61,7 @@ describe('index.test.ts', () => {
     const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
     mkdirp.sync(dir);
 
-    const tsHelper = new TsHelper({
+    const tsHelper = createTsHelperInstance({
       cwd: path.resolve(__dirname, './fixtures/app'),
       watch: true,
       watchOptions: {
@@ -98,7 +99,7 @@ describe('index.test.ts', () => {
     const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
     mkdirp.sync(dir);
 
-    const tsHelper = new TsHelper({
+    const tsHelper = createTsHelperInstance({
       cwd: path.resolve(__dirname, './fixtures/app'),
       watch: true,
       execAtInit: true,
@@ -146,7 +147,7 @@ describe('index.test.ts', () => {
     const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
     mkdirp.sync(dir);
 
-    const tsHelper = new TsHelper({
+    const tsHelper = createTsHelperInstance({
       cwd: path.resolve(__dirname, './fixtures/app'),
       watch: true,
       execAtInit: true,
@@ -195,7 +196,7 @@ describe('index.test.ts', () => {
       }
     });
 
-    const tsHelper = new TsHelper({
+    const tsHelper = createTsHelperInstance({
       cwd: path.resolve(__dirname, './fixtures/app3'),
       watchDirs,
     });
@@ -206,17 +207,17 @@ describe('index.test.ts', () => {
   });
 
   it('should support read framework by package.json', () => {
-    let tsHelper = new TsHelper({
+    let tsHelper = createTsHelperInstance({
       cwd: path.resolve(__dirname, './fixtures/app3'),
       watch: false,
     });
     assert(tsHelper.config.framework === 'egg');
-    tsHelper = new TsHelper({
+    tsHelper = createTsHelperInstance({
       cwd: path.resolve(__dirname, './fixtures/app2'),
       watch: false,
     });
     assert(tsHelper.config.framework === 'larva');
-    tsHelper = new TsHelper({
+    tsHelper = createTsHelperInstance({
       cwd: path.resolve(__dirname, './fixtures/app4'),
       watch: false,
     });
@@ -225,11 +226,52 @@ describe('index.test.ts', () => {
 
   it('should support rewrite by package.json', () => {
     const watchDirs = getDefaultWatchDirs();
-    const tsHelper = new TsHelper({
+    const tsHelper = createTsHelperInstance({
       cwd: path.resolve(__dirname, './fixtures/app4'),
     });
     const len = Object.keys(watchDirs).filter(k => (watchDirs[k] as any).enabled).length;
     assert(tsHelper.watchNameList.length === len - 2);
     assert(tsHelper.watchDirs[0].includes('controller'));
+  });
+
+  it('should works without error in real app', async () => {
+    const baseDir = path.resolve(__dirname, './fixtures/real/');
+    createTsHelperInstance({
+      cwd: baseDir,
+      execAtInit: true,
+      autoRemoveJs: false,
+    });
+
+    await sleep(4000);
+
+    const proc = spawn('egg-bin', ['dev', '--ts', '--baseDir', baseDir], {
+      stdio: 'pipe',
+      env: {
+        ...process.env,
+        ...{
+          TS_NODE_PROJECT: path.resolve(baseDir, './tsconfig.json'),
+        },
+      },
+    });
+
+    await new Promise((resolve, reject) => {
+      proc.stdout.on('data', info => {
+        if (info.toString().match(/egg started on http/)) {
+          proc.kill('SIGINT');
+          resolve();
+        }
+      });
+
+      let errorInfo = '';
+      let timeout;
+      proc.stderr.on('data', info => {
+        errorInfo += info.toString();
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          reject(new Error(errorInfo));
+          proc.kill('SIGINT');
+        }, 3000);
+      });
+    });
   });
 });

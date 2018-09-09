@@ -16,6 +16,7 @@
         "order": "fields-first"
       }
     ],
+    "no-this-assignment": false,
     "object-literal-sort-keys": false,
     "max-classes-per-file": [true, 10],
     "max-line-length": false,
