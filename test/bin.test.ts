@@ -86,7 +86,7 @@ describe('bin.test.ts', () => {
   it('should works with clean command correctly', async () => {
     const appPath = path.resolve(__dirname, './fixtures/app9');
     const p = spawn('tsc', [], { cwd: appPath });
-    await sleep(3000);
+    await sleep(5000);
     p.kill('SIGINT');
     assert(fs.existsSync(path.resolve(appPath, './test.js')));
     assert(fs.existsSync(path.resolve(appPath, './app/test.js')));

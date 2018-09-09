@@ -11,3 +11,4 @@ run/
 *.log
 dist/
 .cache
+test/fixtures/*/typings
