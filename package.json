@@ -20,11 +20,6 @@
     "egg",
     "typescript"
   ],
-  "nyc": {
-    "extension": [
-      ".ts"
-    ]
-  },
   "files": [
     "dist",
     "register.js"
