@@ -2,6 +2,7 @@ import { ChildProcess, spawn } from 'child_process';
 import * as del from 'del';
 import * as fs from 'fs';
 import * as mkdirp from 'mkdirp';
+import * as os from 'os';
 import * as path from 'path';
 import * as assert from 'power-assert';
 
@@ -84,9 +85,10 @@ describe('bin.test.ts', () => {
   });
 
   it('should works with clean command correctly', async () => {
+    const tscBin = path.resolve(__dirname, '../node_modules/.bin/tsc' + (os.platform() === 'win32' ? '.cmd' : ''));
     const appPath = path.resolve(__dirname, './fixtures/app9');
-    const p = spawn('tsc', [], { cwd: appPath });
-    await sleep(5000);
+    const p = spawn(tscBin, [], { cwd: appPath });
+    await sleep(8000);
     p.kill('SIGINT');
     assert(fs.existsSync(path.resolve(appPath, './test.js')));
     assert(fs.existsSync(path.resolve(appPath, './app/test.js')));

@@ -3,6 +3,7 @@ import * as d from 'debug';
 import * as del from 'del';
 import * as fs from 'fs';
 import * as mkdirp from 'mkdirp';
+import * as os from 'os';
 import * as path from 'path';
 import * as assert from 'power-assert';
 import { createTsHelperInstance, getDefaultWatchDirs } from '../dist/';
@@ -244,7 +245,8 @@ describe('index.test.ts', () => {
 
     await sleep(4000);
 
-    const proc = spawn('egg-bin', ['dev', '--ts', '--baseDir', baseDir], {
+    const eggBin = path.resolve(__dirname, '../node_modules/.bin/egg-bin' + (os.platform() === 'win32' ? '.cmd' : ''));
+    const proc = spawn(eggBin, ['dev', '--ts', '--baseDir', baseDir], {
       stdio: 'pipe',
       env: {
         ...process.env,
