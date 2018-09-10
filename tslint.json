@@ -10,6 +10,7 @@
     "member-access": [false],
     "no-submodule-imports": false,
     "object-literal-key-quotes": [true, "as-needed"],
+    "no-empty": false,
     "member-ordering": [
       true,
       {

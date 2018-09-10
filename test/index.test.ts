@@ -8,6 +8,15 @@ import * as path from 'path';
 import * as assert from 'power-assert';
 import { createTsHelperInstance, getDefaultWatchDirs } from '../dist/';
 const debug = d('egg-ts-helper#index.test');
+const noop = () => {};
+const timeout = (delay, callback: () => any) => {
+  return  new Promise((_, reject) => {
+    setTimeout(() => {
+      callback();
+      reject('timeout');
+    }, delay);
+  });
+};
 
 function sleep(time) {
   return new Promise(res => setTimeout(res, time));
@@ -115,31 +124,33 @@ describe('index.test.ts', () => {
     const baseConfig = fs.readFileSync(defaultConfigPath);
     const localConfigPath = path.resolve(__dirname, './fixtures/app/config/config.local.ts');
     const localConfig = fs.readFileSync(localConfigPath);
+    const end = () => {
+      fs.writeFileSync(defaultConfigPath, baseConfig);
+      fs.writeFileSync(localConfigPath, localConfig);
+    };
 
     fs.writeFile(defaultConfigPath, baseConfig + '\n\n', () => {
-      fs.writeFile(defaultConfigPath, baseConfig + '\n', () => {
-        /* do nothing */
-      });
-      fs.writeFile(localConfigPath, baseConfig, () => {
-        /* do nothing */
-      });
+      fs.writeFile(defaultConfigPath, baseConfig + '\n', noop);
+      fs.writeFile(localConfigPath, baseConfig, noop);
     });
 
-    await new Promise(resolve => {
-      function cb(_, p) {
-        if (p === defaultConfigPath) {
-          throw new Error('should not update config.default.ts');
-        } else if (p === localConfigPath) {
-          tsHelper.removeListener('update', cb);
-          resolve();
+    await Promise.race([
+      new Promise(resolve => {
+        function cb(_, p) {
+          if (p === defaultConfigPath) {
+            end();
+            throw new Error('should not update config.default.ts');
+          } else if (p === localConfigPath) {
+            end();
+            tsHelper.removeListener('update', cb);
+            resolve();
+          }
         }
-      }
 
-      tsHelper.on('update', cb);
-    });
-
-    fs.writeFileSync(defaultConfigPath, baseConfig);
-    fs.writeFileSync(localConfigPath, localConfig);
+        tsHelper.on('update', cb);
+      }),
+      timeout(10000, end),
+    ]);
 
     await sleep(100);
   });
@@ -163,22 +174,26 @@ describe('index.test.ts', () => {
     const basePlugin = fs.readFileSync(defaultPluginPath);
     const pluginPath = path.resolve(__dirname, './fixtures/app/config/plugin.ts');
     const pluginText = fs.readFileSync(pluginPath);
+    const end = () => {
+      fs.writeFileSync(defaultPluginPath, basePlugin);
+    };
 
-    fs.writeFile(defaultPluginPath, pluginText, () => {
-      /* do nothing */
-    });
-    await new Promise(resolve => {
-      function cb(_, p) {
-        if (p === defaultPluginPath) {
-          tsHelper.removeListener('update', cb);
-          resolve();
+    fs.writeFile(defaultPluginPath, pluginText, noop);
+
+    await Promise.race([
+      new Promise(resolve => {
+        function cb(_, p) {
+          if (p === defaultPluginPath) {
+            end();
+            tsHelper.removeListener('update', cb);
+            resolve();
+          }
         }
-      }
 
-      tsHelper.on('update', cb);
-    });
-
-    fs.writeFileSync(defaultPluginPath, basePlugin);
+        tsHelper.on('update', cb);
+      }),
+      timeout(10000, end),
+    ]);
   });
 
   it('should support rewrite by options.watchDirs', () => {
