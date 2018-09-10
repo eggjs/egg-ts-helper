@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as assert from 'power-assert';
+import * as ts from 'typescript';
 import * as utils from '../dist/utils';
 
 describe('utils.test.ts', () => {
@@ -32,5 +33,41 @@ describe('utils.test.ts', () => {
   it('should check module exist without error', () => {
     assert(!!utils.moduleExist('chokidar'));
     assert(!utils.moduleExist('egg-sequelize'));
+  });
+
+  it('should findExportNode without error', () => {
+    let exportResult = utils.findExportNode(`export default {};`)!;
+    assert(ts.isObjectLiteralExpression(exportResult.exportDefaultNode!));
+
+    exportResult = utils.findExportNode(`export default class ABC {}`)!;
+    assert(ts.isClassDeclaration(exportResult.exportDefaultNode!));
+
+    exportResult = utils.findExportNode(`export default function() {};`)!;
+    assert(ts.isFunctionLike(exportResult.exportDefaultNode!));
+
+    exportResult = utils.findExportNode(`const abc = {};export default abc;`)!;
+    assert(ts.isObjectLiteralExpression(exportResult.exportDefaultNode!));
+
+    exportResult = utils.findExportNode(`function abc() {};export default abc;`)!;
+    assert(ts.isFunctionLike(exportResult.exportDefaultNode!));
+
+    exportResult = utils.findExportNode(`const abc = {};const ccc = abc;export default ccc;`)!;
+    assert(ts.isObjectLiteralExpression(exportResult.exportDefaultNode!));
+
+    exportResult = utils.findExportNode(`const abc = {};export = abc;`)!;
+    assert(ts.isObjectLiteralExpression(exportResult.exportDefaultNode!));
+
+    exportResult = utils.findExportNode(`export const abc = 666;export function ccc() {}`)!;
+    assert(exportResult.exportNodeList.length === 2);
+    assert(ts.isVariableDeclaration(exportResult.exportNodeList[0]));
+    assert(ts.isFunctionLike(exportResult.exportNodeList[1]));
+
+    exportResult = utils.findExportNode(`module.exports = {};`)!;
+    assert(ts.isObjectLiteralExpression(exportResult.exportDefaultNode!));
+
+    exportResult = utils.findExportNode(`exports.abc = {}; exports.ccc = function() {}`)!;
+    assert(exportResult.exportNodeList.length === 2);
+    assert(ts.isObjectLiteralExpression((exportResult.exportNodeList[0] as ts.BinaryExpression).right));
+    assert(ts.isFunctionLike((exportResult.exportNodeList[1] as ts.BinaryExpression).right));
   });
 });
