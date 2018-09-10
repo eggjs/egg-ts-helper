@@ -11,29 +11,22 @@ export function loadFiles(cwd: string, pattern?: string) {
 
   return fileList.filter(f => {
     // filter same name js/ts
-    return !(
-      f.endsWith('.js') &&
-      fileList.includes(f.substring(0, f.length - 2) + 'ts')
-    );
+    return !(f.endsWith('.js') && fileList.includes(f.substring(0, f.length - 2) + 'ts'));
   });
 }
 
 // clean same name js/ts
 export function cleanJs(cwd: string) {
   const fileList: string[] = [];
-  glob
-    .sync(['**/*.ts', '!**/*.d.ts', '!**/node_modules'], { cwd })
-    .forEach(f => {
-      const jf = removeSameNameJs(path.resolve(cwd, f));
-      if (jf) {
-        fileList.push(jf);
-      }
-    });
+  glob.sync(['**/*.ts', '!**/*.d.ts', '!**/node_modules'], { cwd }).forEach(f => {
+    const jf = removeSameNameJs(path.resolve(cwd, f));
+    if (jf) {
+      fileList.push(jf);
+    }
+  });
 
   if (fileList.length) {
-    console.info(
-      `[egg-ts-helper] These file was deleted because the same name ts file was exist!\n`,
-    );
+    console.info(`[egg-ts-helper] These file was deleted because the same name ts file was exist!\n`);
     console.info('  ' + fileList.join('\n  ') + '\n');
   }
 }
@@ -43,9 +36,7 @@ export function getModuleObjByPath(f: string) {
   const props = f.split('/').map(formatProp);
 
   // composing moduleName
-  const moduleName = props
-    .map(prop => camelProp(prop, 'upper'))
-    .join('');
+  const moduleName = props.map(prop => camelProp(prop, 'upper')).join('');
 
   return {
     props,
@@ -91,10 +82,7 @@ export function isModuleExports(node: ts.Node) {
     const obj = node.expression;
     const prop = node.name;
     return (
-      ts.isIdentifier(obj) &&
-      obj.escapedText === 'module' &&
-      ts.isIdentifier(prop) &&
-      prop.escapedText === 'exports'
+      ts.isIdentifier(obj) && obj.escapedText === 'module' && ts.isIdentifier(prop) && prop.escapedText === 'exports'
     );
   }
 

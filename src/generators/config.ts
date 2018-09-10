@@ -72,25 +72,16 @@ export default function(tsHelper: TsHelper) {
       return { dist };
     }
 
-    const { base, inserts, property } = config.interface;
-    const newType = `New${base}`;
+    const newConfigType = `New${config.interface}`;
     return {
       dist,
       content:
-        `import { ${base} } from '${baseConfig.framework}';\n` +
+        `import { ${config.interface} } from '${baseConfig.framework}';\n` +
         `${importList.join('\n')}\n` +
         `${declarationList.join('\n')}\n` +
-        `type ${newType} = ${base} & ${moduleList.join(' & ')};\n\n` +
         `declare module '${baseConfig.framework}' {\n` +
-        inserts
-          .map(prop => {
-            return (
-              `  interface ${prop} {\n` +
-              `    ${property}: ${newType};\n` +
-              `  }\n`
-            );
-          })
-          .join('\n') +
+        `  type ${newConfigType} = ${moduleList.join(' & ')};\n` +
+        `  interface ${config.interface} extends ${newConfigType} { };\n` +
         `}`,
     };
   });
