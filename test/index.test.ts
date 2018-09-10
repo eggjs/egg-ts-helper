@@ -280,11 +280,11 @@ describe('index.test.ts', () => {
       });
 
       let errorInfo = '';
-      let timeout;
+      let tick;
       proc.stderr.on('data', info => {
         errorInfo += info.toString();
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
+        clearTimeout(tick);
+        tick = setTimeout(() => {
           reject(new Error(errorInfo));
           proc.kill('SIGINT');
         }, 3000);
