@@ -11,29 +11,22 @@ export function loadFiles(cwd: string, pattern?: string) {
 
   return fileList.filter(f => {
     // filter same name js/ts
-    return !(
-      f.endsWith('.js') &&
-      fileList.includes(f.substring(0, f.length - 2) + 'ts')
-    );
+    return !(f.endsWith('.js') && fileList.includes(f.substring(0, f.length - 2) + 'ts'));
   });
 }
 
 // clean same name js/ts
 export function cleanJs(cwd: string) {
   const fileList: string[] = [];
-  glob
-    .sync(['**/*.ts', '!**/*.d.ts', '!**/node_modules'], { cwd })
-    .forEach(f => {
-      const jf = removeSameNameJs(path.resolve(cwd, f));
-      if (jf) {
-        fileList.push(jf);
-      }
-    });
+  glob.sync(['**/*.ts', '!**/*.d.ts', '!**/node_modules'], { cwd }).forEach(f => {
+    const jf = removeSameNameJs(path.resolve(cwd, f));
+    if (jf) {
+      fileList.push(jf);
+    }
+  });
 
   if (fileList.length) {
-    console.info(
-      `[egg-ts-helper] These file was deleted because the same name ts file was exist!\n`,
-    );
+    console.info(`[egg-ts-helper] These file was deleted because the same name ts file was exist!\n`);
     console.info('  ' + fileList.join('\n  ') + '\n');
   }
 }
@@ -43,9 +36,7 @@ export function getModuleObjByPath(f: string) {
   const props = f.split('/').map(formatProp);
 
   // composing moduleName
-  const moduleName = props
-    .map(prop => camelProp(prop, 'upper'))
-    .join('');
+  const moduleName = props.map(prop => camelProp(prop, 'upper')).join('');
 
   return {
     props,
@@ -71,34 +62,86 @@ export function removeSameNameJs(f: string) {
   }
 }
 
-// parse ts file to ast
-export function getSourceFile(f: string) {
-  const code = fs.readFileSync(f, {
-    encoding: 'utf-8',
-  });
-
+// find export node from sourcefile.
+export function findExportNode(code: string) {
+  let sourceFile;
   try {
-    return ts.createSourceFile(f, code, ts.ScriptTarget.ES2017, true);
+    sourceFile = ts.createSourceFile('file.ts', code, ts.ScriptTarget.ES2017, true);
   } catch (e) {
     console.error(e);
     return;
   }
-}
 
-// check whether node was module.exports
-export function isModuleExports(node: ts.Node) {
-  if (ts.isPropertyAccessExpression(node)) {
-    const obj = node.expression;
-    const prop = node.name;
-    return (
-      ts.isIdentifier(obj) &&
-      obj.escapedText === 'module' &&
-      ts.isIdentifier(prop) &&
-      prop.escapedText === 'exports'
-    );
+  const cache: Map<ts.__String, ts.Node> = new Map();
+  const exportNodeList: ts.Node[] = [];
+  let exportDefaultNode: ts.Node | undefined;
+
+  eachSourceFile(sourceFile, node => {
+    if (node.parent !== sourceFile) {
+      return;
+    }
+
+    // each node in root scope
+    if (modifierHas(node, ts.SyntaxKind.ExportKeyword)) {
+      if (modifierHas(node, ts.SyntaxKind.DefaultKeyword)) {
+        // export default
+        exportDefaultNode = node;
+      } else {
+        // export variable
+        if (ts.isVariableStatement(node)) {
+          exportNodeList.push.apply(exportNodeList, node.declarationList.declarations);
+        } else {
+          exportNodeList.push(node);
+        }
+      }
+    } else if (ts.isVariableStatement(node)) {
+      // cache variable statement
+      for (const declaration of node.declarationList.declarations) {
+        if (ts.isIdentifier(declaration.name) && declaration.initializer) {
+          cache.set(declaration.name.escapedText, declaration.initializer);
+        }
+      }
+    } else if ((ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node)) && node.name) {
+      // cache function declaration and class declaration
+      cache.set(node.name.escapedText, node);
+    } else if (ts.isExportAssignment(node)) {
+      // export default {}
+      exportDefaultNode = node.expression;
+    }  else if (
+      ts.isExpressionStatement(node) &&
+      ts.isBinaryExpression(node.expression)
+    ) {
+      if (ts.isPropertyAccessExpression(node.expression.left)) {
+        const obj = node.expression.left.expression;
+        const prop = node.expression.left.name;
+        if (ts.isIdentifier(obj)) {
+          if (obj.escapedText === 'exports') {
+            // exports.xxx = {}
+            exportNodeList.push(node.expression);
+          } else if (obj.escapedText === 'module' && ts.isIdentifier(prop) && prop.escapedText === 'exports') {
+            // module.exports = {}
+            exportDefaultNode = node.expression.right;
+          }
+        }
+      } else if (ts.isIdentifier(node.expression.left)) {
+        // let exportData;
+        // exportData = {};
+        // export exportData
+        cache.set(node.expression.left.escapedText, node.expression.right);
+      }
+    }
+  });
+
+  while (exportDefaultNode && ts.isIdentifier(exportDefaultNode) && cache.size) {
+    const mid = cache.get(exportDefaultNode.escapedText);
+    cache.delete(exportDefaultNode.escapedText);
+    exportDefaultNode = mid;
   }
 
-  return false;
+  return {
+    exportDefaultNode,
+    exportNodeList,
+  };
 }
 
 // check kind in node.modifiers.
@@ -108,9 +151,11 @@ export function modifierHas(node: ts.Node, kind) {
 
 // each ast node
 export function eachSourceFile(node: ts.Node, cb: (n: ts.Node) => any) {
-  const result = cb(node);
-  if (result === false) {
-    return;
+  if (!ts.isSourceFile(node)) {
+    const result = cb(node);
+    if (result === false) {
+      return;
+    }
   }
 
   node.forEachChild((sub: ts.Node) => {

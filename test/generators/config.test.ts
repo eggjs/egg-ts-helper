@@ -15,10 +15,9 @@ describe('generators/config.test.ts', () => {
     assert(result.content!.includes(`type ConfigDefault = ReturnType<typeof ExportConfigDefault>;`));
     assert(result.content!.includes(`type ConfigLocal = typeof ExportConfigLocal;`));
     assert(result.content!.includes(`type ConfigProd = typeof ExportConfigProd;`));
-    assert(result.content!.includes(`EggAppConfig & ConfigDefault & ConfigLocal & ConfigProd;`));
+    assert(result.content!.includes(`ConfigDefault & ConfigLocal & ConfigProd;`));
     assert(result.content!.includes(`declare module 'larva'`));
-    assert(result.content!.includes(`config: NewEggAppConfig;`));
-    assert(result.content!.match(/Application|Controller|Service/));
+    assert(result.content!.includes(`interface EggAppConfig extends NewEggAppConfig { }`));
   });
 
   it('should works without error with file changed', () => {
@@ -31,10 +30,9 @@ describe('generators/config.test.ts', () => {
     assert(result.content!.includes(`type ConfigDefault = ReturnType<typeof ExportConfigDefault>;`));
     assert(result.content!.includes(`type ConfigLocal = typeof ExportConfigLocal;`));
     assert(result.content!.includes(`type ConfigProd = typeof ExportConfigProd;`));
-    assert(result.content!.includes(`EggAppConfig & ConfigDefault & ConfigLocal & ConfigProd;`));
+    assert(result.content!.includes(`ConfigDefault & ConfigLocal & ConfigProd;`));
     assert(result.content!.includes(`declare module 'larva'`));
-    assert(result.content!.includes(`config: NewEggAppConfig;`));
-    assert(result.content!.match(/Application|Controller|Service/));
+    assert(result.content!.includes(`interface EggAppConfig extends NewEggAppConfig { }`));
   });
 
   it('should works while file was not exist', () => {
@@ -50,7 +48,7 @@ describe('generators/config.test.ts', () => {
     assert(result.content);
     assert(result.content!.includes(`import ExportConfig from '../../config/config';`));
     assert(result.content!.includes(`type Config = ReturnType<typeof ExportConfig>;`));
-    assert(result.content!.includes(`EggAppConfig & Config`));
+    assert(result.content!.includes(`Config`));
   });
 
   it('should works without empty config.ts', () => {

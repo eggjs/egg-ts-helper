@@ -25,6 +25,7 @@
     "importHelpers": true
   },
   "include": [
-    "src/**/*"
+    "./src/**/*",
+    "typings/**/*"
   ]
 }

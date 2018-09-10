@@ -11,6 +11,7 @@
     "emitDecoratorMetadata": true,
     "charset": "utf8",
     "allowJs": false,
+    "watch": false,
     "pretty": true,
     "noEmitOnError": false,
     "noUnusedLocals": true,

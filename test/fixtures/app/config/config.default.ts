@@ -12,3 +12,4 @@ export default appInfo => {
 
   return config;
 };
+

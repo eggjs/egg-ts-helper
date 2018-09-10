@@ -13,13 +13,15 @@ declare global {
   }
 }
 
-export interface WatchItem extends PlainObject {
+export interface BaseWatchItem {
   path: string;
   generator: string;
   enabled: boolean;
   trigger?: string[];
   pattern?: string;
 }
+
+export interface WatchItem extends PlainObject, BaseWatchItem { }
 
 export interface TsHelperOption {
   cwd?: string;
@@ -51,6 +53,9 @@ export type TsGenerator<T, U = GeneratorResult | GeneratorResult[] | void> = (
   baseConfig: TsHelperConfig,
 ) => U;
 
+// partial and exclude some properties
+type PartialExclude<T, K extends keyof T> = { [P in K]: T[P]; } & { [U in Exclude<keyof T, K>]?: T[U]; };
+
 export const defaultConfig = {
   cwd: process.cwd(),
   framework: 'egg',
@@ -65,12 +70,22 @@ export const defaultConfig = {
   configFile: './tshelper.js',
 };
 
+export function formatWatchItem(watchItem: WatchItem) {
+  return {
+    trigger: ['add', 'unlink'],
+    generator: 'class',
+    enabled: true,
+    ...watchItem,
+  };
+}
+
 // default watch dir
 export function getDefaultWatchDirs(opt?: TsHelperOption) {
+  const baseConfig: { [key: string]: PartialExclude<BaseWatchItem, 'path'> & PlainObject } = {};
   const watchConfig: { [key: string]: WatchItem | boolean } = {};
 
   // extend
-  watchConfig.extend = {
+  baseConfig.extend = {
     path: 'app/extend',
     interface: {
       context: 'Context',
@@ -81,85 +96,73 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
       helper: 'IHelper',
     },
     generator: 'extend',
-    trigger: ['add', 'change', 'unlink'],
-    enabled: true,
   };
 
   // controller
-  watchConfig.controller = {
+  baseConfig.controller = {
     path: 'app/controller',
     interface: 'IController',
     generator: 'class',
-    trigger: ['add', 'unlink'],
-    enabled: true,
   };
 
   // middleware
-  watchConfig.middleware = {
+  baseConfig.middleware = {
     path: 'app/middleware',
     interface: 'IMiddleware',
     interfaceHandle: val => `typeof ${val}`,
     generator: 'class',
-    trigger: ['add', 'unlink'],
-    enabled: true,
   };
 
   // proxy
-  watchConfig.proxy = {
+  baseConfig.proxy = {
     path: 'app/proxy',
     interface: 'IProxy',
     generator: 'class',
-    trigger: ['add', 'unlink'],
     enabled: false,
   };
 
   // model
-  watchConfig.model = {
+  baseConfig.model = {
     path: 'app/model',
     generator: 'class',
     interface: 'IModel',
     caseStyle: 'upper',
     interfaceHandle: val => `ReturnType<typeof ${val}>`,
-    trigger: ['add', 'unlink'],
-    enabled: true,
   };
 
-  if (utils.moduleExist('egg-sequelize', (opt || {}).cwd)) {
-    watchConfig.model.interface = 'Sequelize';
-    watchConfig.model.framework = 'sequelize';
+  if (opt && utils.moduleExist('egg-sequelize', opt.cwd)) {
+    baseConfig.model.interface = 'Sequelize';
+    baseConfig.model.framework = 'sequelize';
   }
 
   // config
-  watchConfig.config = {
+  baseConfig.config = {
     path: 'config',
     pattern: 'config*.(ts|js)',
-    interface: {
-      inserts: ['Application', 'Controller', 'Service'],
-      property: 'config',
-      base: 'EggAppConfig',
-    },
+    interface: 'EggAppConfig',
     generator: 'config',
     trigger: ['add', 'unlink', 'change'],
-    enabled: true,
   };
 
   // plugin
-  watchConfig.plugin = {
+  baseConfig.plugin = {
     path: 'config',
     pattern: 'plugin*.(ts|js)',
     generator: 'plugin',
     trigger: ['add', 'unlink', 'change'],
-    enabled: true,
   };
 
   // service
-  watchConfig.service = {
+  baseConfig.service = {
     path: 'app/service',
     interface: 'IService',
     generator: 'class',
-    trigger: ['add', 'unlink'],
-    enabled: true,
   };
+
+  // format config
+  Object.keys(baseConfig).forEach(k => {
+    watchConfig[k] = formatWatchItem(baseConfig[k] as WatchItem);
+  });
 
   return watchConfig;
 }
@@ -169,9 +172,7 @@ const gd = path.resolve(__dirname, './generators');
 const generators = fs
   .readdirSync(gd)
   .filter(f => !f.endsWith('.d.ts'))
-  .map(
-    f => require(path.resolve(gd, f.substring(0, f.lastIndexOf('.')))).default,
-  );
+  .map(f => require(path.resolve(gd, f.substring(0, f.lastIndexOf('.')))).default);
 
 export default class TsHelper extends EventEmitter {
   readonly config: TsHelperConfig;
@@ -359,6 +360,7 @@ export default class TsHelper extends EventEmitter {
           item.dist,
           '// This file was auto created by egg-ts-helper\n' +
             '// Do not modify this file!!!!!!!!!\n\n' +
+            `import '${config.framework}'; // Make sure ts to import ${config.framework} declaration at first\n` +
             item.content,
         );
         this.emit('update', item.dist, file);
@@ -418,7 +420,7 @@ function mergeConfig(base: TsHelperConfig, ...args: TsHelperOption[]) {
             if (base.watchDirs[k]) {
               Object.assign(base.watchDirs[k], item);
             } else {
-              base.watchDirs[k] = item;
+              base.watchDirs[k] = formatWatchItem(item);
             }
           }
         });

@@ -1,4 +1,5 @@
 import * as d from 'debug';
+import * as fs from 'fs';
 import * as path from 'path';
 import * as ts from 'typescript';
 import TsHelper from '..';
@@ -72,25 +73,16 @@ export default function(tsHelper: TsHelper) {
       return { dist };
     }
 
-    const { base, inserts, property } = config.interface;
-    const newType = `New${base}`;
+    const newConfigType = `New${config.interface}`;
     return {
       dist,
       content:
-        `import { ${base} } from '${baseConfig.framework}';\n` +
+        `import { ${config.interface} } from '${baseConfig.framework}';\n` +
         `${importList.join('\n')}\n` +
         `${declarationList.join('\n')}\n` +
-        `type ${newType} = ${base} & ${moduleList.join(' & ')};\n\n` +
         `declare module '${baseConfig.framework}' {\n` +
-        inserts
-          .map(prop => {
-            return (
-              `  interface ${prop} {\n` +
-              `    ${property}: ${newType};\n` +
-              `  }\n`
-            );
-          })
-          .join('\n') +
+        `  type ${newConfigType} = ${moduleList.join(' & ')};\n` +
+        `  interface ${config.interface} extends ${newConfigType} { };\n` +
         `}`,
     };
   });
@@ -98,38 +90,16 @@ export default function(tsHelper: TsHelper) {
 
 // check config return type.
 export function checkConfigReturnType(f: string) {
-  const sourceFile = utils.getSourceFile(f);
-  if (!sourceFile) {
+  const result = utils.findExportNode(fs.readFileSync(f, 'utf-8'));
+  if (!result) {
     return;
   }
 
-  let hasExport = false;
-  let exportElement: ts.Node | undefined;
-  utils.eachSourceFile(sourceFile, node => {
-    if (node.parent !== sourceFile) {
-      return;
-    }
-
-    if (ts.isExportAssignment(node)) {
-      // has export default ...
-      exportElement = node.expression;
-      return false;
-    } else if (utils.modifierHas(node, ts.SyntaxKind.ExportKeyword)) {
-      if (utils.modifierHas(node, ts.SyntaxKind.DefaultKeyword)) {
-        exportElement = node;
-        return;
-      }
-
-      // has export
-      hasExport = true;
-    }
-  });
-
-  if (exportElement) {
-    return ts.isFunctionLike(exportElement)
+  if (result.exportDefaultNode) {
+    return ts.isFunctionLike(result.exportDefaultNode)
       ? EXPORT_DEFAULT_FUNCTION
       : EXPORT_DEFAULT;
-  } else if (hasExport) {
+  } else if (result.exportNodeList.length) {
     return EXPORT;
   }
 }

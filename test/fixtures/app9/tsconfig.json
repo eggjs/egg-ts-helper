@@ -3,9 +3,10 @@
     "strict": true,
     "target": "es2017",
     "module": "commonjs",
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "watch": false
   },
   "include": [
-    "**/*"
+    "./**/*"
   ]
 }
