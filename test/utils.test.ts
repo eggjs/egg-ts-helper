@@ -69,5 +69,8 @@ describe('utils.test.ts', () => {
     assert(exportResult.exportNodeList.length === 2);
     assert(ts.isObjectLiteralExpression((exportResult.exportNodeList[0] as ts.BinaryExpression).right));
     assert(ts.isFunctionLike((exportResult.exportNodeList[1] as ts.BinaryExpression).right));
+
+    exportResult = utils.findExportNode(`const abc = {}; let bbb; bbb = abc; export default bbb;`)!;
+    assert(ts.isObjectLiteralExpression(exportResult.exportDefaultNode!));
   });
 });
