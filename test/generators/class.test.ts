@@ -14,7 +14,7 @@ describe('generators/class.test.ts', () => {
     );
     assert(result.content!.includes('../../../app/controller/home'));
     assert(result.content!.includes('interface IController'));
-    assert(result.content!.includes('home: Home;'));
+    assert(result.content!.includes('home: _Home;'));
   });
 
   it('should works with middleware without error', () => {
@@ -25,7 +25,7 @@ describe('generators/class.test.ts', () => {
     );
     assert(result.content!.includes('../../../app/middleware/uuid'));
     assert(result.content!.includes('interface IMiddleware'));
-    assert(result.content!.includes('uuid: typeof Uuid;'));
+    assert(result.content!.includes('uuid: typeof _Uuid;'));
   });
 
   it('should works with model without error', () => {
@@ -36,8 +36,8 @@ describe('generators/class.test.ts', () => {
     );
     assert(result.content!.includes('../../../app/model/User'));
     assert(result.content!.includes('interface IModel'));
-    assert(result.content!.includes('User: ReturnType<typeof User>;'));
-    assert(result.content!.includes('Person: ReturnType<typeof Person>;'));
+    assert(result.content!.includes('User: ReturnType<typeof _User>;'));
+    assert(result.content!.includes('Person: ReturnType<typeof _Person>;'));
   });
 
   it('should support appoint framework', () => {

@@ -59,8 +59,8 @@ describe('index.test.ts', () => {
     const content = fs.readFileSync(dts, { encoding: 'utf-8' });
     assert(content.includes('service/test/test'));
     assert(content.includes('service/test/test-two'));
-    assert(content.includes('test: TestTest'));
-    assert(content.includes('testTwo: TestTestTwo'));
+    assert(content.includes('test: _TestTest'));
+    assert(content.includes('testTwo: _TestTestTwo'));
 
     await sleep(2000);
 
@@ -97,8 +97,8 @@ describe('index.test.ts', () => {
     const content = fs.readFileSync(dts, { encoding: 'utf-8' });
     assert(content.includes('service/test/test'));
     assert(content.includes('service/test/test-two'));
-    assert(content.includes('test: TestTest'));
-    assert(content.includes('testTwo: TestTestTwo'));
+    assert(content.includes('test: _TestTest'));
+    assert(content.includes('testTwo: _TestTestTwo'));
 
     await sleep(2000);
 

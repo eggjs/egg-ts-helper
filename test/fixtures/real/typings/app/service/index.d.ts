@@ -2,10 +2,10 @@
 // Do not modify this file!!!!!!!!!
 
 import 'egg'; // Make sure ts to import egg declaration at first
-import Db from '../../../app/service/db';
+import _Db from '../../../app/service/db';
 
 declare module 'egg' {
   interface IService {
-    db: Db;
+    db: _Db;
   }
 }
