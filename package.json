@@ -7,6 +7,10 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:whxaxes/egg-ts-helper.git"
+  },
   "scripts": {
     "build": "tsc -d",
     "build:w": "tsc -d -w",
