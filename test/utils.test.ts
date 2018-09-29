@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as assert from 'power-assert';
 import * as ts from 'typescript';
-import * as utils from '../dist/utils';
+import * as utils from '../src/utils';
 
 describe('utils.test.ts', () => {
   const appDir = path.resolve(__dirname, './fixtures/app7');
