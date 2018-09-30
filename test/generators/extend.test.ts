@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as assert from 'power-assert';
-import { getDefaultWatchDirs, WatchItem } from '../../dist';
+import { getDefaultWatchDirs, WatchItem } from '../../src';
 import { triggerGenerator } from './utils';
 
 describe('generators/extend.test.ts', () => {
@@ -57,4 +57,18 @@ describe('generators/extend.test.ts', () => {
     assert(item.content!.includes('type ExtendIHelperType = typeof ExtendIHelper'));
     assert(item.content!.includes('interface IHelper extends ExtendIHelperType { }'));
   });
+
+  it('should works with env', () => {
+    const result = triggerGenerator('extend', appDir, 'application.unittest.ts');
+    const item = result[0];
+    assert(
+      item.dist ===
+        path.resolve(appDir, './typings/app/extend/application.unittest.d.ts'),
+    );
+
+    assert(item.content!.includes('../../../app/extend/application.unittest'));
+    assert(item.content!.includes('type ExtendUnittestApplicationType = typeof ExtendUnittestApplication;'));
+    assert(item.content!.includes('interface Application extends ExtendUnittestApplicationType { }'));
+  });
+
 });

@@ -1,7 +1,7 @@
 import * as d from 'debug';
 import * as fs from 'fs';
 import * as path from 'path';
-import { default as TsHelper, GeneratorResult } from '../';
+import { default as TsHelper, GeneratorResult } from '..';
 const debug = d('egg-ts-helper#generators_extend');
 
 export default function(tsHelper: TsHelper) {
@@ -21,7 +21,10 @@ export default function(tsHelper: TsHelper) {
     const tsList: GeneratorResult[] = [];
     fileList.forEach(f => {
       const basename = path.basename(f, '.ts');
-      const interfaceName = config.interface[basename];
+      const m = basename.split('.');
+      const interfaceNameKey = m[0];
+      const interfaceEnvironment = m[1] ? m[1].replace(/^[a-z]/, r => r.toUpperCase()) : '';
+      const interfaceName = config.interface[interfaceNameKey];
       if (!interfaceName) {
         return;
       }
@@ -36,7 +39,7 @@ export default function(tsHelper: TsHelper) {
       tsPath = tsPath.substring(0, tsPath.lastIndexOf('.'));
 
       debug('import extendObject from %s', tsPath);
-      const typeName = `Extend${interfaceName}`;
+      const typeName = `Extend${interfaceEnvironment}${interfaceName}`;
       tsList.push({
         dist,
         content:

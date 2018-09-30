@@ -5,8 +5,8 @@ import {
   getDefaultWatchDirs,
   TsGenerator,
   WatchItem,
-} from '../../dist/';
-import { loadFiles } from '../../dist/utils';
+} from '../../src/';
+import { loadFiles } from '../../src/utils';
 
 export function triggerGenerator<T extends GeneratorResult[] | GeneratorResult = GeneratorResult[]>(
   name: string,
