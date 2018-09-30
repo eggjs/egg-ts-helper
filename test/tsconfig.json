@@ -20,8 +20,6 @@
     "allowUnusedLabels": false,
     "strictPropertyInitialization": false,
     "noFallthroughCasesInSwitch": true,
-    "skipLibCheck": true,
-    "skipDefaultLibCheck": true,
     "inlineSourceMap": true,
     "importHelpers": true
   },

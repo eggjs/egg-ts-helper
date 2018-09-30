@@ -11,5 +11,5 @@ type ConfigLocal = ReturnType<typeof ExportConfigLocal>;
 type ConfigProd = ReturnType<typeof ExportConfigProd>;
 declare module 'egg' {
   type NewEggAppConfig = ConfigDefault & ConfigLocal & ConfigProd;
-  interface EggAppConfig extends NewEggAppConfig { };
+  interface EggAppConfig extends NewEggAppConfig { }
 }
