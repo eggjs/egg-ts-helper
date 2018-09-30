@@ -82,7 +82,7 @@ export default function(tsHelper: TsHelper) {
         `${declarationList.join('\n')}\n` +
         `declare module '${baseConfig.framework}' {\n` +
         `  type ${newConfigType} = ${moduleList.join(' & ')};\n` +
-        `  interface ${config.interface} extends ${newConfigType} { };\n` +
+        `  interface ${config.interface} extends ${newConfigType} { }\n` +
         `}`,
     };
   });

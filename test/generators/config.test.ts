@@ -17,7 +17,7 @@ describe('generators/config.test.ts', () => {
     assert(result.content!.includes(`type ConfigProd = typeof ExportConfigProd;`));
     assert(result.content!.includes(`ConfigDefault & ConfigLocal & ConfigProd;`));
     assert(result.content!.includes(`declare module 'larva'`));
-    assert(result.content!.includes(`interface EggAppConfig extends NewEggAppConfig { }`));
+    assert(result.content!.includes(`interface EggAppConfig extends NewEggAppConfig { }\n`));
   });
 
   it('should works without error with file changed', () => {
