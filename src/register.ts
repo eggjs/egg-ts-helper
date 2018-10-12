@@ -31,10 +31,14 @@ if (cluster.isMaster) {
 
 // start to register
 function register() {
+  const argv = ['-w'];
+  if (process.env.NODE_ENV === 'test') {
+    // silent in unittest
+    argv.push('-s');
+  }
+
   // fork a process to watch files change
-  const ps = fork(path.resolve(__dirname, './bin'), ['-w'], {
-    execArgv: [],
-  });
+  const ps = fork(path.resolve(__dirname, './bin'), argv, { execArgv: [] });
 
   // kill child process while process exit
   function close() {
