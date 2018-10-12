@@ -3,7 +3,7 @@ import * as del from 'del';
 import * as path from 'path';
 import * as assert from 'power-assert';
 
-describe.only('register.test.ts', () => {
+describe('register.test.ts', () => {
   beforeEach(() => {
     del.sync(path.resolve(__dirname, '../.cache'));
     del.sync(path.resolve(__dirname, './fixtures/app8/typings'), {
