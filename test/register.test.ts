@@ -11,7 +11,7 @@ describe('register.test.ts', () => {
     });
   });
 
-  it('should works with --require without error', done => {
+  it('should works with --require without error', async () => {
     const ps = spawn(
       'node',
       [
@@ -20,14 +20,58 @@ describe('register.test.ts', () => {
         path.resolve(__dirname, './fixtures/app8/app/controller/home.js'),
       ],
       {
+        env: {
+          ...process.env,
+          NODE_ENV: 'development',
+        },
         cwd: path.resolve(__dirname, './fixtures/app8'),
       },
     );
 
-    ps.stdout.on('data', data => {
-      assert(data.toString() === 'done');
-      process.kill(ps.pid);
-      done();
+    let str = '';
+    await new Promise(resolve => {
+      let tick;
+      ps.stdout.on('data', data => {
+        str += data.toString();
+        clearTimeout(tick);
+        tick = setTimeout(resolve, 1000);
+      });
     });
+
+    assert(str.includes('created'));
+    assert(str.includes('done'));
+    process.kill(ps.pid);
+  });
+
+  it('should silent when NODE_ENV is test', async () => {
+    const ps = spawn(
+      'node',
+      [
+        '--require',
+        path.resolve(__dirname, '../register.js'),
+        path.resolve(__dirname, './fixtures/app8/app/controller/home.js'),
+      ],
+      {
+        env: {
+          ...process.env,
+          NODE_ENV: 'test',
+        },
+        cwd: path.resolve(__dirname, './fixtures/app8'),
+      },
+    );
+
+    let str = '';
+    await new Promise(resolve => {
+      let tick;
+      ps.stdout.on('data', data => {
+        str += data.toString();
+        clearTimeout(tick);
+        tick = setTimeout(resolve, 1000);
+      });
+    });
+
+    assert(!str.includes('created'));
+    assert(str.includes('done'));
+    process.kill(ps.pid);
   });
 });
