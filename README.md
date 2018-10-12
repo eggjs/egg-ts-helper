@@ -14,7 +14,7 @@
 [coveralls-url]: https://coveralls.io/r/whxaxes/egg-ts-helper
 [coveralls-image]: https://img.shields.io/coveralls/whxaxes/egg-ts-helper.svg
 
-A simple tool for generates typescript definition files(d.ts) for [egg](https://eggjs.org) application. Injecting `controller`,`proxy`,`service` and `extend` to egg by [Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html)
+A simple tool used to creating typescript definition files(d.ts) for [egg](https://eggjs.org) application. Injecting `controller`,`proxy`,`service` and `extend` to egg by [Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html)
 
 
 ## Install
@@ -37,7 +37,7 @@ Open your egg application, executing the command
 $ ets
 ```
 
-`-w` flag can auto recreated d.ts while file changed
+It can auto recreate d.ts while the file has changed by `-w` flag.
 
 ```
 $ ets -w
@@ -52,8 +52,8 @@ $ ets -h
 
   Options:
 
-    -v, --version           output the version number
-    -w, --watch             Watching files, d.ts will recreate after file has changed
+    -v, --version           Output the version number
+    -w, --watch             Watching files, d.ts will recreate if file is changed
     -c, --cwd [path]        Egg application base dir (default: process.cwd)
     -C, --config [path]     Configuration file, The argument can be a file path to a valid JSON/JS configuration file.（default: {cwd}/tshelper.js
     -f, --framework [name]  Egg framework(default: egg)
@@ -61,11 +61,11 @@ $ ets -h
     -i, --ignore [dirs]     Ignore watchDirs, your can ignore multiple dirs with comma like: -i controller,service
     -e, --enabled [dirs]    Enable watchDirs, your can enable multiple dirs with comma like: -e proxy,other
     -E, --extra [json]      Extra config, the value should be json string
-    -h, --help              output usage information
+    -h, --help              Output usage information
 
   Commands:
 
-    clean                   Clean js file when it has the same name ts file
+    clean                   Clean js file when it has same name ts file
 ```
 
 ## Options
@@ -82,15 +82,15 @@ $ ets -h
 | configFile | string | {cwd}/tshelper.js | configure file path |
 | watchDirs | object | | generator configuration |
 
-egg-ts-helper would watching `app/extend`,`app/controller`,`app/service`, `app/config`, `app/middleware`, `app/model` by default. The dts would recreated when the files under these folders was changed.
+egg-ts-helper will watch `app/extend`,`app/controller`,`app/service`, `app/config`, `app/middleware`, `app/model` by default. The d.ts can recreate when the files under these folders is changed.
 
-you can disabled some folders by `-i` flag.
+You can disabled some folders by `-i` flag. like
 
 ```
 $ ets -i extend,controller
 ```
 
-or configure in the config file
+Or configure in `tshelper.js`
 
 ```
 // {cwd}/tshelper.js
@@ -103,7 +103,7 @@ module.exports = {
 }
 ```
 
-or configure in package.json
+Or in `package.json`
 
 ```
 // {cwd}/package.json
@@ -122,11 +122,11 @@ or configure in package.json
 
 ## Extend
 
-`egg-ts-helper` not only support the base loader( controller, middleware ... ), but also support to configure your own loader.
+`egg-ts-helper` not only support the base loader( controller, middleware ... ), but also support to configure custom loader.
 
 ### Use build-in generator
 
-for example. If I want to auto create the d.ts for `egg-mongodb`. configuring watchDirs in `{cwd}/tshelper.js` and use `class` generator
+For example. Creating the d.ts for `egg-mongodb` by `egg-ts-helper`.
 
 ```typescript
 // ./tshelper.js
@@ -147,7 +147,7 @@ module.exports = {
 }
 ```
 
-the configuration can create d.ts like below.
+The configuration can create d.ts like below.
 
 ```
 import Station from '../../../app/model/station';
@@ -159,7 +159,7 @@ declare module '{ framework }' {
 }
 ```
 
-and don't forget to declare IModel to egg.
+And don't forget to declare a interface `IModel` in egg declaration.
 
 ```typescript
 // typings/index.d.ts
@@ -176,7 +176,7 @@ declare module 'egg' {
 ```
 
 
-### Define custom generator
+### Defining a custom generator
 
 ```javascript
 // ./tshelper.js
@@ -209,19 +209,21 @@ module.exports = {
 
 ## Register
 
-You can require register to start egg-ts-helper before starting egg application with [egg-bin](https://github.com/eggjs/egg-bin).
+`egg-ts-helper` offers a `register.js` for easyier to use with [egg-bin](https://github.com/eggjs/egg-bin).
 
 ```
 $ egg-bin dev -r egg-ts-helper/register
 ```
 
-debugging
+test/coverage/debugging
 
 ```
+$ egg-bin test -r egg-ts-helper/register
+$ egg-bin cov -r egg-ts-helper/register
 $ egg-bin debug -r egg-ts-helper/register
 ```
 
-## Generated Code
+## Declarations
 
 see https://github.com/whxaxes/egg-ts-helper/tree/master/test/fixtures/real/typings
 
