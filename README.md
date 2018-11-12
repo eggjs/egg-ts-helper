@@ -72,15 +72,15 @@ $ ets -h
 
 | name | type | default | description |
 | --- | --- | --- | --- |
-| cwd | string | process.cwd | egg application base dir |
-| framework | string | egg | egg framework |
-| typings | string | {cwd}/typings | typings dir |
+| cwd | `string` | process.cwd | egg application base dir |
+| framework | `string` | egg | egg framework |
+| typings | `string` | {cwd}/typings | typings dir |
 | caseStyle | `string | Function` | lower | egg case style(lower,upper,camel) or `(filename) => {return 'YOUR_CASE'}`|
-| watch | boolean | false | watch file change or not |
-| watchOptions | object | undefined | chokidar [options](https://github.com/paulmillr/chokidar#api) |
-| execAtInit | boolean | false | execute d.ts generation while instance was created |
-| configFile | string | {cwd}/tshelper.js | configure file path |
-| watchDirs | object | | generator configuration |
+| watch | `boolean` | false | watch file change or not |
+| watchOptions | `object` | undefined | chokidar [options](https://github.com/paulmillr/chokidar#api) |
+| execAtInit | `boolean` | false | execute d.ts generation while instance was created |
+| configFile | `string` | {cwd}/tshelper.js | configure file path |
+| watchDirs | `object` | | generator configuration |
 
 egg-ts-helper will watch `app/extend`,`app/controller`,`app/service`, `app/config`, `app/middleware`, `app/model` by default. The d.ts can recreate when the files under these folders is changed.
 
