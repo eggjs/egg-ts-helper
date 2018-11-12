@@ -33,8 +33,7 @@ export function cleanJs(cwd: string) {
 
 // get moduleName by file path
 export function getModuleObjByPath(f: string) {
-  const props = f.split('/').map(formatProp);
-
+  const props = f.split('/');
   // composing moduleName
   const moduleName = props.map(prop => camelProp(prop, 'upper')).join('');
 
@@ -42,11 +41,6 @@ export function getModuleObjByPath(f: string) {
     props,
     moduleName,
   };
-}
-
-// format property
-export function formatProp(prop: string) {
-  return prop.replace(/[._-][a-z]/gi, s => s.substring(1).toUpperCase());
 }
 
 // remove same name js
@@ -191,8 +185,19 @@ export function requireFile(url) {
   return exp;
 }
 
+// format property
+export function formatProp(prop: string) {
+  return prop.replace(/[._-][a-z]/gi, s => s.substring(1).toUpperCase());
+}
+
 // like egg-core/file-loader
-export function camelProp(property: string, caseStyle: string): string {
+export function camelProp(property: string, caseStyle: string | ((...args: any[]) => string)): string {
+  if (typeof caseStyle === 'function') {
+    return caseStyle(property);
+  }
+
+  // camel transfer
+  property = formatProp(property);
   let first = property[0];
   // istanbul ignore next
   switch (caseStyle) {
@@ -203,6 +208,7 @@ export function camelProp(property: string, caseStyle: string): string {
       first = first.toUpperCase();
       break;
     case 'camel':
+      break;
     default:
       break;
   }
