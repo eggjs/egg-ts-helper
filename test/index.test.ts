@@ -47,7 +47,13 @@ describe('index.test.ts', () => {
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/index.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/plugin.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/custom.d.ts')));
-    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/app/casestyle/index.d.ts')));
+
+    // casestyle check
+    const caseStylePath = path.resolve(__dirname, './fixtures/app/typings/app/casestyle/index.d.ts');
+    const caseStyleContent = fs.readFileSync(caseStylePath, 'utf8');
+    assert(fs.existsSync(caseStylePath));
+    assert(caseStyleContent.search('simpleTest: SimpleTestSchema') !== -1);
+    
 
     const dts = path.resolve(__dirname, './fixtures/app/typings/app/service/index.d.ts');
     fs.writeFileSync(path.resolve(dir, 'test.ts'), '');

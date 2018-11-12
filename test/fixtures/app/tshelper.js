@@ -14,6 +14,7 @@ module.exports = {
     },
     casestyle: {
       path: 'app/casestyle',
+      interface: 'schema',
       pattern: '**/*.schema.(ts|js)',
       caseStyle: filename => {
         const p1 = filename.split('.schema')[0];
