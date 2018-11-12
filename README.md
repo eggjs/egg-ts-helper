@@ -75,7 +75,7 @@ $ ets -h
 | cwd | `string` | process.cwd | egg application base dir |
 | framework | `string` | egg | egg framework |
 | typings | `string` | {cwd}/typings | typings dir |
-| caseStyle | `string | Function` | lower | egg case style(lower,upper,camel) or `(filename) => {return 'YOUR_CASE'}`|
+| caseStyle | `string``Function` | lower | egg case style(lower,upper,camel) or `(filename) => {return 'YOUR_CASE'}`|
 | watch | `boolean` | false | watch file change or not |
 | watchOptions | `object` | undefined | chokidar [options](https://github.com/paulmillr/chokidar#api) |
 | execAtInit | `boolean` | false | execute d.ts generation while instance was created |
