@@ -28,7 +28,7 @@ export interface TsHelperOption {
   framework?: string;
   typings?: string;
   watchDirs?: { [key: string]: WatchItem | boolean };
-  caseStyle?: string;
+  caseStyle?: string | Function;
   watch?: boolean;
   watchOptions?: chokidar.WatchOptions;
   autoRemoveJs?: boolean;

@@ -47,6 +47,7 @@ describe('index.test.ts', () => {
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/index.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/plugin.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/custom.d.ts')));
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/app/casestyle/index.d.ts')));
 
     const dts = path.resolve(__dirname, './fixtures/app/typings/app/service/index.d.ts');
     fs.writeFileSync(path.resolve(dir, 'test.ts'), '');
