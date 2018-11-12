@@ -185,18 +185,17 @@ export function requireFile(url) {
   return exp;
 }
 
-
 // format property
 export function formatProp(prop: string) {
   return prop.replace(/[._-][a-z]/gi, s => s.substring(1).toUpperCase());
 }
 
 // like egg-core/file-loader
-export function camelProp(property: string, caseStyle: string | Function): string {
-  if(typeof caseStyle === 'function') {
+export function camelProp(property: string, caseStyle: string | ((...args: any[]) => string)): string {
+  if (typeof caseStyle === 'function') {
     return caseStyle(property);
   }
-  
+
   // camel transfer
   property = formatProp(property);
   let first = property[0];

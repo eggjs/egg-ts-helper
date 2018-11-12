@@ -53,7 +53,6 @@ describe('index.test.ts', () => {
     const caseStyleContent = fs.readFileSync(caseStylePath, 'utf8');
     assert(fs.existsSync(caseStylePath));
     assert(caseStyleContent.search('simpleTest: SimpleTestSchema') !== -1);
-    
 
     const dts = path.resolve(__dirname, './fixtures/app/typings/app/service/index.d.ts');
     fs.writeFileSync(path.resolve(dir, 'test.ts'), '');
