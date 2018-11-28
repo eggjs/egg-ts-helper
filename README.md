@@ -163,7 +163,7 @@ declare module 'egg' {
 }
 ```
 
-You can add `interfaceHandle` to change the value.
+You can add `interfaceHandle` to change the value. or change `declareTo` option.
 
 ```js
 // ./tshelper.js
@@ -174,20 +174,20 @@ module.exports = {
       path: 'app/model', // dir path
       generator: 'class', // generator name
       interface: 'IModel',  // interface name
-      declareTo: 'Context.model', // declare to this interface
+      declareTo: 'Application.model', // declare to this interface
       interfaceHandle: val => `ReturnType<typeof ${val}>`, // interfaceHandle
     }
   }
 }
 ```
 
-The key will be wrapped by `ReturnType` like below.
+The key `Station` will be wrapped by `ReturnType`, and `IModel` will mount to `Application.model` like below
 
 ```typescript
 import Station from '../../../app/model/station';
 
 declare module 'egg' {
-  interface Context {
+  interface Application {
     model: IModel;
   }
 
