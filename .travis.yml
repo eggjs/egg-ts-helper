@@ -8,5 +8,5 @@ os:
   - osx
   - linux
 script:
-  - DEBUG=egg-ts-helper* npm run cov
+  - npm run cov
 after_script: "npm install coveralls && cat ./coverage/lcov.info | coveralls"

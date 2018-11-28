@@ -1,4 +1,10 @@
 
+1.15.0 / 2018-11-28
+===================
+
+  * feat: add `declareTo` option
+  * chore: upgrade typescript to 3.0
+
 1.14.0 / 2018-11-12
 ===================
 
