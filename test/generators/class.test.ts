@@ -17,6 +17,17 @@ describe('generators/class.test.ts', () => {
     assert(result.content!.includes('home: Home;'));
   });
 
+  it('should works without error with no interface', () => {
+    const result = triggerGenerator<GeneratorResult>('controller', appDir);
+    assert(
+      result.dist ===
+        path.resolve(appDir, './typings/app/controller/index.d.ts'),
+    );
+    assert(result.content!.includes('../../../app/controller/home'));
+    assert(result.content!.includes('interface IController'));
+    assert(result.content!.includes('home: Home;'));
+  });
+
   it('should works with middleware without error', () => {
     const result = triggerGenerator<GeneratorResult>('middleware', appDir);
     assert(
@@ -34,6 +45,22 @@ describe('generators/class.test.ts', () => {
       result.dist ===
         path.resolve(appDir, './typings/app/model/index.d.ts'),
     );
+    assert(result.content!.includes('../../../app/model/User'));
+    assert(result.content!.includes('interface IModel'));
+    assert(result.content!.includes('User: ReturnType<typeof User>;'));
+    assert(result.content!.includes('Person: ReturnType<typeof Person>;'));
+  });
+
+  it('should support declareTo with model without error', () => {
+    const result = triggerGenerator<GeneratorResult>('model', appDir, undefined, {
+      declareTo: 'Context.model',
+    });
+
+    assert(
+      result.dist ===
+        path.resolve(appDir, './typings/app/model/index.d.ts'),
+    );
+    assert(result.content!.includes('interface Context {\n    model: IModel;\n  }'));
     assert(result.content!.includes('../../../app/model/User'));
     assert(result.content!.includes('interface IModel'));
     assert(result.content!.includes('User: ReturnType<typeof User>;'));

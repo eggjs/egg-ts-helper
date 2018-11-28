@@ -5,6 +5,10 @@ import 'egg'; // Make sure ts to import egg declaration at first
 import User from '../../../app/model/User';
 
 declare module 'egg' {
+  interface Application {
+    model: IModel;
+  }
+
   interface IModel {
     User: ReturnType<typeof User>;
   }

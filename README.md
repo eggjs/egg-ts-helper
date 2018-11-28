@@ -137,11 +137,11 @@ module.exports = {
       path: 'app/model', // dir path
       // pattern: '**/*.(ts|js)', // glob pattern, default is **/*.(ts|js). it doesn't need to configure normally.
       generator: 'class', // generator name
-      framework: 'larva', // framework name
       interface: 'IModel',  // interface name
-      caseStyle: 'upper', // caseStyle for loader
-      interfaceHandle: val => `ReturnType<typeof ${val}>`, // interfaceHandle
-      trigger: ['add', 'unlink'], // recreate d.ts when receive these events, all events: ['add', 'unlink', 'change']
+      declareTo: 'Context.model', // declare to this interface
+      // caseStyle: 'upper', // caseStyle for loader
+      // interfaceHandle: val => `ReturnType<typeof ${val}>`, // interfaceHandle
+      // trigger: ['add', 'unlink'], // recreate d.ts when receive these events, all events: ['add', 'unlink', 'change']
     }
   }
 }
@@ -149,32 +149,53 @@ module.exports = {
 
 The configuration can create d.ts like below.
 
-```
+```typescript
 import Station from '../../../app/model/station';
 
-declare module '{ framework }' {
-  interface { interface } {
-    Station: { interfaceHandle ? interfaceHandle('Station') : Station };
+declare module 'egg' {
+  interface Context {
+    model: IModel;
+  }
+
+  interface IModel {
+    Station: Station;
   }
 }
 ```
 
-And don't forget to declare a interface `IModel` in egg declaration.
+You can add `interfaceHandle` to change the value.
+
+```js
+// ./tshelper.js
+
+module.exports = {
+  watchDirs: {
+    model: {
+      path: 'app/model', // dir path
+      generator: 'class', // generator name
+      interface: 'IModel',  // interface name
+      declareTo: 'Context.model', // declare to this interface
+      interfaceHandle: val => `ReturnType<typeof ${val}>`, // interfaceHandle
+    }
+  }
+}
+```
+
+The key will be wrapped by `ReturnType` like below.
 
 ```typescript
-// typings/index.d.ts
-import { PlainObject } from 'egg';
+import Station from '../../../app/model/station';
 
 declare module 'egg' {
-  interface Application {
-    model: IModel
+  interface Context {
+    model: IModel;
   }
 
-  interface IModel extends PlainObject {
+  interface IModel {
+    Station: ReturnType<typeof Station>;
   }
 }
 ```
-
 
 ### Defining a custom generator
 

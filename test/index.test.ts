@@ -267,7 +267,7 @@ describe('index.test.ts', () => {
     await sleep(4000);
 
     const eggBin = path.resolve(__dirname, '../node_modules/.bin/egg-bin' + (os.platform() === 'win32' ? '.cmd' : ''));
-    const proc = spawn(eggBin, ['dev', '--ts', '--baseDir', baseDir], {
+    const proc = spawn(eggBin, ['dev', '--ts', '--baseDir', baseDir, '--port', '7661'], {
       stdio: 'pipe',
       env: {
         ...process.env,

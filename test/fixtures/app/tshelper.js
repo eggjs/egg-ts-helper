@@ -20,6 +20,13 @@ module.exports = {
         const p1 = filename.split('.schema')[0];
         return p1.replace(/[_-][a-z]/ig, s => s.substring(1).toUpperCase());
       }
-    }
+    },
+    model: {
+      path: 'app/model', // dir path
+      generator: 'class', // generator name
+      interface: 'IModel',  // interface name
+      declareTo: 'Context.model', // declare to this interface
+      interfaceHandle: val => `ReturnType<typeof ${val}>`, // interfaceHandle
+    },
   }
 };

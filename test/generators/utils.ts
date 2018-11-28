@@ -12,6 +12,7 @@ export function triggerGenerator<T extends GeneratorResult[] | GeneratorResult =
   name: string,
   appDir: string,
   file?: string,
+  extra?: any,
 ) {
   const defaultWatchDirs = getDefaultWatchDirs();
   const tsHelper = new TsHelper({
@@ -32,6 +33,7 @@ export function triggerGenerator<T extends GeneratorResult[] | GeneratorResult =
       file: file ? path.resolve(dir, file) : '',
       fileList: loadFiles(dir, watchDir.pattern),
       dtsDir,
+      ...extra,
     },
     tsHelper.config,
   );
