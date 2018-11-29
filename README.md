@@ -1,4 +1,4 @@
-# egg-ts-helper
+# # egg-ts-helper
 
 [![NPM version][npm-image]][npm-url]
 [![Build Status][travis-image]][travis-url]
@@ -82,9 +82,9 @@ $ ets -h
 | configFile | `string` | {cwd}/tshelper.js | configure file path |
 | watchDirs | `object` | | generator configuration |
 
-egg-ts-helper will watch `app/extend`,`app/controller`,`app/service`, `app/config`, `app/middleware`, `app/model` by default. The d.ts can recreate when the files under these folders is changed.
+egg-ts-helper watch `app/extend`,`app/controller`,`app/service`, `app/config`, `app/middleware`, `app/model` by default. The d.ts can recreate when the files under these folders is changed.
 
-You can disabled some folders by `-i` flag. like
+You can disabled some folders by `-i` flag.
 
 ```
 $ ets -i extend,controller
@@ -103,7 +103,7 @@ module.exports = {
 }
 ```
 
-Or in `package.json`
+Or `package.json`
 
 ```
 // {cwd}/package.json
@@ -122,11 +122,11 @@ Or in `package.json`
 
 ## Extend
 
-`egg-ts-helper` not only support the base loader( controller, middleware ... ), but also support to configure custom loader.
+`egg-ts-helper` not only support the base loader( controller, middleware ... ), but also support custom loader.
 
-### Use build-in generator
+### Example
 
-For example. Creating the d.ts for `model` by `egg-ts-helper`.
+Creating d.ts for `model` by `egg-ts-helper`.
 
 ```typescript
 // ./tshelper.js
@@ -163,39 +163,61 @@ declare module 'egg' {
 }
 ```
 
+option list
+
+- path
+- pattern
+- generator
+- caseStyle
+- interface
+- interfaceHandle
+- trigger
+
 ### Effect of different options.
 
-If `generator` is set to `class`.
+**interface** `string`
+
+`interface` set to `IOther`.
 
 ```typescript
-...
-
-  interface IModel {
-    Station: Station;
-  }
+interface IOther {
+  Station: Station;
+}
 ```
 
-If `generator` is set to `function`.
+**generator** `string`
+
+see https://github.com/whxaxes/egg-ts-helper/tree/master/src/generators
+
+
+
+`generator` set to `class`.
 
 ```typescript
-...
-
-  interface IModel {
-    Station: ReturnType<typeof Station>;
-  }
+interface IModel {
+  Station: Station;
+}
 ```
 
-If `generator` is set to `object`.
+`generator` set to `function`.
 
 ```typescript
-...
-
-  interface IModel {
-    Station: typeof Station;
-  }
+interface IModel {
+  Station: ReturnType<typeof Station>;
+}
 ```
 
-If you want to define your own type, just setting the `interfaceHandle` like
+`generator` set to `object`.
+
+```typescript
+interface IModel {
+  Station: typeof Station;
+}
+```
+
+**interfaceHandle** `function`
+
+If you want to define your own type, just setting the `interfaceHandle`.
 
 ```js
 module.exports = {
@@ -209,17 +231,37 @@ module.exports = {
 }
 ```
 
-The d.ts will be 
+The typings.
 
 ```typescript
-...
-
-  interface IModel {
-    Station: Station & { [key: string]: any };
-  }
+interface IModel {
+  Station: Station & { [key: string]: any };
+}
 ```
 
-If `declareTo` is set to `Application.model.subModel`
+**caseStyle** `string|function`
+
+`caseStyle` can set to `lower`、`upper`、`camel` or function
+
+**declareTo** `string`
+
+`declareTo` set to `Context.model`
+
+```typescript
+import Station from '../../../app/model/station';
+
+declare module 'egg' {
+  interface Context {
+    model: IModel;
+  }
+
+  interface IModel {
+    Station: Station;
+  }
+}
+```
+
+`declareTo` set to `Application.model.subModel`
 
 ```typescript
 import Station from '../../../app/model/station';
@@ -237,7 +279,7 @@ declare module 'egg' {
 }
 ```
 
-### Defining a custom generator
+### Defining custom generator
 
 ```javascript
 // ./tshelper.js
