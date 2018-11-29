@@ -1,4 +1,13 @@
 
+1.16.0 / 2018-11-29
+===================
+
+  * chore: update comment
+  * feat: add prefix to interface
+  * refactor: add esModuleInterop option
+  * feat: add new generator `function` and `object`
+  * refactor: refactor build-in generators
+
 1.15.0 / 2018-11-28
 ===================
 
