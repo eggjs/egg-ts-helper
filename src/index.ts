@@ -362,10 +362,10 @@ export default class TsHelper extends EventEmitter {
         mkdirp.sync(path.dirname(item.dist));
         fs.writeFileSync(
           item.dist,
-          '// This file was auto created by egg-ts-helper\n' +
-            '// Do not modify this file!!!!!!!!!\n\n' +
-            `import '${config.framework}'; // Make sure ts to import ${config.framework} declaration at first\n` +
-            item.content,
+          '// This file is created by egg-ts-helper\n' +
+          '// Do not modify this file!!!!!!!!!\n\n' +
+          `import '${config.framework}';\n` +
+          item.content,
         );
         this.emit('update', item.dist, file);
       } else if (fs.existsSync(item.dist)) {
