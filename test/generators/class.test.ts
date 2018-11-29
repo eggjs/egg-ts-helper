@@ -1,6 +1,6 @@
 import path from 'path';
 import assert from 'power-assert';
-import { GeneratorResult } from '../../src/';
+import { GeneratorResult } from '../../dist/';
 import { triggerGenerator } from './utils';
 
 describe('generators/class.test.ts', () => {

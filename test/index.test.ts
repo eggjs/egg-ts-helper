@@ -6,7 +6,7 @@ import mkdirp from 'mkdirp';
 import os from 'os';
 import path from 'path';
 import assert from 'power-assert';
-import { createTsHelperInstance, getDefaultWatchDirs } from '../src/';
+import { createTsHelperInstance, getDefaultWatchDirs } from '../dist/';
 const debug = d('egg-ts-helper#index.test');
 const noop = () => {};
 const timeout = (delay, callback: () => any) => {
