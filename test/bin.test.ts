@@ -108,7 +108,7 @@ describe('bin.test.ts', () => {
       .toString();
     assert(content.includes('declare module \'egg\''));
     assert(content.includes('interface IController'));
-    assert(content.includes('home: Home'));
+    assert(content.includes('home: ExportHome'));
   });
 
   it('should works with -w and -e correctly', async () => {
@@ -129,8 +129,8 @@ describe('bin.test.ts', () => {
     const content = fs.readFileSync(dts, { encoding: 'utf-8' });
     assert(content.includes('service/test/test'));
     assert(content.includes('service/test/test-two'));
-    assert(content.includes('test: TestTest'));
-    assert(content.includes('testTwo: TestTestTwo'));
+    assert(content.includes('test: ExportTestTest'));
+    assert(content.includes('testTwo: ExportTestTestTwo'));
 
     await sleep(2000);
 

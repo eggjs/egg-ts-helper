@@ -22,11 +22,12 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
   fileList.forEach(f => {
     f = f.substring(0, f.lastIndexOf('.'));
     const obj = utils.getModuleObjByPath(f);
+    const moduleName = `Export${obj.moduleName}`;
     const tsPath = path
       .relative(config.dtsDir, path.join(config.dir, f))
       .replace(/\/|\\/g, '/');
-    debug('import %s from %s', obj.moduleName, tsPath);
-    importStr += `import ${obj.moduleName} from '${tsPath}';\n`;
+    debug('import %s from %s', moduleName, tsPath);
+    importStr += `import ${moduleName} from '${tsPath}';\n`;
 
     // create mapping
     let collector = interfaceMap;
@@ -37,7 +38,7 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
       );
 
       if (!obj.props.length) {
-        collector[name] = obj.moduleName;
+        collector[name] = moduleName;
       } else {
         collector = collector[name] = collector[name] || {};
       }

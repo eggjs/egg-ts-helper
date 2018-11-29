@@ -48,11 +48,11 @@ describe('index.test.ts', () => {
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/plugin.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/custom.d.ts')));
 
-    // casestyle check
+    // caseStyle check
     const caseStylePath = path.resolve(__dirname, './fixtures/app/typings/app/casestyle/index.d.ts');
     const caseStyleContent = fs.readFileSync(caseStylePath, 'utf8');
     assert(fs.existsSync(caseStylePath));
-    assert(caseStyleContent.search('simpleTest: SimpleTestSchema') !== -1);
+    assert(caseStyleContent.includes('simpleTest: ExportSimpleTestSchema'));
 
     const dts = path.resolve(__dirname, './fixtures/app/typings/app/service/index.d.ts');
     fs.writeFileSync(path.resolve(dir, 'test.ts'), '');
@@ -65,8 +65,8 @@ describe('index.test.ts', () => {
     const content = fs.readFileSync(dts, { encoding: 'utf-8' });
     assert(content.includes('service/test/test'));
     assert(content.includes('service/test/test-two'));
-    assert(content.includes('test: TestTest'));
-    assert(content.includes('testTwo: TestTestTwo'));
+    assert(content.includes('test: ExportTestTest'));
+    assert(content.includes('testTwo: ExportTestTestTwo'));
 
     await sleep(2000);
 
@@ -103,8 +103,8 @@ describe('index.test.ts', () => {
     const content = fs.readFileSync(dts, { encoding: 'utf-8' });
     assert(content.includes('service/test/test'));
     assert(content.includes('service/test/test-two'));
-    assert(content.includes('test: TestTest'));
-    assert(content.includes('testTwo: TestTestTwo'));
+    assert(content.includes('test: ExportTestTest'));
+    assert(content.includes('testTwo: ExportTestTestTwo'));
 
     await sleep(2000);
 

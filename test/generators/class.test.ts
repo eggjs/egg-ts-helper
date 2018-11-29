@@ -14,7 +14,7 @@ describe('generators/class.test.ts', () => {
     );
     assert(result.content!.includes('../../../app/controller/home'));
     assert(result.content!.includes('interface IController'));
-    assert(result.content!.includes('home: Home;'));
+    assert(result.content!.includes('home: ExportHome;'));
   });
 
   it('should works without error with no interface', () => {
@@ -25,7 +25,7 @@ describe('generators/class.test.ts', () => {
     );
     assert(result.content!.includes('../../../app/controller/home'));
     assert(result.content!.includes('interface IController'));
-    assert(result.content!.includes('home: Home;'));
+    assert(result.content!.includes('home: ExportHome;'));
   });
 
   it('should works with middleware without error', () => {
@@ -36,7 +36,7 @@ describe('generators/class.test.ts', () => {
     );
     assert(result.content!.includes('../../../app/middleware/uuid'));
     assert(result.content!.includes('interface IMiddleware'));
-    assert(result.content!.includes('uuid: typeof Uuid;'));
+    assert(result.content!.includes('uuid: typeof ExportUuid;'));
   });
 
   it('should works with model without error', () => {
@@ -47,8 +47,8 @@ describe('generators/class.test.ts', () => {
     );
     assert(result.content!.includes('../../../app/model/User'));
     assert(result.content!.includes('interface IModel'));
-    assert(result.content!.includes('User: ReturnType<typeof User>;'));
-    assert(result.content!.includes('Person: ReturnType<typeof Person>;'));
+    assert(result.content!.includes('User: ReturnType<typeof ExportUser>;'));
+    assert(result.content!.includes('Person: ReturnType<typeof ExportPerson>;'));
   });
 
   it('should support declareTo with model without error', () => {
@@ -63,8 +63,8 @@ describe('generators/class.test.ts', () => {
     assert(result.content!.includes('interface Context {\n    model: IModel;\n  }'));
     assert(result.content!.includes('../../../app/model/User'));
     assert(result.content!.includes('interface IModel'));
-    assert(result.content!.includes('User: ReturnType<typeof User>;'));
-    assert(result.content!.includes('Person: ReturnType<typeof Person>;'));
+    assert(result.content!.includes('User: ReturnType<typeof ExportUser>;'));
+    assert(result.content!.includes('Person: ReturnType<typeof ExportPerson>;'));
   });
 
   it('should support appoint framework', () => {
