@@ -126,7 +126,7 @@ Or in `package.json`
 
 ### Use build-in generator
 
-For example. Creating the d.ts for `egg-mongodb` by `egg-ts-helper`.
+For example. Creating the d.ts for `model` by `egg-ts-helper`.
 
 ```typescript
 // ./tshelper.js
@@ -163,36 +163,76 @@ declare module 'egg' {
 }
 ```
 
-You can add `interfaceHandle` to change the value. or change `declareTo` option.
+### Effect of different options.
+
+If `generator` is set to `class`.
+
+```typescript
+...
+
+  interface IModel {
+    Station: Station;
+  }
+```
+
+If `generator` is set to `function`.
+
+```typescript
+...
+
+  interface IModel {
+    Station: ReturnType<typeof Station>;
+  }
+```
+
+If `generator` is set to `object`.
+
+```typescript
+...
+
+  interface IModel {
+    Station: typeof Station;
+  }
+```
+
+If you want to define your own type, just setting the `interfaceHandle` like
 
 ```js
-// ./tshelper.js
-
 module.exports = {
   watchDirs: {
     model: {
-      path: 'app/model', // dir path
-      generator: 'class', // generator name
-      interface: 'IModel',  // interface name
-      declareTo: 'Application.model', // declare to this interface
-      interfaceHandle: val => `ReturnType<typeof ${val}>`, // interfaceHandle
+      ...
+
+      interfaceHandle: val => `${val} & { [key: string]: any }`,
     }
   }
 }
 ```
 
-The key `Station` will be wrapped by `ReturnType`, and `IModel` will mount to `Application.model` like below
+The d.ts will be 
+
+```typescript
+...
+
+  interface IModel {
+    Station: Station & { [key: string]: any };
+  }
+```
+
+If `declareTo` is set to `Application.model.subModel`
 
 ```typescript
 import Station from '../../../app/model/station';
 
 declare module 'egg' {
   interface Application {
-    model: IModel;
+    model: {
+      subModel: IModel;
+    }
   }
 
   interface IModel {
-    Station: ReturnType<typeof Station>;
+    Station: Station;
   }
 }
 ```
