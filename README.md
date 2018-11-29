@@ -1,4 +1,4 @@
-# # egg-ts-helper
+# egg-ts-helper
 
 [![NPM version][npm-image]][npm-url]
 [![Build Status][travis-image]][travis-url]
