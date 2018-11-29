@@ -1,9 +1,9 @@
 import { exec, fork } from 'child_process';
-import * as cluster from 'cluster';
-import * as d from 'debug';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as processExists from 'process-exists';
+import cluster from 'cluster';
+import d from 'debug';
+import fs from 'fs';
+import path from 'path';
+import processExists from 'process-exists';
 import { createTsHelperInstance } from './';
 import { cleanJs } from './utils';
 const debug = d('egg-ts-helper#register');

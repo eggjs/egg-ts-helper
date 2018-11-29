@@ -1,5 +1,5 @@
-import * as d from 'debug';
-import * as path from 'path';
+import d from 'debug';
+import path from 'path';
 import { TsGenConfig, TsHelperConfig } from '..';
 import * as utils from '../utils';
 let uniqId = 100;

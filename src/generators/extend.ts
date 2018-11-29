@@ -1,6 +1,6 @@
-import * as d from 'debug';
-import * as fs from 'fs';
-import * as path from 'path';
+import d from 'debug';
+import fs from 'fs';
+import path from 'path';
 import { GeneratorResult, TsGenConfig, TsHelperConfig } from '..';
 const debug = d('egg-ts-helper#generators_extend');
 

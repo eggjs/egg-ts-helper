@@ -1,11 +1,11 @@
 import { spawn } from 'child_process';
-import * as d from 'debug';
-import * as del from 'del';
-import * as fs from 'fs';
-import * as mkdirp from 'mkdirp';
-import * as os from 'os';
-import * as path from 'path';
-import * as assert from 'power-assert';
+import d from 'debug';
+import del from 'del';
+import fs from 'fs';
+import mkdirp from 'mkdirp';
+import os from 'os';
+import path from 'path';
+import assert from 'power-assert';
 import { createTsHelperInstance, getDefaultWatchDirs } from '../src/';
 const debug = d('egg-ts-helper#index.test');
 const noop = () => {};

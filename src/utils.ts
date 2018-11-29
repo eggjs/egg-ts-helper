@@ -1,7 +1,7 @@
-import * as fs from 'fs';
-import * as glob from 'globby';
-import * as path from 'path';
-import * as ts from 'typescript';
+import fs from 'fs';
+import glob from 'globby';
+import path from 'path';
+import ts from 'typescript';
 
 // load ts/js files
 export function loadFiles(cwd: string, pattern?: string) {

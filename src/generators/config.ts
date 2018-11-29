@@ -1,7 +1,7 @@
-import * as d from 'debug';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as ts from 'typescript';
+import d from 'debug';
+import fs from 'fs';
+import path from 'path';
+import ts from 'typescript';
 import { TsGenConfig, TsHelperConfig } from '..';
 import * as utils from '../utils';
 const debug = d('egg-ts-helper#generators_config');

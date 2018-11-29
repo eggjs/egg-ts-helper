@@ -1,9 +1,9 @@
-import * as chokidar from 'chokidar';
-import * as d from 'debug';
+import chokidar from 'chokidar';
+import d from 'debug';
 import { EventEmitter } from 'events';
-import * as fs from 'fs';
-import * as mkdirp from 'mkdirp';
-import * as path from 'path';
+import fs from 'fs';
+import mkdirp from 'mkdirp';
+import path from 'path';
 import * as utils from './utils';
 const debug = d('egg-ts-helper#index');
 

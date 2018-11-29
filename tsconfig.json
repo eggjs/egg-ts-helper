@@ -9,6 +9,7 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
     "charset": "utf8",
     "allowJs": false,
     "pretty": true,

@@ -1,7 +1,7 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import * as assert from 'power-assert';
-import * as ts from 'typescript';
+import fs from 'fs';
+import path from 'path';
+import assert from 'power-assert';
+import ts from 'typescript';
 import * as utils from '../src/utils';
 
 describe('utils.test.ts', () => {

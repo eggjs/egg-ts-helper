@@ -1,10 +1,10 @@
 import { ChildProcess, spawn } from 'child_process';
-import * as del from 'del';
-import * as fs from 'fs';
-import * as mkdirp from 'mkdirp';
-import * as os from 'os';
-import * as path from 'path';
-import * as assert from 'power-assert';
+import del from 'del';
+import fs from 'fs';
+import mkdirp from 'mkdirp';
+import os from 'os';
+import path from 'path';
+import assert from 'power-assert';
 
 function sleep(time) {
   return new Promise(res => setTimeout(res, time));
