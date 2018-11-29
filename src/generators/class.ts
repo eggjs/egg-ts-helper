@@ -1,80 +1,78 @@
 import * as d from 'debug';
 import * as path from 'path';
-import TsHelper from '../';
+import { TsGenConfig, TsHelperConfig } from '..';
 import * as utils from '../utils';
 let uniqId = 100;
 const debug = d('egg-ts-helper#generators_class');
 
-export default function(tsHelper: TsHelper) {
-  tsHelper.register('class', (config, baseConfig) => {
-    const fileList = config.fileList;
-    const dist = path.resolve(config.dtsDir, 'index.d.ts');
+export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
+  const fileList = config.fileList;
+  const dist = path.resolve(config.dtsDir, 'index.d.ts');
 
-    debug('file list : %o', fileList);
-    if (!fileList.length) {
-      return { dist };
-    }
+  debug('file list : %o', fileList);
+  if (!fileList.length) {
+    return { dist };
+  }
 
-    // using to compose import code
-    let importStr = '';
-    // using to create interface mapping
-    const interfaceMap: PlainObject = {};
+  // using to compose import code
+  let importStr = '';
+  // using to create interface mapping
+  const interfaceMap: PlainObject = {};
 
-    fileList.forEach(f => {
-      f = f.substring(0, f.lastIndexOf('.'));
-      const obj = utils.getModuleObjByPath(f);
-      const tsPath = path
-        .relative(config.dtsDir, path.join(config.dir, f))
-        .replace(/\/|\\/g, '/');
-      debug('import %s from %s', obj.moduleName, tsPath);
-      importStr += `import ${obj.moduleName} from '${tsPath}';\n`;
+  fileList.forEach(f => {
+    f = f.substring(0, f.lastIndexOf('.'));
+    const obj = utils.getModuleObjByPath(f);
+    const tsPath = path
+      .relative(config.dtsDir, path.join(config.dir, f))
+      .replace(/\/|\\/g, '/');
+    debug('import %s from %s', obj.moduleName, tsPath);
+    importStr += `import ${obj.moduleName} from '${tsPath}';\n`;
 
-      // create mapping
-      let collector = interfaceMap;
-      while (obj.props.length) {
-        const name = utils.camelProp(
-          obj.props.shift() as string,
-          config.caseStyle || baseConfig.caseStyle,
-        );
-
-        if (!obj.props.length) {
-          collector[name] = obj.moduleName;
-        } else {
-          collector = collector[name] = collector[name] || {};
-        }
-      }
-    });
-
-    // interface name
-    const interfaceName = config.interface || `TC${uniqId++}`;
-
-    // add mount interface
-    let declareInterface;
-    if (config.declareTo) {
-      const interfaceList: string[] = config.declareTo.split('.');
-      declareInterface = composeInterface(
-        interfaceList.slice(1).concat(interfaceName),
-        interfaceList[0],
-        undefined,
-        '  ',
+    // create mapping
+    let collector = interfaceMap;
+    while (obj.props.length) {
+      const name = utils.camelProp(
+        obj.props.shift() as string,
+        config.caseStyle || baseConfig.caseStyle,
       );
-    }
 
-    return {
-      dist,
-      content:
-        `${importStr}\n` +
-        `declare module '${config.framework || baseConfig.framework}' {\n` +
-        (declareInterface ? `${declareInterface}\n` : '') +
-        composeInterface(
-          interfaceMap,
-          interfaceName,
-          config.interfaceHandle,
-          '  ',
-        ) +
-        '}\n',
-    };
+      if (!obj.props.length) {
+        collector[name] = obj.moduleName;
+      } else {
+        collector = collector[name] = collector[name] || {};
+      }
+    }
   });
+
+  // interface name
+  const interfaceName = config.interface || `TC${uniqId++}`;
+
+  // add mount interface
+  let declareInterface;
+  if (config.declareTo) {
+    const interfaceList: string[] = config.declareTo.split('.');
+    declareInterface = composeInterface(
+      interfaceList.slice(1).concat(interfaceName),
+      interfaceList[0],
+      undefined,
+      '  ',
+    );
+  }
+
+  return {
+    dist,
+    content:
+      `${importStr}\n` +
+      `declare module '${config.framework || baseConfig.framework}' {\n` +
+      (declareInterface ? `${declareInterface}\n` : '') +
+      composeInterface(
+        interfaceMap,
+        interfaceName,
+        config.interfaceHandle,
+        '  ',
+      ) +
+      '}\n',
+  };
 }
 
 // composing all the interface

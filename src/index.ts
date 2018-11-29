@@ -109,8 +109,7 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
   baseConfig.middleware = {
     path: 'app/middleware',
     interface: 'IMiddleware',
-    interfaceHandle: val => `typeof ${val}`,
-    generator: 'class',
+    generator: 'object',
   };
 
   // proxy
@@ -124,10 +123,9 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
   // model
   baseConfig.model = {
     path: 'app/model',
-    generator: 'class',
+    generator: 'function',
     interface: 'IModel',
     caseStyle: 'upper',
-    interfaceHandle: val => `ReturnType<typeof ${val}>`,
   };
 
   if (opt && utils.moduleExist('egg-sequelize', opt.cwd)) {
@@ -172,7 +170,13 @@ const gd = path.resolve(__dirname, './generators');
 const generators = fs
   .readdirSync(gd)
   .filter(f => !f.endsWith('.d.ts'))
-  .map(f => require(path.resolve(gd, f.substring(0, f.lastIndexOf('.')))).default);
+  .map(f => {
+    const name = f.substring(0, f.lastIndexOf('.'));
+    return {
+      name,
+      genFn: require(path.resolve(gd, name)).default,
+    };
+  });
 
 export default class TsHelper extends EventEmitter {
   readonly config: TsHelperConfig;
@@ -192,7 +196,7 @@ export default class TsHelper extends EventEmitter {
     debug('framework is %s', config.framework);
 
     // add build-in generators
-    generators.forEach(gen => gen(this));
+    generators.forEach(({ name, genFn }) => this.register(name, genFn));
 
     // cached watching name list
     this.watchNameList = Object.keys(config.watchDirs).filter(key => {
