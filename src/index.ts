@@ -364,7 +364,6 @@ export default class TsHelper extends EventEmitter {
     }
 
     const resultList = Array.isArray(result) ? result : [ result ];
-
     resultList.forEach(async item => {
       // check cache
       if (this.isCached(item.dist, item.content)) {

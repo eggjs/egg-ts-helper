@@ -15,7 +15,6 @@
     "pretty": true,
     "declaration": true,
     "declarationMap": true,
-    "composite": true,
     "noEmitOnError": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
