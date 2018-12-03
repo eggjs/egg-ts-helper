@@ -5,14 +5,10 @@ import { GeneratorResult, TsGenConfig, TsHelperConfig } from '..';
 const debug = d('egg-ts-helper#generators_extend');
 
 export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
-  const fileList = !config.file
-    ? config.fileList
-    : config.file.endsWith('.ts')
-    ? [config.file]
-    : [];
+  const fileList = config.file ? [config.file] : config.fileList;
 
   debug('file list : %o', fileList);
-  if (!fileList.length && !config.file) {
+  if (!fileList.length) {
     // clean files
     return Object.keys(config.interface).map(key => ({
       dist: path.resolve(config.dtsDir, `${key}.d.ts`),
@@ -21,12 +17,14 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
 
   const tsList: GeneratorResult[] = [];
   fileList.forEach(f => {
-    const basename = path.basename(f, '.ts');
-    const m = basename.split('.');
-    const interfaceNameKey = m[0];
-    const interfaceEnvironment = m[1]
-      ? m[1].replace(/^[a-z]/, r => r.toUpperCase())
+    let basename = path.basename(f);
+    basename = basename.substring(0, basename.lastIndexOf('.'));
+    const moduleNames = basename.split('.');
+    const interfaceNameKey = moduleNames[0];
+    const interfaceEnvironment = moduleNames[1]
+      ? moduleNames[1].replace(/^[a-z]/, r => r.toUpperCase())
       : '';
+
     const interfaceName = config.interface[interfaceNameKey];
     if (!interfaceName) {
       return;

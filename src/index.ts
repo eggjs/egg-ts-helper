@@ -201,7 +201,7 @@ export default class TsHelper extends EventEmitter {
     // cached watching name list
     this.watchNameList = Object.keys(config.watchDirs).filter(key => {
       const dir = config.watchDirs[key];
-      return Object.prototype.hasOwnProperty.call(dir, 'enabled')
+      return dir.hasOwnProperty('enabled')
         ? dir.enabled
         : true;
     });
