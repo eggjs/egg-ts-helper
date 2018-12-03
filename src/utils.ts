@@ -83,7 +83,7 @@ export function findExportNode(code: string) {
       } else {
         // export variable
         if (ts.isVariableStatement(node)) {
-          exportNodeList.push.apply(exportNodeList, node.declarationList.declarations);
+          node.declarationList.declarations.forEach(declare => exportNodeList.push(declare));
         } else {
           exportNodeList.push(node);
         }
