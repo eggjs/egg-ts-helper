@@ -5,7 +5,7 @@ import { GeneratorResult, TsGenConfig, TsHelperConfig } from '..';
 const debug = d('egg-ts-helper#generators_extend');
 
 export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
-  const fileList = config.file ? [config.file] : config.fileList;
+  const fileList = config.file ? [ config.file ] : config.fileList;
 
   debug('file list : %o', fileList);
   if (!fileList.length) {

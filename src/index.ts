@@ -1,8 +1,7 @@
 import chokidar from 'chokidar';
 import d from 'debug';
 import { EventEmitter } from 'events';
-import fs from 'fs';
-import mkdirp from 'mkdirp';
+import fs from 'mz/fs';
 import path from 'path';
 import * as utils from './utils';
 const debug = d('egg-ts-helper#index');
@@ -29,6 +28,7 @@ export interface TsHelperOption {
   typings?: string;
   watchDirs?: { [key: string]: WatchItem | boolean };
   caseStyle?: string | ((...args: any[]) => string);
+  oneForAll?: boolean | string;
   watch?: boolean;
   watchOptions?: chokidar.WatchOptions;
   autoRemoveJs?: boolean;
@@ -64,6 +64,7 @@ export const defaultConfig = {
   autoRemoveJs: true,
   throttle: 500,
   watch: false,
+  oneForAll: false,
   watchOptions: undefined,
   execAtInit: false,
   watchDirs: {},
@@ -72,7 +73,7 @@ export const defaultConfig = {
 
 export function formatWatchItem(watchItem: WatchItem) {
   return {
-    trigger: ['add', 'unlink'],
+    trigger: [ 'add', 'unlink' ],
     generator: 'class',
     enabled: true,
     ...watchItem,
@@ -139,7 +140,7 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
     pattern: 'config*.(ts|js)',
     interface: 'EggAppConfig',
     generator: 'config',
-    trigger: ['add', 'unlink', 'change'],
+    trigger: [ 'add', 'unlink', 'change' ],
   };
 
   // plugin
@@ -147,7 +148,7 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
     path: 'config',
     pattern: 'plugin*.(ts|js)',
     generator: 'plugin',
-    trigger: ['add', 'unlink', 'change'],
+    trigger: [ 'add', 'unlink', 'change' ],
   };
 
   // service
@@ -187,6 +188,7 @@ export default class TsHelper extends EventEmitter {
   private tickerMap: PlainObject = {};
   private watched: boolean = false;
   private cacheDist: PlainObject = {};
+  private oneForAllDist: string;
 
   constructor(options: TsHelperOption = {}) {
     super();
@@ -212,6 +214,14 @@ export default class TsHelper extends EventEmitter {
       const p = item.path.replace(/\/|\\/, path.sep);
       return getAbsoluteUrlByCwd(p, config.cwd);
     });
+
+    // calc oneForAll dist path
+    if (this.config.oneForAll) {
+      this.oneForAllDist = getAbsoluteUrlByCwd(
+        typeof config.oneForAll === 'string' ? config.oneForAll : './ets.d.ts',
+        config.typings,
+      );
+    }
 
     // generate d.ts at init
     if (config.execAtInit) {
@@ -285,10 +295,7 @@ export default class TsHelper extends EventEmitter {
     }
 
     // read from local file
-    mergeConfig(
-      config,
-      utils.requireFile(getAbsoluteUrlByCwd(configFile, cwd)),
-    );
+    mergeConfig(config, utils.requireFile(getAbsoluteUrlByCwd(configFile, cwd)));
     debug('%o', config);
 
     // merge local config and options to config
@@ -301,7 +308,7 @@ export default class TsHelper extends EventEmitter {
     return config as TsHelperConfig;
   }
 
-  private generateTs(index: number, event?: string, file?: string) {
+  private async generateTs(index: number, event?: string, file?: string) {
     const config = this.config;
     const dir = this.watchDirs[index];
     const watchName = this.watchNameList[index];
@@ -347,33 +354,60 @@ export default class TsHelper extends EventEmitter {
       return;
     }
 
-    const resultList = Array.isArray(result) ? result : [result];
-    resultList.forEach(item => {
-      if (
-        this.cacheDist[item.dist] &&
-        this.cacheDist[item.dist].content === item.content
-      ) {
+    const distList: string[] = [];
+    const resultList = Array.isArray(result) ? result : [ result ];
+    const comment =
+      '// This file is created by egg-ts-helper\n' +
+      '// Do not modify this file!!!!!!!!!\n\n';
+
+    resultList.forEach(async item => {
+      const hasContent = !!item.content;
+      if (hasContent && config.oneForAll) {
+        distList.push(item.dist);
+      }
+
+      // check cache
+      if (this.isCached(item.dist, item.content)) {
         return;
       }
 
-      this.cacheDist[item.dist] = item;
-      if (item.content) {
-        debug('created d.ts : %s', item.dist);
-        mkdirp.sync(path.dirname(item.dist));
-        fs.writeFileSync(
-          item.dist,
-          '// This file is created by egg-ts-helper\n' +
-          '// Do not modify this file!!!!!!!!!\n\n' +
-          `import '${config.framework}';\n` +
-          item.content,
-        );
+      if (hasContent) {
+        // create file
+        const dtsContent = `${comment}import '${config.framework}';\n${item.content}`;
+        debug('created d.ts : %s \n\n %s', item.dist, dtsContent);
+        await utils.writeFile(item.dist, dtsContent);
         this.emit('update', item.dist, file);
-      } else if (fs.existsSync(item.dist)) {
+      } else if (await fs.exists(item.dist)) {
+        // remove file
         debug('remove d.ts : %s', item.dist);
-        fs.unlinkSync(item.dist);
+        await fs.unlink(item.dist);
         this.emit('remove', item.dist, file);
       }
     });
+
+    // create d.ts includes all types.
+    if (config.oneForAll && distList.length) {
+      const distContent = comment + distList
+        .map(file => `import '${path.relative(this.oneForAllDist, file)}'`)
+        .join('\n');
+
+      if (this.isCached(this.oneForAllDist, distContent)) {
+        return;
+      }
+
+      await utils.writeFile(this.oneForAllDist, distContent);
+    }
+  }
+
+  private isCached(fileUrl, content) {
+    const cacheItem = this.cacheDist[fileUrl];
+    if (cacheItem === content) {
+      // no need to create file content is not changed.
+      return true;
+    }
+
+    this.cacheDist[fileUrl] = content;
+    return false;
   }
 
   // trigger while file changed

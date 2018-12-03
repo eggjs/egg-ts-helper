@@ -1,11 +1,12 @@
-import fs from 'fs';
+import fs from 'mz/fs';
+import mkdirp from 'mkdirp';
 import glob from 'globby';
 import path from 'path';
 import ts from 'typescript';
 
 // load ts/js files
 export function loadFiles(cwd: string, pattern?: string) {
-  const fileList = glob.sync([pattern || '**/*.(js|ts)', '!**/*.d.ts'], {
+  const fileList = glob.sync([ pattern || '**/*.(js|ts)', '!**/*.d.ts' ], {
     cwd,
   });
 
@@ -15,10 +16,16 @@ export function loadFiles(cwd: string, pattern?: string) {
   });
 }
 
+// write file
+export function writeFile(fileUrl, content) {
+  mkdirp.sync(path.dirname(fileUrl));
+  return fs.writeFile(fileUrl, content);
+}
+
 // clean same name js/ts
 export function cleanJs(cwd: string) {
   const fileList: string[] = [];
-  glob.sync(['**/*.ts', '!**/*.d.ts', '!**/node_modules'], { cwd }).forEach(f => {
+  glob.sync([ '**/*.ts', '!**/*.d.ts', '!**/node_modules' ], { cwd }).forEach(f => {
     const jf = removeSameNameJs(path.resolve(cwd, f));
     if (jf) {
       fileList.push(jf);
@@ -26,7 +33,7 @@ export function cleanJs(cwd: string) {
   });
 
   if (fileList.length) {
-    console.info(`[egg-ts-helper] These file was deleted because the same name ts file was exist!\n`);
+    console.info('[egg-ts-helper] These file was deleted because the same name ts file was exist!\n');
     console.info('  ' + fileList.join('\n  ') + '\n');
   }
 }
@@ -101,7 +108,7 @@ export function findExportNode(code: string) {
     } else if (ts.isExportAssignment(node)) {
       // export default {}
       exportDefaultNode = node.expression;
-    }  else if (
+    } else if (
       ts.isExpressionStatement(node) &&
       ts.isBinaryExpression(node.expression)
     ) {

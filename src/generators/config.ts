@@ -82,7 +82,7 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
       `declare module '${baseConfig.framework}' {\n` +
       `  type ${newConfigType} = ${moduleList.join(' & ')};\n` +
       `  interface ${config.interface} extends ${newConfigType} { }\n` +
-      `}`,
+      '}',
   };
 }
 
