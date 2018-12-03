@@ -2,13 +2,13 @@
 // Do not modify this file!!!!!!!!!
 
 import './app/extend/application';
-import './app/extend/helper';
-import './app/controller/index';
 import './app/extend/request';
+import './app/controller/index';
 import './app/model/index';
+import './app/middleware/index';
 import './config/index';
-import './config/plugin';
 import './app/service/index';
+import './config/plugin';
 import './app/extend/response';
 import './app/extend/context';
-import './app/middleware/index';
+import './app/extend/helper';

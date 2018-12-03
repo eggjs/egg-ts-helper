@@ -345,4 +345,21 @@ describe('index.test.ts', () => {
       });
     });
   });
+
+  it('should works in real-js app', async () => {
+    const baseDir = path.resolve(__dirname, './fixtures/real-js/');
+    tsHelper = createTsHelperInstance({
+      cwd: baseDir,
+      execAtInit: true,
+      autoRemoveJs: false,
+    });
+
+    await sleep(2000);
+
+    assert(fs.existsSync(path.resolve(baseDir, './typings/app/controller/index.d.ts')));
+    assert(fs.existsSync(path.resolve(baseDir, './typings/app/extend/context.d.ts')));
+    assert(fs.existsSync(path.resolve(baseDir, './typings/app/service/index.d.ts')));
+    assert(fs.existsSync(path.resolve(baseDir, './typings/app/middleware/index.d.ts')));
+    assert(fs.existsSync(path.resolve(baseDir, './typings/config/index.d.ts')));
+  });
 });
