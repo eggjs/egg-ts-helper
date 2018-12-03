@@ -5,6 +5,9 @@ import fs from 'mz/fs';
 import path from 'path';
 import * as utils from './utils';
 const debug = d('egg-ts-helper#index');
+const dtsComment =
+  '// This file is created by egg-ts-helper\n' +
+  '// Do not modify this file!!!!!!!!!\n\n';
 
 declare global {
   interface PlainObject {
@@ -170,7 +173,7 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
 const gd = path.resolve(__dirname, './generators');
 const generators = fs
   .readdirSync(gd)
-  .filter(f => !f.endsWith('.d.ts'))
+  .filter(f => !f.endsWith('.d.ts') && !f.endsWith('.map'))
   .map(f => {
     const name = f.substring(0, f.lastIndexOf('.'));
     return {
@@ -188,7 +191,12 @@ export default class TsHelper extends EventEmitter {
   private tickerMap: PlainObject = {};
   private watched: boolean = false;
   private cacheDist: PlainObject = {};
+
+  // support oneForAll
   private oneForAllDist: string;
+  private oneForAllDistDir: string;
+  private oneForAllTick: any;
+  private dtsFileList: string[] = [];
 
   constructor(options: TsHelperOption = {}) {
     super();
@@ -221,6 +229,7 @@ export default class TsHelper extends EventEmitter {
         typeof config.oneForAll === 'string' ? config.oneForAll : './ets.d.ts',
         config.typings,
       );
+      this.oneForAllDistDir = path.dirname(this.oneForAllDist);
     }
 
     // generate d.ts at init
@@ -354,49 +363,78 @@ export default class TsHelper extends EventEmitter {
       return;
     }
 
-    const distList: string[] = [];
     const resultList = Array.isArray(result) ? result : [ result ];
-    const comment =
-      '// This file is created by egg-ts-helper\n' +
-      '// Do not modify this file!!!!!!!!!\n\n';
 
     resultList.forEach(async item => {
-      const hasContent = !!item.content;
-      if (hasContent && config.oneForAll) {
-        distList.push(item.dist);
-      }
-
       // check cache
       if (this.isCached(item.dist, item.content)) {
         return;
       }
 
-      if (hasContent) {
+      if (item.content) {
         // create file
-        const dtsContent = `${comment}import '${config.framework}';\n${item.content}`;
+        const dtsContent = `${dtsComment}import '${config.framework}';\n${item.content}`;
         debug('created d.ts : %s \n\n %s', item.dist, dtsContent);
         await utils.writeFile(item.dist, dtsContent);
         this.emit('update', item.dist, file);
-      } else if (await fs.exists(item.dist)) {
+
+        // update oneForAllDistMap
+        this.updateOneForAll(item.dist);
+      } else {
+        const fileExist = await fs.exists(item.dist);
+        if (!fileExist) {
+          return;
+        }
+
         // remove file
         debug('remove d.ts : %s', item.dist);
         await fs.unlink(item.dist);
         this.emit('remove', item.dist, file);
+
+        // update oneForAllDistMap
+        this.updateOneForAll(item.dist, true);
       }
     });
+  }
 
-    // create d.ts includes all types.
-    if (config.oneForAll && distList.length) {
-      const distContent = comment + distList
-        .map(file => `import '${path.relative(this.oneForAllDist, file)}'`)
+  // update oneForAll
+  private updateOneForAll(fileUrl: string, isRemove?: boolean) {
+    const config = this.config;
+    if (!config.oneForAll) {
+      return;
+    }
+
+    const index = this.dtsFileList.indexOf(fileUrl);
+    if (index >= 0) {
+      if (isRemove) {
+        this.dtsFileList.splice(index, 1);
+      } else {
+        return;
+      }
+    }
+
+    this.dtsFileList.push(fileUrl);
+
+    if (this.oneForAllTick) {
+      return;
+    }
+
+    this.oneForAllTick = setTimeout(() => {
+      // create d.ts includes all types.
+      const distContent = dtsComment + this.dtsFileList
+        .map(file => {
+          const importUrl = path.relative(this.oneForAllDistDir, file.replace(/\.d\.ts$/, ''));
+          return `import '${importUrl.startsWith('.') ? importUrl : `./${importUrl}`}';`;
+        })
         .join('\n');
 
       if (this.isCached(this.oneForAllDist, distContent)) {
         return;
       }
 
-      await utils.writeFile(this.oneForAllDist, distContent);
-    }
+      utils.writeFile(this.oneForAllDist, distContent);
+      this.oneForAllTick = null;
+    }, config.throttle);
   }
 
   private isCached(fileUrl, content) {

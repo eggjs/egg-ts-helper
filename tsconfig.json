@@ -13,6 +13,7 @@
     "charset": "utf8",
     "allowJs": false,
     "pretty": true,
+    "declarationMap": true,
     "noEmitOnError": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,

@@ -1,7 +1,7 @@
 import { spawn } from 'child_process';
 import del from 'del';
 import path from 'path';
-import assert from 'power-assert';
+import assert = require('assert');
 
 describe('register.test.ts', () => {
   beforeEach(() => {

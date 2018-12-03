@@ -5,12 +5,12 @@ import fs from 'fs';
 import mkdirp from 'mkdirp';
 import os from 'os';
 import path from 'path';
-import assert from 'power-assert';
+import assert = require('assert');
 import { createTsHelperInstance, getDefaultWatchDirs } from '../dist/';
 const debug = d('egg-ts-helper#index.test');
 const noop = () => {};
 const timeout = (delay, callback: () => any) => {
-  return  new Promise((_, reject) => {
+  return new Promise((_, reject) => {
     setTimeout(() => {
       callback();
       reject('timeout');
@@ -47,6 +47,7 @@ describe('index.test.ts', () => {
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/index.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/plugin.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/custom.d.ts')));
+    assert(!fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/ets.d.ts')));
 
     // caseStyle check
     const caseStylePath = path.resolve(__dirname, './fixtures/app/typings/app/casestyle/index.d.ts');
@@ -54,6 +55,7 @@ describe('index.test.ts', () => {
     assert(fs.existsSync(caseStylePath));
     assert(caseStyleContent.includes('simpleTest: ExportSimpleTestSchema'));
 
+    // dts check
     const dts = path.resolve(__dirname, './fixtures/app/typings/app/service/index.d.ts');
     fs.writeFileSync(path.resolve(dir, 'test.ts'), '');
     fs.writeFileSync(path.resolve(dir, 'test-two.ts'), '');
@@ -71,6 +73,47 @@ describe('index.test.ts', () => {
     await sleep(2000);
 
     assert(!fs.existsSync(dts));
+  });
+
+  it('should support oneForAll option', async () => {
+    createTsHelperInstance({
+      cwd: path.resolve(__dirname, './fixtures/app'),
+      watch: true,
+      execAtInit: true,
+      autoRemoveJs: false,
+      oneForAll: true,
+    });
+
+    const oneForAllDist = path.resolve(__dirname, './fixtures/app/typings/ets.d.ts');
+
+    await sleep(2000);
+
+    // onForAll check
+    const oneForAll = fs.readFileSync(oneForAllDist, { encoding: 'utf-8' });
+    assert(oneForAll.includes('import \'./app/controller/index\';'));
+    assert(oneForAll.includes('import \'./app/extend/context\';'));
+    assert(oneForAll.includes('import \'./app/middleware/index\';'));
+    assert(oneForAll.includes('import \'./config/index\';'));
+    assert(oneForAll.includes('import \'./custom\';'));
+  });
+
+  it('should works with custom oneForAll dist', async () => {
+    const oneForAllDist = path.resolve(__dirname, './fixtures/app/typings/all/special.d.ts');
+    createTsHelperInstance({
+      cwd: path.resolve(__dirname, './fixtures/app'),
+      watch: true,
+      oneForAll: oneForAllDist,
+    });
+
+    await sleep(2000);
+
+    // onForAll check
+    const oneForAll = fs.readFileSync(oneForAllDist, { encoding: 'utf-8' });
+    assert(oneForAll.includes('import \'../app/controller/index\';'));
+    assert(oneForAll.includes('import \'../app/extend/context\';'));
+    assert(oneForAll.includes('import \'../app/middleware/index\';'));
+    assert(oneForAll.includes('import \'../config/index\';'));
+    assert(oneForAll.includes('import \'../custom\';'));
   });
 
   it('should works with polling watcher', async () => {
@@ -267,7 +310,7 @@ describe('index.test.ts', () => {
     await sleep(4000);
 
     const eggBin = path.resolve(__dirname, '../node_modules/.bin/egg-bin' + (os.platform() === 'win32' ? '.cmd' : ''));
-    const proc = spawn(eggBin, ['dev', '--ts', '--baseDir', baseDir, '--port', '7661'], {
+    const proc = spawn(eggBin, [ 'dev', '--ts', '--baseDir', baseDir, '--port', '7661' ], {
       stdio: 'pipe',
       env: {
         ...process.env,
