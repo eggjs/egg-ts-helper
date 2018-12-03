@@ -199,7 +199,7 @@ interface IModel {
 }
 ```
 
-`generator` set to `function`.
+`generator` set to `function`. ( Support since `1.16.0` )
 
 ```typescript
 interface IModel {
@@ -207,7 +207,7 @@ interface IModel {
 }
 ```
 
-`generator` set to `object`.
+`generator` set to `object`. ( Support since `1.16.0` )
 
 ```typescript
 interface IModel {
@@ -243,7 +243,7 @@ interface IModel {
 
 `caseStyle` can set to `lower`、`upper`、`camel` or function
 
-**declareTo** `string`
+**declareTo** `string` ( Support since `1.15.0` )
 
 `declareTo` set to `Context.model`
 
