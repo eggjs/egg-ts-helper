@@ -6,7 +6,7 @@ import mkdirp from 'mkdirp';
 import os from 'os';
 import path from 'path';
 import assert = require('assert');
-import { createTsHelperInstance, getDefaultWatchDirs } from '../dist/';
+import TsHelper, { createTsHelperInstance, getDefaultWatchDirs } from '../dist/';
 const debug = d('egg-ts-helper#index.test');
 const noop = () => {};
 const timeout = (delay, callback: () => any) => {
@@ -23,15 +23,20 @@ function sleep(time) {
 }
 
 describe('index.test.ts', () => {
+  let tsHelper: TsHelper;
   before(() => {
     del.sync(path.resolve(__dirname, './fixtures/*/typings'), { force: true });
+  });
+
+  afterEach(() => {
+    tsHelper.destroy();
   });
 
   it('should works without error', async () => {
     const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
     mkdirp.sync(dir);
 
-    const tsHelper = createTsHelperInstance({
+    tsHelper = createTsHelperInstance({
       cwd: path.resolve(__dirname, './fixtures/app'),
       watch: true,
       execAtInit: true,
@@ -76,7 +81,7 @@ describe('index.test.ts', () => {
   });
 
   it('should support oneForAll option', async () => {
-    createTsHelperInstance({
+    tsHelper = createTsHelperInstance({
       cwd: path.resolve(__dirname, './fixtures/app'),
       watch: true,
       execAtInit: true,
@@ -99,7 +104,7 @@ describe('index.test.ts', () => {
 
   it('should works with custom oneForAll dist', async () => {
     const oneForAllDist = path.resolve(__dirname, './fixtures/app/typings/all/special.d.ts');
-    createTsHelperInstance({
+    tsHelper = createTsHelperInstance({
       cwd: path.resolve(__dirname, './fixtures/app'),
       watch: true,
       oneForAll: oneForAllDist,
@@ -120,7 +125,7 @@ describe('index.test.ts', () => {
     const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
     mkdirp.sync(dir);
 
-    const tsHelper = createTsHelperInstance({
+    tsHelper = createTsHelperInstance({
       cwd: path.resolve(__dirname, './fixtures/app'),
       watch: true,
       watchOptions: {
@@ -158,7 +163,7 @@ describe('index.test.ts', () => {
     const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
     mkdirp.sync(dir);
 
-    const tsHelper = createTsHelperInstance({
+    tsHelper = createTsHelperInstance({
       cwd: path.resolve(__dirname, './fixtures/app'),
       watch: true,
       execAtInit: true,
@@ -208,7 +213,7 @@ describe('index.test.ts', () => {
     const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
     mkdirp.sync(dir);
 
-    const tsHelper = createTsHelperInstance({
+    tsHelper = createTsHelperInstance({
       cwd: path.resolve(__dirname, './fixtures/app'),
       watch: true,
       execAtInit: true,
@@ -261,7 +266,7 @@ describe('index.test.ts', () => {
       }
     });
 
-    const tsHelper = createTsHelperInstance({
+    tsHelper = createTsHelperInstance({
       cwd: path.resolve(__dirname, './fixtures/app3'),
       watchDirs,
     });
@@ -272,7 +277,7 @@ describe('index.test.ts', () => {
   });
 
   it('should support read framework by package.json', () => {
-    let tsHelper = createTsHelperInstance({
+    tsHelper = createTsHelperInstance({
       cwd: path.resolve(__dirname, './fixtures/app3'),
       watch: false,
     });
@@ -291,7 +296,7 @@ describe('index.test.ts', () => {
 
   it('should support rewrite by package.json', () => {
     const watchDirs = getDefaultWatchDirs();
-    const tsHelper = createTsHelperInstance({
+    tsHelper = createTsHelperInstance({
       cwd: path.resolve(__dirname, './fixtures/app4'),
     });
     const len = Object.keys(watchDirs).filter(k => (watchDirs[k] as any).enabled).length;
@@ -301,7 +306,7 @@ describe('index.test.ts', () => {
 
   it('should works without error in real app', async () => {
     const baseDir = path.resolve(__dirname, './fixtures/real/');
-    createTsHelperInstance({
+    tsHelper = createTsHelperInstance({
       cwd: baseDir,
       execAtInit: true,
       autoRemoveJs: false,

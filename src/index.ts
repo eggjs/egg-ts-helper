@@ -195,7 +195,6 @@ export default class TsHelper extends EventEmitter {
   // support oneForAll
   private oneForAllDist: string;
   private oneForAllDistDir: string;
-  private oneForAllTick: any;
   private dtsFileList: string[] = [];
 
   constructor(options: TsHelperOption = {}) {
@@ -229,6 +228,7 @@ export default class TsHelper extends EventEmitter {
         typeof config.oneForAll === 'string' ? config.oneForAll : './ets.d.ts',
         config.typings,
       );
+
       this.oneForAllDistDir = path.dirname(this.oneForAllDist);
     }
 
@@ -286,6 +286,13 @@ export default class TsHelper extends EventEmitter {
     });
 
     this.watched = true;
+  }
+
+  // destroy
+  destroy() {
+    this.removeAllListeners();
+    this.watchers.forEach(watcher => watcher.close());
+    this.watchers.length = 0;
   }
 
   // configure
@@ -364,7 +371,7 @@ export default class TsHelper extends EventEmitter {
     }
 
     const resultList = Array.isArray(result) ? result : [ result ];
-    resultList.forEach(async item => {
+    await Promise.all(resultList.map(async item => {
       // check cache
       if (this.isCached(item.dist, item.content)) {
         return;
@@ -373,7 +380,7 @@ export default class TsHelper extends EventEmitter {
       if (item.content) {
         // create file
         const dtsContent = `${dtsComment}import '${config.framework}';\n${item.content}`;
-        debug('created d.ts : %s \n\n %s', item.dist, dtsContent);
+        debug('created d.ts : %s', item.dist);
         await utils.writeFile(item.dist, dtsContent);
         this.emit('update', item.dist, file);
 
@@ -393,7 +400,7 @@ export default class TsHelper extends EventEmitter {
         // update oneForAllDistMap
         this.updateOneForAll(item.dist, true);
       }
-    });
+    }));
   }
 
   // update oneForAll
@@ -413,12 +420,7 @@ export default class TsHelper extends EventEmitter {
     }
 
     this.dtsFileList.push(fileUrl);
-
-    if (this.oneForAllTick) {
-      return;
-    }
-
-    this.oneForAllTick = setTimeout(() => {
+    this.throttleFn(this.oneForAllDist, () => {
       // create d.ts includes all types.
       const distContent = dtsComment + this.dtsFileList
         .map(file => {
@@ -432,8 +434,7 @@ export default class TsHelper extends EventEmitter {
       }
 
       utils.writeFile(this.oneForAllDist, distContent);
-      this.oneForAllTick = null;
-    }, config.throttle);
+    });
   }
 
   private isCached(fileUrl, content) {
@@ -451,17 +452,22 @@ export default class TsHelper extends EventEmitter {
   private onChange(p: string, event: string, index: number) {
     debug('%s trigger change', p);
 
-    const k = p.substring(0, p.lastIndexOf('.'));
-    if (this.tickerMap[k]) {
-      return;
-    }
-
-    // throttle 500ms
-    this.tickerMap[k] = setTimeout(() => {
+    this.throttleFn(p, () => {
       debug('trigger change event in %s', index);
       this.emit('change', p);
       this.generateTs(index, event, p);
-      this.tickerMap[k] = null;
+    });
+  }
+
+  // throttling execution
+  private throttleFn(key, fn) {
+    if (this.tickerMap[key]) {
+      return;
+    }
+
+    this.tickerMap[key] = setTimeout(() => {
+      fn();
+      this.tickerMap[key] = null;
     }, this.config.throttle);
   }
 }
