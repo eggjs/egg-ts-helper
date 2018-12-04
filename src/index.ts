@@ -31,7 +31,6 @@ export interface TsHelperOption {
   typings?: string;
   watchDirs?: { [key: string]: WatchItem | boolean };
   caseStyle?: string | ((...args: any[]) => string);
-  oneForAll?: boolean | string;
   watch?: boolean;
   watchOptions?: chokidar.WatchOptions;
   autoRemoveJs?: boolean;
@@ -68,7 +67,6 @@ export const defaultConfig = {
   autoRemoveJs: true,
   throttle: 500,
   watch: false,
-  oneForAll: false,
   watchOptions: undefined,
   execAtInit: false,
   watchDirs: {},
