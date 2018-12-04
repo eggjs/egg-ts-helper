@@ -8,7 +8,6 @@ install:
 os:
   - osx
   - linux
-  - windows
 script:
   - npm run cov
 after_script: "npm install coveralls && cat ./coverage/lcov.info | coveralls"
