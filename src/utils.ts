@@ -126,19 +126,13 @@ export function findExportNode(code: string) {
           cache.set(declaration.name.escapedText, declaration.initializer);
         }
       }
-    } else if (
-      (ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node)) &&
-      node.name
-    ) {
+    } else if ((ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node)) && node.name) {
       // cache function declaration and class declaration
       cache.set(node.name.escapedText, node);
     } else if (ts.isExportAssignment(node)) {
       // export default {}
       exportDefaultNode = node.expression;
-    } else if (
-      ts.isExpressionStatement(node) &&
-      ts.isBinaryExpression(node.expression)
-    ) {
+    } else if (ts.isExpressionStatement(node) && ts.isBinaryExpression(node.expression)) {
       if (ts.isPropertyAccessExpression(node.expression.left)) {
         const obj = node.expression.left.expression;
         const prop = node.expression.left.name;
@@ -164,11 +158,7 @@ export function findExportNode(code: string) {
     }
   });
 
-  while (
-    exportDefaultNode &&
-    ts.isIdentifier(exportDefaultNode) &&
-    cache.size
-  ) {
+  while (exportDefaultNode && ts.isIdentifier(exportDefaultNode) && cache.size) {
     const mid = cache.get(exportDefaultNode.escapedText);
     cache.delete(exportDefaultNode.escapedText);
     exportDefaultNode = mid;
@@ -201,11 +191,7 @@ export function eachSourceFile(node: ts.Node, cb: (n: ts.Node) => any) {
 
 // check whether module is exist
 export function moduleExist(mod: string, cwd?: string) {
-  const nodeModulePath = path.resolve(
-    cwd || process.cwd(),
-    'node_modules',
-    mod,
-  );
+  const nodeModulePath = path.resolve(cwd || process.cwd(), 'node_modules', mod);
   try {
     return fs.existsSync(nodeModulePath) || require.resolve(mod);
   } catch (e) {
@@ -247,7 +233,7 @@ export function camelProp(
 
   // camel transfer
   property = formatProp(property);
-  let first = property[0];
+  let first = property[ 0 ];
   // istanbul ignore next
   switch (caseStyle) {
     case 'lower':
