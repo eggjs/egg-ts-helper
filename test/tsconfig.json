@@ -1,29 +1,5 @@
 {
-  "compilerOptions": {
-    "strict": true,
-    "target": "es2017",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "outDir": "dist",
-    "noImplicitAny": false,
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "charset": "utf8",
-    "allowJs": true,
-    "watch": false,
-    "pretty": true,
-    "noEmitOnError": false,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "allowUnreachableCode": false,
-    "allowUnusedLabels": false,
-    "strictPropertyInitialization": false,
-    "noFallthroughCasesInSwitch": true,
-    "inlineSourceMap": true,
-    "importHelpers": true
-  },
+  "extends": "../tsconfig.json",
   "include": [
     "./**/*"
   ]

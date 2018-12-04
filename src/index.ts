@@ -174,7 +174,7 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
 const gd = path.resolve(__dirname, './generators');
 const generators = fs
   .readdirSync(gd)
-  .filter(f => !f.endsWith('.d.ts') && !f.endsWith('.map'))
+  .filter(f => f.endsWith('.js'))
   .map(f => {
     const name = f.substring(0, f.lastIndexOf('.'));
     return {

@@ -9,3 +9,4 @@ declare module 'egg' {
     access: typeof ExportAccess;
   }
 }
+//# sourceMappingURL=index.d.ts.map

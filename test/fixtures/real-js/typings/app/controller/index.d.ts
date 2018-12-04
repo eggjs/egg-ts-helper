@@ -9,3 +9,4 @@ declare module 'egg' {
     home: ExportHome;
   }
 }
+//# sourceMappingURL=index.d.ts.map

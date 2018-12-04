@@ -72,4 +72,8 @@ describe('generators/class.test.ts', () => {
     const result = triggerGenerator<GeneratorResult>('controller', newAppDir);
     assert(result.content!.includes('declare module \'larva\''));
   });
+
+  it('test sourcemap', () => {
+    triggerGenerator<GeneratorResult>('controller', appDir);
+  });
 });

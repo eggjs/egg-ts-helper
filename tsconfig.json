@@ -16,7 +16,7 @@
     "declaration": true,
     "declarationMap": true,
     "noEmitOnError": false,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "noUnusedParameters": true,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
