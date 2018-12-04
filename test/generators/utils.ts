@@ -36,5 +36,6 @@ export function triggerGenerator<T extends GeneratorResult[] | GeneratorResult =
       ...extra,
     },
     tsHelper.config,
+    tsHelper,
   );
 }
