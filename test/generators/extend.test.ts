@@ -1,5 +1,5 @@
 import path from 'path';
-import assert from 'power-assert';
+import assert = require('assert');
 import { getDefaultWatchDirs, WatchItem } from '../../src';
 import { triggerGenerator } from './utils';
 

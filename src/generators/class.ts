@@ -20,24 +20,25 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
   const interfaceMap: PlainObject = {};
 
   fileList.forEach(f => {
-    f = f.substring(0, f.lastIndexOf('.'));
-    const obj = utils.getModuleObjByPath(f);
-    const moduleName = `Export${obj.moduleName}`;
-    const tsPath = path
-      .relative(config.dtsDir, path.join(config.dir, f))
-      .replace(/\/|\\/g, '/');
-    debug('import %s from %s', moduleName, tsPath);
-    importStr += `import ${moduleName} from '${tsPath}';\n`;
+    const { props, moduleName: sModuleName } = utils.getModuleObjByPath(f);
+    const moduleName = `Export${sModuleName}`;
+    const importContext = utils.getImportStr(
+      config.dtsDir,
+      path.join(config.dir, f),
+      moduleName,
+    );
+
+    importStr += `${importContext}\n`;
 
     // create mapping
     let collector = interfaceMap;
-    while (obj.props.length) {
+    while (props.length) {
       const name = utils.camelProp(
-        obj.props.shift() as string,
+        props.shift() as string,
         config.caseStyle || baseConfig.caseStyle,
       );
 
-      if (!obj.props.length) {
+      if (!props.length) {
         collector[name] = moduleName;
       } else {
         collector = collector[name] = collector[name] || {};

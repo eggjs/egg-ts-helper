@@ -4,6 +4,6 @@ const path = require('path');
 
 process.stdout.write(
   fs.existsSync(path.resolve(__dirname, '../../typings/app/controller/index.d.ts')) 
-  ? 'done'
-  : 'fail'
+    ? 'done'
+    : 'fail'
 );

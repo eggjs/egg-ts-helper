@@ -1,29 +1,3 @@
 {
-  "extends": "tslint:latest",
-  "rules": {
-    "quotemark": [true, "single", "jsx-double"],
-    "no-console": [true, "dir", "log", "warn"],
-    "space-before-function-paren": false,
-    "interface-name": false,
-    "arrow-parens": [true, "ban-single-arg-parens"],
-    "adjacent-overload-signatures": true,
-    "member-access": [false],
-    "no-submodule-imports": false,
-    "object-literal-key-quotes": [true, "as-needed"],
-    "no-empty": false,
-    "member-ordering": [
-      true,
-      {
-        "order": "fields-first"
-      }
-    ],
-    "no-this-assignment": false,
-    "object-literal-sort-keys": false,
-    "max-classes-per-file": [true, 10],
-    "max-line-length": false,
-    "variable-name": false,
-    "align": [true, "statements"],
-    "no-conditional-assignment": false,
-    "no-implicit-dependencies": false
-  }
+  "extends": "tslint-config-egg"
 }

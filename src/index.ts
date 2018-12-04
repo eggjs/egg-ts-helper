@@ -2,10 +2,12 @@ import chokidar from 'chokidar';
 import d from 'debug';
 import { EventEmitter } from 'events';
 import fs from 'fs';
-import mkdirp from 'mkdirp';
 import path from 'path';
 import * as utils from './utils';
 const debug = d('egg-ts-helper#index');
+const dtsComment =
+  '// This file is created by egg-ts-helper\n' +
+  '// Do not modify this file!!!!!!!!!\n\n';
 
 declare global {
   interface PlainObject {
@@ -51,6 +53,7 @@ export interface GeneratorResult {
 export type TsGenerator<T, U = GeneratorResult | GeneratorResult[] | void> = (
   config: T,
   baseConfig: TsHelperConfig,
+  tsHelper: TsHelper,
 ) => U;
 
 // partial and exclude some properties
@@ -72,7 +75,7 @@ export const defaultConfig = {
 
 export function formatWatchItem(watchItem: WatchItem) {
   return {
-    trigger: ['add', 'unlink'],
+    trigger: [ 'add', 'unlink' ],
     generator: 'class',
     enabled: true,
     ...watchItem,
@@ -136,10 +139,11 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
   // config
   baseConfig.config = {
     path: 'config',
-    pattern: 'config*.(ts|js)',
+    // only need to parse config.default.ts or config.ts
+    pattern: 'config(.default|).(ts|js)',
     interface: 'EggAppConfig',
     generator: 'config',
-    trigger: ['add', 'unlink', 'change'],
+    trigger: [ 'add', 'unlink', 'change' ],
   };
 
   // plugin
@@ -147,7 +151,7 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
     path: 'config',
     pattern: 'plugin*.(ts|js)',
     generator: 'plugin',
-    trigger: ['add', 'unlink', 'change'],
+    trigger: [ 'add', 'unlink', 'change' ],
   };
 
   // service
@@ -169,7 +173,7 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
 const gd = path.resolve(__dirname, './generators');
 const generators = fs
   .readdirSync(gd)
-  .filter(f => !f.endsWith('.d.ts'))
+  .filter(f => f.endsWith('.js'))
   .map(f => {
     const name = f.substring(0, f.lastIndexOf('.'));
     return {
@@ -187,6 +191,10 @@ export default class TsHelper extends EventEmitter {
   private tickerMap: PlainObject = {};
   private watched: boolean = false;
   private cacheDist: PlainObject = {};
+  private dtsFileList: string[] = [];
+
+  // utils
+  public utils = utils;
 
   constructor(options: TsHelperOption = {}) {
     super();
@@ -235,7 +243,7 @@ export default class TsHelper extends EventEmitter {
 
   // build all dirs
   build() {
-    this.watchDirs.forEach((_, i) => this.generateTs(i));
+    this.watchDirs.map((_, i) => this.generateTs(i));
   }
 
   // init watcher
@@ -269,6 +277,34 @@ export default class TsHelper extends EventEmitter {
     this.watched = true;
   }
 
+  // destroy
+  destroy() {
+    this.removeAllListeners();
+    this.watchers.forEach(watcher => watcher.close());
+    this.watchers.length = 0;
+  }
+
+  // create oneForAll file
+  createOneForAll(dist?: string) {
+    const config = this.config;
+    const oneForAllDist = (typeof dist === 'string') ? dist : path.join(config.typings, './ets.d.ts');
+    const oneForAllDistDir = path.dirname(oneForAllDist);
+
+    // create d.ts includes all types.
+    const distContent = dtsComment + this.dtsFileList
+      .map(file => {
+        const importUrl = path
+          .relative(oneForAllDistDir, file.replace(/\.d\.ts$/, ''))
+          .replace(/\/|\\/g, '/');
+
+        return `import '${importUrl.startsWith('.') ? importUrl : `./${importUrl}`}';`;
+      })
+      .join('\n');
+
+    this.emit('update', oneForAllDist);
+    utils.writeFileSync(oneForAllDist, distContent);
+  }
+
   // configure
   // options > configFile > package.json
   private configure(options: TsHelperOption): TsHelperConfig {
@@ -285,10 +321,7 @@ export default class TsHelper extends EventEmitter {
     }
 
     // read from local file
-    mergeConfig(
-      config,
-      utils.requireFile(getAbsoluteUrlByCwd(configFile, cwd)),
-    );
+    mergeConfig(config, utils.requireFile(getAbsoluteUrlByCwd(configFile, cwd)));
     debug('%o', config);
 
     // merge local config and options to config
@@ -341,56 +374,85 @@ export default class TsHelper extends EventEmitter {
     };
 
     // execute generator
-    const result = generator(newConfig, config);
+    const result = generator(newConfig, config, this);
     debug('generate ts file result : %o', result);
     if (!result) {
       return;
     }
 
-    const resultList = Array.isArray(result) ? result : [result];
-    resultList.forEach(item => {
-      if (
-        this.cacheDist[item.dist] &&
-        this.cacheDist[item.dist].content === item.content
-      ) {
+    const resultList = Array.isArray(result) ? result : [ result ];
+    resultList.map(item => {
+      // check cache
+      if (this.isCached(item.dist, item.content)) {
         return;
       }
 
-      this.cacheDist[item.dist] = item;
+      let isRemove = false;
       if (item.content) {
+        // create file
+        const dtsContent = `${dtsComment}import '${config.framework}';\n${item.content}`;
         debug('created d.ts : %s', item.dist);
-        mkdirp.sync(path.dirname(item.dist));
-        fs.writeFileSync(
-          item.dist,
-          '// This file is created by egg-ts-helper\n' +
-          '// Do not modify this file!!!!!!!!!\n\n' +
-          `import '${config.framework}';\n` +
-          item.content,
-        );
+        utils.writeFileSync(item.dist, dtsContent);
         this.emit('update', item.dist, file);
-      } else if (fs.existsSync(item.dist)) {
+      } else {
+        if (!fs.existsSync(item.dist)) {
+          return;
+        }
+
+        // remove file
         debug('remove d.ts : %s', item.dist);
         fs.unlinkSync(item.dist);
         this.emit('remove', item.dist, file);
+        isRemove = true;
       }
+
+      // update distFiles
+      this.updateDistFiles(item.dist, isRemove);
     });
+  }
+
+  private updateDistFiles(fileUrl: string, isRemove?: boolean) {
+    const index = this.dtsFileList.indexOf(fileUrl);
+    if (index >= 0) {
+      if (isRemove) {
+        this.dtsFileList.splice(index, 1);
+      }
+    } else {
+      this.dtsFileList.push(fileUrl);
+    }
+  }
+
+  private isCached(fileUrl, content) {
+    const cacheItem = this.cacheDist[fileUrl];
+    if (cacheItem === content) {
+      // no need to create file content is not changed.
+      return true;
+    }
+
+    this.cacheDist[fileUrl] = content;
+    return false;
   }
 
   // trigger while file changed
   private onChange(p: string, event: string, index: number) {
     debug('%s trigger change', p);
 
-    const k = p.substring(0, p.lastIndexOf('.'));
-    if (this.tickerMap[k]) {
-      return;
-    }
-
-    // throttle 500ms
-    this.tickerMap[k] = setTimeout(() => {
+    this.throttleFn(p, () => {
       debug('trigger change event in %s', index);
       this.emit('change', p);
       this.generateTs(index, event, p);
-      this.tickerMap[k] = null;
+    });
+  }
+
+  // throttling execution
+  private throttleFn(key, fn) {
+    if (this.tickerMap[key]) {
+      return;
+    }
+
+    this.tickerMap[key] = setTimeout(() => {
+      fn();
+      this.tickerMap[key] = null;
     }, this.config.throttle);
   }
 }
