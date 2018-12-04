@@ -31,7 +31,7 @@ if (cluster.isMaster) {
 
 // start to register
 function register() {
-  const argv = ['-w'];
+  const argv = [ '-w' ];
   if (process.env.NODE_ENV === 'test') {
     // silent in unittest
     argv.push('-s');
