@@ -2,7 +2,7 @@
 // Do not modify this file!!!!!!!!!
 
 import 'egg';
-import ExtendContext from '../../../app/extend/context';
+import ExtendContext = require('../../../app/extend/context');
 declare module 'egg' {
   type ExtendContextType = typeof ExtendContext;
   interface Context extends ExtendContextType { }

@@ -2,7 +2,7 @@
 // Do not modify this file!!!!!!!!!
 
 import 'egg';
-import ExportAccess from '../../../app/middleware/access';
+import ExportAccess = require('../../../app/middleware/access');
 
 declare module 'egg' {
   interface IMiddleware {

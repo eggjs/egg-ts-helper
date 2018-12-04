@@ -54,6 +54,7 @@ export interface GeneratorResult {
 export type TsGenerator<T, U = GeneratorResult | GeneratorResult[] | void> = (
   config: T,
   baseConfig: TsHelperConfig,
+  tsHelper: TsHelper,
 ) => U;
 
 // partial and exclude some properties
@@ -196,6 +197,9 @@ export default class TsHelper extends EventEmitter {
   private oneForAllDist: string;
   private oneForAllDistDir: string;
   private dtsFileList: string[] = [];
+
+  // utils
+  public utils = utils;
 
   constructor(options: TsHelperOption = {}) {
     super();
@@ -364,7 +368,7 @@ export default class TsHelper extends EventEmitter {
     };
 
     // execute generator
-    const result = generator(newConfig, config);
+    const result = generator(newConfig, config, this);
     debug('generate ts file result : %o', result);
     if (!result) {
       return;

@@ -1,10 +1,8 @@
-import d from 'debug';
 import fs from 'fs';
 import path from 'path';
 import ts from 'typescript';
 import { TsGenConfig, TsHelperConfig } from '..';
 import * as utils from '../utils';
-const debug = d('egg-ts-helper#generators_config');
 
 export const EXPORT_DEFAULT_FUNCTION = 1;
 export const EXPORT_DEFAULT = 2;
@@ -33,32 +31,30 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
 
     // read from cache
     if (!cache[abUrl] || config.file === abUrl) {
-      f = f.substring(0, f.lastIndexOf('.'));
       const type = checkConfigReturnType(abUrl);
-      const moduleName = utils.getModuleObjByPath(f).moduleName;
-      const tsPath = path
-        .relative(config.dtsDir, path.join(config.dir, f))
-        .replace(/\/|\\/g, '/');
-      debug('import %s from %s', moduleName, tsPath);
+      const { moduleName: sModuleName } = utils.getModuleObjByPath(f);
+      const moduleName = `Export${sModuleName}`;
+      const importContext = utils.getImportStr(
+        config.dtsDir,
+        abUrl,
+        moduleName,
+        type === EXPORT,
+      );
 
-      const imn = `Export${moduleName}`;
-      const prefix = type === EXPORT ? '* as ' : '';
-      const ims = `import ${prefix}${imn} from '${tsPath}';`;
-      let tds = `type ${moduleName} = `;
-
+      let tds = `type ${sModuleName} = `;
       if (type === EXPORT_DEFAULT_FUNCTION) {
-        tds += `ReturnType<typeof ${imn}>;`;
+        tds += `ReturnType<typeof ${moduleName}>;`;
       } else if (type === EXPORT_DEFAULT || type === EXPORT) {
-        tds += `typeof ${imn};`;
+        tds += `typeof ${moduleName};`;
       } else {
         return;
       }
 
       // cache the file
       cache[abUrl] = {
-        import: ims,
+        import: importContext,
         declaration: tds,
-        moduleName,
+        moduleName: sModuleName,
       };
     }
 

@@ -12,8 +12,27 @@ export function loadFiles(cwd: string, pattern?: string) {
 
   return fileList.filter(f => {
     // filter same name js/ts
-    return !(f.endsWith('.js') && fileList.includes(f.substring(0, f.length - 2) + 'ts'));
+    return !(
+      f.endsWith('.js') &&
+      fileList.includes(f.substring(0, f.length - 2) + 'ts')
+    );
   });
+}
+
+// get import context
+export function getImportStr(
+  from: string,
+  to: string,
+  moduleName?: string,
+  importStar?: boolean,
+) {
+  const extname = path.extname(to);
+  let importPath = path.relative(from, to).replace(/\/|\\/g, '/');
+  importPath = importPath.substring(0, importPath.length - extname.length);
+  const isTS = extname === '.ts';
+  const importStartStr = isTS && importStar ? '* as ' : '';
+  const fromStr = isTS ? `from '${importPath}'` : `= require('${importPath}')`;
+  return `import ${importStartStr}${moduleName} ${fromStr};`;
 }
 
 // write file
@@ -25,22 +44,27 @@ export function writeFile(fileUrl, content) {
 // clean same name js/ts
 export function cleanJs(cwd: string) {
   const fileList: string[] = [];
-  glob.sync([ '**/*.ts', '!**/*.d.ts', '!**/node_modules' ], { cwd }).forEach(f => {
-    const jf = removeSameNameJs(path.resolve(cwd, f));
-    if (jf) {
-      fileList.push(jf);
-    }
-  });
+  glob
+    .sync([ '**/*.ts', '!**/*.d.ts', '!**/node_modules' ], { cwd })
+    .forEach(f => {
+      const jf = removeSameNameJs(path.resolve(cwd, f));
+      if (jf) {
+        fileList.push(jf);
+      }
+    });
 
   if (fileList.length) {
-    console.info('[egg-ts-helper] These file was deleted because the same name ts file was exist!\n');
+    console.info(
+      '[egg-ts-helper] These file was deleted because the same name ts file was exist!\n',
+    );
     console.info('  ' + fileList.join('\n  ') + '\n');
   }
 }
 
 // get moduleName by file path
 export function getModuleObjByPath(f: string) {
-  const props = f.split('/');
+  const props = f.substring(0, f.lastIndexOf('.')).split('/');
+
   // composing moduleName
   const moduleName = props.map(prop => camelProp(prop, 'upper')).join('');
 
@@ -67,7 +91,12 @@ export function removeSameNameJs(f: string) {
 export function findExportNode(code: string) {
   let sourceFile;
   try {
-    sourceFile = ts.createSourceFile('file.ts', code, ts.ScriptTarget.ES2017, true);
+    sourceFile = ts.createSourceFile(
+      'file.ts',
+      code,
+      ts.ScriptTarget.ES2017,
+      true,
+    );
   } catch (e) {
     console.error(e);
     return;
@@ -90,7 +119,9 @@ export function findExportNode(code: string) {
       } else {
         // export variable
         if (ts.isVariableStatement(node)) {
-          node.declarationList.declarations.forEach(declare => exportNodeList.push(declare));
+          node.declarationList.declarations.forEach(declare =>
+            exportNodeList.push(declare),
+          );
         } else {
           exportNodeList.push(node);
         }
@@ -102,7 +133,10 @@ export function findExportNode(code: string) {
           cache.set(declaration.name.escapedText, declaration.initializer);
         }
       }
-    } else if ((ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node)) && node.name) {
+    } else if (
+      (ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node)) &&
+      node.name
+    ) {
       // cache function declaration and class declaration
       cache.set(node.name.escapedText, node);
     } else if (ts.isExportAssignment(node)) {
@@ -119,7 +153,11 @@ export function findExportNode(code: string) {
           if (obj.escapedText === 'exports') {
             // exports.xxx = {}
             exportNodeList.push(node.expression);
-          } else if (obj.escapedText === 'module' && ts.isIdentifier(prop) && prop.escapedText === 'exports') {
+          } else if (
+            obj.escapedText === 'module' &&
+            ts.isIdentifier(prop) &&
+            prop.escapedText === 'exports'
+          ) {
             // module.exports = {}
             exportDefaultNode = node.expression.right;
           }
@@ -133,7 +171,11 @@ export function findExportNode(code: string) {
     }
   });
 
-  while (exportDefaultNode && ts.isIdentifier(exportDefaultNode) && cache.size) {
+  while (
+    exportDefaultNode &&
+    ts.isIdentifier(exportDefaultNode) &&
+    cache.size
+  ) {
     const mid = cache.get(exportDefaultNode.escapedText);
     cache.delete(exportDefaultNode.escapedText);
     exportDefaultNode = mid;
@@ -166,7 +208,11 @@ export function eachSourceFile(node: ts.Node, cb: (n: ts.Node) => any) {
 
 // check whether module is exist
 export function moduleExist(mod: string, cwd?: string) {
-  const nodeModulePath = path.resolve(cwd || process.cwd(), 'node_modules', mod);
+  const nodeModulePath = path.resolve(
+    cwd || process.cwd(),
+    'node_modules',
+    mod,
+  );
   try {
     return fs.existsSync(nodeModulePath) || require.resolve(mod);
   } catch (e) {
@@ -198,7 +244,10 @@ export function formatProp(prop: string) {
 }
 
 // like egg-core/file-loader
-export function camelProp(property: string, caseStyle: string | ((...args: any[]) => string)): string {
+export function camelProp(
+  property: string,
+  caseStyle: string | ((...args: any[]) => string),
+): string {
   if (typeof caseStyle === 'function') {
     return caseStyle(property);
   }

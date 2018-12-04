@@ -35,6 +35,31 @@ describe('utils.test.ts', () => {
     assert(!utils.moduleExist('egg-sequelize'));
   });
 
+  it('should getImportStr without error', () => {
+    let importContext = utils.getImportStr('./fixtures/app/typings', './fixtures/app/controller/test.ts', 'Test');
+    assert(importContext === "import Test from '../controller/test';");
+
+    importContext = utils.getImportStr('./fixtures/app/typings/app', './fixtures/app/service/test.ts', 'Test');
+    assert(importContext === "import Test from '../../service/test';");
+
+    importContext = utils.getImportStr('./fixtures/app/typings', './fixtures/app/controller/test.ts', 'Test', true);
+    assert(importContext === "import * as Test from '../controller/test';");
+
+    importContext = utils.getImportStr('./fixtures/app/typings', './fixtures/app/controller/test.js', 'Test');
+    assert(importContext === "import Test = require('../controller/test');");
+
+    importContext = utils.getImportStr('./fixtures/app/typings', './fixtures/app/controller/test.js', 'Test', true);
+    assert(importContext === "import Test = require('../controller/test');");
+  });
+
+  it('should getModuleObjByPath without error', () => {
+    let result = utils.getModuleObjByPath('abc/fff.ts');
+    assert(result.moduleName === 'AbcFff');
+
+    result = utils.getModuleObjByPath('abc/bbb.ts');
+    assert(result.moduleName === 'AbcBbb');
+  });
+
   it('should findExportNode without error', () => {
     let exportResult = utils.findExportNode('export default {};')!;
     assert(ts.isObjectLiteralExpression(exportResult.exportDefaultNode!));
