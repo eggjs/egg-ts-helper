@@ -385,15 +385,13 @@ export default class TsHelper extends EventEmitter {
         return;
       }
 
+      let isRemove = false;
       if (item.content) {
         // create file
         const dtsContent = `${dtsComment}import '${config.framework}';\n${item.content}`;
         debug('created d.ts : %s', item.dist);
         await utils.writeFile(item.dist, dtsContent);
         this.emit('update', item.dist, file);
-
-        // update distFiles
-        this.updateDistFiles(item.dist);
       } else {
         const fileExist = await fs.exists(item.dist);
         if (!fileExist) {
@@ -404,10 +402,11 @@ export default class TsHelper extends EventEmitter {
         debug('remove d.ts : %s', item.dist);
         await fs.unlink(item.dist);
         this.emit('remove', item.dist, file);
-
-        // update distFiles
-        this.updateDistFiles(item.dist, true);
+        isRemove = true;
       }
+
+      // update distFiles
+      this.updateDistFiles(item.dist, isRemove);
     }));
   }
 
