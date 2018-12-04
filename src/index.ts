@@ -294,7 +294,10 @@ export default class TsHelper extends EventEmitter {
     // create d.ts includes all types.
     const distContent = dtsComment + this.dtsFileList
       .map(file => {
-        const importUrl = path.relative(oneForAllDistDir, file.replace(/\.d\.ts$/, ''));
+        const importUrl = path
+          .relative(oneForAllDistDir, file.replace(/\.d\.ts$/, ''))
+          .replace(/\/|\\/g, '/');
+
         return `import '${importUrl.startsWith('.') ? importUrl : `./${importUrl}`}';`;
       })
       .join('\n');
