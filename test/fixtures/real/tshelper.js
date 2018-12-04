@@ -1,5 +1,4 @@
 module.exports = {
-  oneForAll: true,
   watchDirs: {
     model: {
       path: 'app/model', // dir path

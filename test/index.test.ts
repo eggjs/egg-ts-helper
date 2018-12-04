@@ -41,7 +41,6 @@ describe('index.test.ts', () => {
       watch: true,
       execAtInit: true,
       autoRemoveJs: false,
-      oneForAll: true,
     });
 
     await sleep(2000);
@@ -53,7 +52,6 @@ describe('index.test.ts', () => {
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/index.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/plugin.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/custom.d.ts')));
-    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/ets.d.ts')));
 
     // caseStyle check
     const caseStylePath = path.resolve(__dirname, './fixtures/app/typings/app/casestyle/index.d.ts');
@@ -81,20 +79,17 @@ describe('index.test.ts', () => {
     assert(!fs.existsSync(dts));
   });
 
-  it('should support oneForAll option', async () => {
+  it('should support oneForAll', async () => {
     tsHelper = createTsHelperInstance({
       cwd: path.resolve(__dirname, './fixtures/app'),
-      watch: true,
-      execAtInit: true,
+      watch: false,
       autoRemoveJs: false,
-      oneForAll: true,
     });
 
+    await tsHelper.build();
+    await tsHelper.createOneForAll();
+
     const oneForAllDist = path.resolve(__dirname, './fixtures/app/typings/ets.d.ts');
-
-    await sleep(2000);
-
-    // onForAll check
     const oneForAll = fs.readFileSync(oneForAllDist, { encoding: 'utf-8' });
     assert(oneForAll.includes('import \'./app/controller/index\';'));
     assert(oneForAll.includes('import \'./app/extend/context\';'));
@@ -107,11 +102,12 @@ describe('index.test.ts', () => {
     const oneForAllDist = path.resolve(__dirname, './fixtures/app/typings/all/special.d.ts');
     tsHelper = createTsHelperInstance({
       cwd: path.resolve(__dirname, './fixtures/app'),
-      watch: true,
-      oneForAll: oneForAllDist,
+      watch: false,
+      autoRemoveJs: false,
     });
 
-    await sleep(2000);
+    await tsHelper.build();
+    await tsHelper.createOneForAll(oneForAllDist);
 
     // onForAll check
     const oneForAll = fs.readFileSync(oneForAllDist, { encoding: 'utf-8' });

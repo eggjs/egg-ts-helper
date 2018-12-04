@@ -192,10 +192,6 @@ export default class TsHelper extends EventEmitter {
   private tickerMap: PlainObject = {};
   private watched: boolean = false;
   private cacheDist: PlainObject = {};
-
-  // support oneForAll
-  private oneForAllDist: string;
-  private oneForAllDistDir: string;
   private dtsFileList: string[] = [];
 
   // utils
@@ -226,16 +222,6 @@ export default class TsHelper extends EventEmitter {
       return getAbsoluteUrlByCwd(p, config.cwd);
     });
 
-    // calc oneForAll dist path
-    if (this.config.oneForAll) {
-      this.oneForAllDist = getAbsoluteUrlByCwd(
-        typeof config.oneForAll === 'string' ? config.oneForAll : './ets.d.ts',
-        config.typings,
-      );
-
-      this.oneForAllDistDir = path.dirname(this.oneForAllDist);
-    }
-
     // generate d.ts at init
     if (config.execAtInit) {
       debug('exec at init');
@@ -257,8 +243,10 @@ export default class TsHelper extends EventEmitter {
   }
 
   // build all dirs
-  build() {
-    this.watchDirs.forEach((_, i) => this.generateTs(i));
+  async build() {
+    await Promise.all(
+      this.watchDirs.map((_, i) => this.generateTs(i)),
+    );
   }
 
   // init watcher
@@ -297,6 +285,24 @@ export default class TsHelper extends EventEmitter {
     this.removeAllListeners();
     this.watchers.forEach(watcher => watcher.close());
     this.watchers.length = 0;
+  }
+
+  // create oneForAll file
+  createOneForAll(dist?: string) {
+    const config = this.config;
+    const oneForAllDist = (typeof dist === 'string') ? dist : path.join(config.typings, './ets.d.ts');
+    const oneForAllDistDir = path.dirname(oneForAllDist);
+
+    // create d.ts includes all types.
+    const distContent = dtsComment + this.dtsFileList
+      .map(file => {
+        const importUrl = path.relative(oneForAllDistDir, file.replace(/\.d\.ts$/, ''));
+        return `import '${importUrl.startsWith('.') ? importUrl : `./${importUrl}`}';`;
+      })
+      .join('\n');
+
+    this.emit('update', oneForAllDist);
+    return utils.writeFile(oneForAllDist, distContent);
   }
 
   // configure
@@ -388,8 +394,8 @@ export default class TsHelper extends EventEmitter {
         await utils.writeFile(item.dist, dtsContent);
         this.emit('update', item.dist, file);
 
-        // update oneForAllDistMap
-        this.updateOneForAll(item.dist);
+        // update distFiles
+        this.updateDistFiles(item.dist);
       } else {
         const fileExist = await fs.exists(item.dist);
         if (!fileExist) {
@@ -401,44 +407,21 @@ export default class TsHelper extends EventEmitter {
         await fs.unlink(item.dist);
         this.emit('remove', item.dist, file);
 
-        // update oneForAllDistMap
-        this.updateOneForAll(item.dist, true);
+        // update distFiles
+        this.updateDistFiles(item.dist, true);
       }
     }));
   }
 
-  // update oneForAll
-  private updateOneForAll(fileUrl: string, isRemove?: boolean) {
-    const config = this.config;
-    if (!config.oneForAll) {
-      return;
-    }
-
+  private updateDistFiles(fileUrl: string, isRemove?: boolean) {
     const index = this.dtsFileList.indexOf(fileUrl);
     if (index >= 0) {
       if (isRemove) {
         this.dtsFileList.splice(index, 1);
-      } else {
-        return;
       }
+    } else {
+      this.dtsFileList.push(fileUrl);
     }
-
-    this.dtsFileList.push(fileUrl);
-    this.throttleFn(this.oneForAllDist, () => {
-      // create d.ts includes all types.
-      const distContent = dtsComment + this.dtsFileList
-        .map(file => {
-          const importUrl = path.relative(this.oneForAllDistDir, file.replace(/\.d\.ts$/, ''));
-          return `import '${importUrl.startsWith('.') ? importUrl : `./${importUrl}`}';`;
-        })
-        .join('\n');
-
-      if (this.isCached(this.oneForAllDist, distContent)) {
-        return;
-      }
-
-      utils.writeFile(this.oneForAllDist, distContent);
-    });
   }
 
   private isCached(fileUrl, content) {

@@ -111,6 +111,24 @@ describe('bin.test.ts', () => {
     assert(content.includes('home: ExportHome'));
   });
 
+  it('should support oneForAll in cli', async () => {
+    // default dist
+    triggerBin('-c', path.resolve(__dirname, './fixtures/app6'), '-o');
+    await sleep(2000);
+    let content = fs
+      .readFileSync(path.resolve(__dirname, './fixtures/app6/typings/ets.d.ts'))
+      .toString();
+    assert(content.includes("import './app/controller/index';"));
+
+    // custom dist
+    triggerBin('-c', path.resolve(__dirname, './fixtures/app6'), '-o', path.resolve(__dirname, './fixtures/app6/typings/special.d.ts'));
+    await sleep(2000);
+    content = fs
+      .readFileSync(path.resolve(__dirname, './fixtures/app6/typings/special.d.ts'))
+      .toString();
+    assert(content.includes("import './app/controller/index';"));
+  });
+
   it('should works with -w and -e correctly', async () => {
     triggerBin('-c', path.resolve(__dirname, './fixtures/app4'), '-w', '-e', 'service');
 
