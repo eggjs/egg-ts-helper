@@ -139,7 +139,8 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
   // config
   baseConfig.config = {
     path: 'config',
-    pattern: 'config*.(ts|js)',
+    // only need to parse config.default.ts or config.ts
+    pattern: 'config(.default|).(ts|js)',
     interface: 'EggAppConfig',
     generator: 'config',
     trigger: [ 'add', 'unlink', 'change' ],

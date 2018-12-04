@@ -165,6 +165,9 @@ describe('index.test.ts', () => {
       watch: true,
       execAtInit: true,
       autoRemoveJs: false,
+      watchDirs: {
+        config: { pattern: 'config.*.ts' },
+      } as any,
     });
 
     await sleep(2000);
