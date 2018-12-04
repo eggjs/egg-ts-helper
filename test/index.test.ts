@@ -41,6 +41,7 @@ describe('index.test.ts', () => {
       watch: true,
       execAtInit: true,
       autoRemoveJs: false,
+      oneForAll: true,
     });
 
     await sleep(2000);
@@ -52,7 +53,7 @@ describe('index.test.ts', () => {
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/index.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/plugin.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/custom.d.ts')));
-    assert(!fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/ets.d.ts')));
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/ets.d.ts')));
 
     // caseStyle check
     const caseStylePath = path.resolve(__dirname, './fixtures/app/typings/app/casestyle/index.d.ts');
