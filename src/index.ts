@@ -1,7 +1,7 @@
 import chokidar from 'chokidar';
 import d from 'debug';
 import { EventEmitter } from 'events';
-import fs from 'mz/fs';
+import fs from 'fs';
 import path from 'path';
 import * as utils from './utils';
 const debug = d('egg-ts-helper#index');
@@ -242,9 +242,7 @@ export default class TsHelper extends EventEmitter {
 
   // build all dirs
   async build() {
-    await Promise.all(
-      this.watchDirs.map((_, i) => this.generateTs(i)),
-    );
+    this.watchDirs.map((_, i) => this.generateTs(i));
   }
 
   // init watcher
@@ -303,7 +301,7 @@ export default class TsHelper extends EventEmitter {
       .join('\n');
 
     this.emit('update', oneForAllDist);
-    return utils.writeFile(oneForAllDist, distContent);
+    utils.writeFileSync(oneForAllDist, distContent);
   }
 
   // configure
@@ -335,7 +333,7 @@ export default class TsHelper extends EventEmitter {
     return config as TsHelperConfig;
   }
 
-  private async generateTs(index: number, event?: string, file?: string) {
+  private generateTs(index: number, event?: string, file?: string) {
     const config = this.config;
     const dir = this.watchDirs[index];
     const watchName = this.watchNameList[index];
@@ -382,7 +380,7 @@ export default class TsHelper extends EventEmitter {
     }
 
     const resultList = Array.isArray(result) ? result : [ result ];
-    await Promise.all(resultList.map(async item => {
+    resultList.map(item => {
       // check cache
       if (this.isCached(item.dist, item.content)) {
         return;
@@ -393,24 +391,23 @@ export default class TsHelper extends EventEmitter {
         // create file
         const dtsContent = `${dtsComment}import '${config.framework}';\n${item.content}`;
         debug('created d.ts : %s', item.dist);
-        await utils.writeFile(item.dist, dtsContent);
+        utils.writeFileSync(item.dist, dtsContent);
         this.emit('update', item.dist, file);
       } else {
-        const fileExist = await fs.exists(item.dist);
-        if (!fileExist) {
+        if (!fs.existsSync(item.dist)) {
           return;
         }
 
         // remove file
         debug('remove d.ts : %s', item.dist);
-        await fs.unlink(item.dist);
+        fs.unlinkSync(item.dist);
         this.emit('remove', item.dist, file);
         isRemove = true;
       }
 
       // update distFiles
       this.updateDistFiles(item.dist, isRemove);
-    }));
+    });
   }
 
   private updateDistFiles(fileUrl: string, isRemove?: boolean) {

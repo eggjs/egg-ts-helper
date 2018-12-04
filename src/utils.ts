@@ -1,4 +1,4 @@
-import fs from 'mz/fs';
+import fs from 'fs';
 import mkdirp from 'mkdirp';
 import glob from 'globby';
 import path from 'path';
@@ -35,10 +35,10 @@ export function getImportStr(
   return `import ${importStartStr}${moduleName} ${fromStr};`;
 }
 
-// write file
-export function writeFile(fileUrl, content) {
+// write file, using fs.writeFileSync to block io that d.ts can create before egg app started.
+export function writeFileSync(fileUrl, content) {
   mkdirp.sync(path.dirname(fileUrl));
-  return fs.writeFile(fileUrl, content);
+  fs.writeFileSync(fileUrl, content);
 }
 
 // clean same name js/ts

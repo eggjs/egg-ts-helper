@@ -42,7 +42,7 @@ if (cmd === 'clean') {
 }
 
 // execute fn
-async function execute() {
+function execute() {
   const watchFiles = program.watch;
   const watchDirs = {};
   (program.ignore || '').split(',').forEach(key => (watchDirs[key] = false));
@@ -67,10 +67,10 @@ async function execute() {
       console.info(`[${packInfo.name}] ${p} created`);
     });
 
-  await tsHelper.build();
+  tsHelper.build();
 
   if (program.oneForAll) {
     // create one for all
-    await tsHelper.createOneForAll(program.oneForAll);
+    tsHelper.createOneForAll(program.oneForAll);
   }
 }
