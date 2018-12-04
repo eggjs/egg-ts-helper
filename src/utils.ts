@@ -54,9 +54,7 @@ export function cleanJs(cwd: string) {
     });
 
   if (fileList.length) {
-    console.info(
-      '[egg-ts-helper] These file was deleted because the same name ts file was exist!\n',
-    );
+    console.info('[egg-ts-helper] These file was deleted because the same name ts file was exist!\n');
     console.info('  ' + fileList.join('\n  ') + '\n');
   }
 }
@@ -91,12 +89,7 @@ export function removeSameNameJs(f: string) {
 export function findExportNode(code: string) {
   let sourceFile;
   try {
-    sourceFile = ts.createSourceFile(
-      'file.ts',
-      code,
-      ts.ScriptTarget.ES2017,
-      true,
-    );
+    sourceFile = ts.createSourceFile('file.ts', code, ts.ScriptTarget.ES2017, true);
   } catch (e) {
     console.error(e);
     return;
