@@ -241,7 +241,7 @@ export default class TsHelper extends EventEmitter {
   }
 
   // build all dirs
-  async build() {
+  build() {
     this.watchDirs.map((_, i) => this.generateTs(i));
   }
 
