@@ -1,18 +1,15 @@
 import d from 'debug';
 import fs from 'fs';
 import path from 'path';
+import * as utils from '../utils';
 import { GeneratorResult, TsGenConfig, TsHelperConfig } from '..';
 const debug = d('egg-ts-helper#generators_extend');
 
 export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
-  const fileList = !config.file
-    ? config.fileList
-    : config.file.endsWith('.ts')
-    ? [config.file]
-    : [];
+  const fileList = config.file ? [ config.file ] : config.fileList;
 
   debug('file list : %o', fileList);
-  if (!fileList.length && !config.file) {
+  if (!fileList.length) {
     // clean files
     return Object.keys(config.interface).map(key => ({
       dist: path.resolve(config.dtsDir, `${key}.d.ts`),
@@ -21,12 +18,14 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
 
   const tsList: GeneratorResult[] = [];
   fileList.forEach(f => {
-    const basename = path.basename(f, '.ts');
-    const m = basename.split('.');
-    const interfaceNameKey = m[0];
-    const interfaceEnvironment = m[1]
-      ? m[1].replace(/^[a-z]/, r => r.toUpperCase())
+    let basename = path.basename(f);
+    basename = basename.substring(0, basename.lastIndexOf('.'));
+    const moduleNames = basename.split('.');
+    const interfaceNameKey = moduleNames[0];
+    const interfaceEnvironment = moduleNames[1]
+      ? moduleNames[1].replace(/^[a-z]/, r => r.toUpperCase())
       : '';
+
     const interfaceName = config.interface[interfaceNameKey];
     if (!interfaceName) {
       return;
@@ -38,18 +37,16 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
       return tsList.push({ dist });
     }
 
-    let tsPath = path.relative(config.dtsDir, f).replace(/\/|\\/g, '/');
-    tsPath = tsPath.substring(0, tsPath.lastIndexOf('.'));
-
-    debug('import extendObject from %s', tsPath);
-    const typeName = `Extend${interfaceEnvironment}${interfaceName}`;
+    // get import info
+    const moduleName = `Extend${interfaceEnvironment}${interfaceName}`;
+    const importContext = utils.getImportStr(config.dtsDir, f, moduleName);
     tsList.push({
       dist,
       content:
-        `import ${typeName} from '${tsPath}';\n` +
+        `${importContext}\n` +
         `declare module \'${baseConfig.framework}\' {\n` +
-        `  type ${typeName}Type = typeof ${typeName};\n` +
-        `  interface ${interfaceName} extends ${typeName}Type { }\n` +
+        `  type ${moduleName}Type = typeof ${moduleName};\n` +
+        `  interface ${interfaceName} extends ${moduleName}Type { }\n` +
         '}',
     });
   });

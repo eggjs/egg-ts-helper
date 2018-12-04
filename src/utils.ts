@@ -1,39 +1,68 @@
 import fs from 'fs';
+import mkdirp from 'mkdirp';
 import glob from 'globby';
 import path from 'path';
 import ts from 'typescript';
 
 // load ts/js files
 export function loadFiles(cwd: string, pattern?: string) {
-  const fileList = glob.sync([pattern || '**/*.(js|ts)', '!**/*.d.ts'], {
+  const fileList = glob.sync([ pattern || '**/*.(js|ts)', '!**/*.d.ts' ], {
     cwd,
   });
 
   return fileList.filter(f => {
     // filter same name js/ts
-    return !(f.endsWith('.js') && fileList.includes(f.substring(0, f.length - 2) + 'ts'));
+    return !(
+      f.endsWith('.js') &&
+      fileList.includes(f.substring(0, f.length - 2) + 'ts')
+    );
   });
+}
+
+// get import context
+export function getImportStr(
+  from: string,
+  to: string,
+  moduleName?: string,
+  importStar?: boolean,
+) {
+  const extname = path.extname(to);
+  let importPath = path.relative(from, to).replace(/\/|\\/g, '/');
+  importPath = importPath.substring(0, importPath.length - extname.length);
+  const isTS = extname === '.ts';
+  const importStartStr = isTS && importStar ? '* as ' : '';
+  const fromStr = isTS ? `from '${importPath}'` : `= require('${importPath}')`;
+  return `import ${importStartStr}${moduleName} ${fromStr};`;
+}
+
+// write file, using fs.writeFileSync to block io that d.ts can create before egg app started.
+export function writeFileSync(fileUrl, content) {
+  mkdirp.sync(path.dirname(fileUrl));
+  fs.writeFileSync(fileUrl, content);
 }
 
 // clean same name js/ts
 export function cleanJs(cwd: string) {
   const fileList: string[] = [];
-  glob.sync(['**/*.ts', '!**/*.d.ts', '!**/node_modules'], { cwd }).forEach(f => {
-    const jf = removeSameNameJs(path.resolve(cwd, f));
-    if (jf) {
-      fileList.push(jf);
-    }
-  });
+  glob
+    .sync([ '**/*.ts', '!**/*.d.ts', '!**/node_modules' ], { cwd })
+    .forEach(f => {
+      const jf = removeSameNameJs(path.resolve(cwd, f));
+      if (jf) {
+        fileList.push(jf);
+      }
+    });
 
   if (fileList.length) {
-    console.info(`[egg-ts-helper] These file was deleted because the same name ts file was exist!\n`);
+    console.info('[egg-ts-helper] These file was deleted because the same name ts file was exist!\n');
     console.info('  ' + fileList.join('\n  ') + '\n');
   }
 }
 
 // get moduleName by file path
 export function getModuleObjByPath(f: string) {
-  const props = f.split('/');
+  const props = f.substring(0, f.lastIndexOf('.')).split('/');
+
   // composing moduleName
   const moduleName = props.map(prop => camelProp(prop, 'upper')).join('');
 
@@ -83,7 +112,9 @@ export function findExportNode(code: string) {
       } else {
         // export variable
         if (ts.isVariableStatement(node)) {
-          node.declarationList.declarations.forEach(declare => exportNodeList.push(declare));
+          node.declarationList.declarations.forEach(declare =>
+            exportNodeList.push(declare),
+          );
         } else {
           exportNodeList.push(node);
         }
@@ -101,10 +132,7 @@ export function findExportNode(code: string) {
     } else if (ts.isExportAssignment(node)) {
       // export default {}
       exportDefaultNode = node.expression;
-    }  else if (
-      ts.isExpressionStatement(node) &&
-      ts.isBinaryExpression(node.expression)
-    ) {
+    } else if (ts.isExpressionStatement(node) && ts.isBinaryExpression(node.expression)) {
       if (ts.isPropertyAccessExpression(node.expression.left)) {
         const obj = node.expression.left.expression;
         const prop = node.expression.left.name;
@@ -112,7 +140,11 @@ export function findExportNode(code: string) {
           if (obj.escapedText === 'exports') {
             // exports.xxx = {}
             exportNodeList.push(node.expression);
-          } else if (obj.escapedText === 'module' && ts.isIdentifier(prop) && prop.escapedText === 'exports') {
+          } else if (
+            obj.escapedText === 'module' &&
+            ts.isIdentifier(prop) &&
+            prop.escapedText === 'exports'
+          ) {
             // module.exports = {}
             exportDefaultNode = node.expression.right;
           }
@@ -191,14 +223,17 @@ export function formatProp(prop: string) {
 }
 
 // like egg-core/file-loader
-export function camelProp(property: string, caseStyle: string | ((...args: any[]) => string)): string {
+export function camelProp(
+  property: string,
+  caseStyle: string | ((...args: any[]) => string),
+): string {
   if (typeof caseStyle === 'function') {
     return caseStyle(property);
   }
 
   // camel transfer
   property = formatProp(property);
-  let first = property[0];
+  let first = property[ 0 ];
   // istanbul ignore next
   switch (caseStyle) {
     case 'lower':

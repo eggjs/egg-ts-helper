@@ -25,16 +25,20 @@ export function triggerGenerator<T extends GeneratorResult[] | GeneratorResult =
   const generator = tsHelper.generators[watchDir.generator] as TsGenerator<any, T>;
   const dir = path.resolve(appDir, watchDir.path);
   const dtsDir = path.resolve(tsHelper.config.typings, path.relative(tsHelper.config.cwd, dir));
+  const config = {
+    ...watchDir,
+    ...extra,
+  };
 
   return generator(
     {
-      ...watchDir,
+      ...config,
       dir,
       file: file ? path.resolve(dir, file) : '',
-      fileList: loadFiles(dir, watchDir.pattern),
+      fileList: loadFiles(dir, config.pattern),
       dtsDir,
-      ...extra,
     },
     tsHelper.config,
+    tsHelper,
   );
 }
