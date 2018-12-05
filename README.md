@@ -327,11 +327,10 @@ $ egg-bin cov -r egg-ts-helper/register
 $ egg-bin debug -r egg-ts-helper/register
 ```
 
-## Declarations
-
-see https://github.com/whxaxes/egg-ts-helper/tree/master/test/fixtures/real/typings
-
-
 ## Demo
 
-see https://github.com/whxaxes/egg-boilerplate-d-ts
+`egg-ts-helper` can works in both `ts` and `js` egg project.
+
+TS demo: https://github.com/whxaxes/egg-boilerplate-d-ts
+
+JS demo: https://github.com/whxaxes/egg-boilerplate-d-js
