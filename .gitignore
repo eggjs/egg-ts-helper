@@ -9,6 +9,7 @@ run/
 *.lock
 .nyc_output
 *.log
+.DS_Store
 dist/
 .cache
 test/fixtures/app*/typings
