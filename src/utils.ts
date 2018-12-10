@@ -19,6 +19,21 @@ export function loadFiles(cwd: string, pattern?: string) {
   });
 }
 
+export function strToFn(fn) {
+  if (typeof fn === 'string') {
+    return (...args: any[]) => fn.replace(/{{\s*(\d+)\s*}}/g, (_, index) => args[index]);
+  } else {
+    return fn;
+  }
+}
+
+export function preWrapHandle(wrapper, fn) {
+  return val => {
+    const result = wrapper(val);
+    return fn ? fn(result) : result;
+  };
+}
+
 // get import context
 export function getImportStr(
   from: string,

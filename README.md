@@ -216,7 +216,7 @@ interface IModel {
 }
 ```
 
-**interfaceHandle** `function`
+**interfaceHandle** `function|string`
 
 If you want to define your own type, just setting the `interfaceHandle`.
 
@@ -232,13 +232,29 @@ module.exports = {
 }
 ```
 
-The typings.
+The generated typings.
 
 ```typescript
 interface IModel {
   Station: Station & { [key: string]: any };
 }
 ```
+
+The type of `interfaceHandle` can be `string` ( Support since `1.18.0` )
+
+```js
+module.exports = {
+  watchDirs: {
+    model: {
+      ...
+
+      interfaceHandle: '{{ 0 }} & { [key: string]: any }',
+    }
+  }
+}
+```
+
+The generated typings is the same as above.
 
 **caseStyle** `string|function`
 
