@@ -1,4 +1,10 @@
 
+1.18.0 / 2018-12-10
+===================
+
+  * feat: interfaceHandle can be string
+  * fix: interfaceHandle in `function` or `object` can be overwrite.
+
 1.17.1 / 2018-12-05
 ===================
 
