@@ -176,7 +176,7 @@ option list
 
 ### Effect of different options.
 
-**interface** `string`
+- **interface** `string`
 
 `interface` set to `IOther`.
 
@@ -186,7 +186,7 @@ interface IOther {
 }
 ```
 
-**generator** `string`
+- **generator** `string`
 
 see https://github.com/whxaxes/egg-ts-helper/tree/master/src/generators
 
@@ -216,7 +216,7 @@ interface IModel {
 }
 ```
 
-**interfaceHandle** `function|string`
+- **interfaceHandle** `function|string`
 
 If you want to define your own type, just setting the `interfaceHandle`.
 
@@ -256,11 +256,11 @@ module.exports = {
 
 The generated typings is the same as above.
 
-**caseStyle** `string|function`
+- **caseStyle** `string|function`
 
 `caseStyle` can set to `lower`、`upper`、`camel` or function
 
-**declareTo** `string` ( Support since `1.15.0` )
+- **declareTo** `string` ( Support since `1.15.0` )
 
 `declareTo` set to `Context.model`
 
