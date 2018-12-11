@@ -14,7 +14,7 @@
 [coveralls-url]: https://coveralls.io/r/whxaxes/egg-ts-helper
 [coveralls-image]: https://img.shields.io/coveralls/whxaxes/egg-ts-helper.svg
 
-一个帮助 `egg` 生成 `d.ts` 的工具，通过 ts 提供的 [Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html) 能力来将 `controller`,`proxy`,`service` 等这些通过 loader 动态加载的模块注入到 egg 的声明中。
+一个帮助 `egg` 生成 `d.ts` 的工具，通过 ts 提供的 [Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html) 能力来将 `controller, proxy, service 等等` 这些 egg 中动态加载的模块注入到 egg 的声明中。从而获得类型校验以及代码提示。
 
 ## 安装
 

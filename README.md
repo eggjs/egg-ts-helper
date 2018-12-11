@@ -14,7 +14,7 @@
 [coveralls-url]: https://coveralls.io/r/whxaxes/egg-ts-helper
 [coveralls-image]: https://img.shields.io/coveralls/whxaxes/egg-ts-helper.svg
 
-A simple tool using to create `d.ts` for [egg](https://eggjs.org) application. Injecting `controller`,`proxy`,`service` etc to the types of egg by [Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html)
+A simple tool using to create `d.ts` for [egg](https://eggjs.org) application. Injecting `controller, proxy, service, etc.` to the types of egg by [Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html) for typeCheck and IntelliSense
 
 
 ## Install
