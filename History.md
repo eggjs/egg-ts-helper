@@ -1,4 +1,20 @@
 
+1.18.0 / 2018-12-10
+===================
+
+  * feat: interfaceHandle can be string
+  * fix: interfaceHandle in `function` or `object` can be overwrite.
+
+1.17.1 / 2018-12-05
+===================
+
+  * fix: fixed clean bug
+
+1.17.0 / 2018-12-05
+===================
+
+  * feat: support js project & add oneForAll option (#21)
+
 1.16.1 / 2018-11-29
 ===================
 

@@ -9,11 +9,7 @@ describe('generators/extend.test.ts', () => {
   it('should works without error', () => {
     const result = triggerGenerator('extend', appDir, 'application.ts');
     const item = result[0];
-    assert(
-      item.dist ===
-        path.resolve(appDir, './typings/app/extend/application.d.ts'),
-    );
-
+    assert(item.dist === path.resolve(appDir, './typings/app/extend/application.d.ts'));
     assert(item.content!.includes('../../../app/extend/application'));
     assert(item.content!.includes('type ExtendApplicationType = typeof ExtendApplication;'));
     assert(item.content!.includes('interface Application extends ExtendApplicationType { }'));
@@ -61,11 +57,7 @@ describe('generators/extend.test.ts', () => {
   it('should works with env', () => {
     const result = triggerGenerator('extend', appDir, 'application.unittest.ts');
     const item = result[0];
-    assert(
-      item.dist ===
-        path.resolve(appDir, './typings/app/extend/application.unittest.d.ts'),
-    );
-
+    assert(item.dist === path.resolve(appDir, './typings/app/extend/application.unittest.d.ts'));
     assert(item.content!.includes('../../../app/extend/application.unittest'));
     assert(item.content!.includes('type ExtendUnittestApplicationType = typeof ExtendUnittestApplication;'));
     assert(item.content!.includes('interface Application extends ExtendUnittestApplicationType { }'));

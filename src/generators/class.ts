@@ -70,7 +70,7 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
       composeInterface(
         interfaceMap,
         interfaceName,
-        config.interfaceHandle,
+        utils.strToFn(config.interfaceHandle),
         '  ',
       ) +
       '}\n',

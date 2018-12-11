@@ -37,6 +37,7 @@ program.parse(process.argv);
 const cwd = program.cwd || defaultConfig.cwd;
 if (cmd === 'clean') {
   cleanJs(cwd);
+  process.exit(0);
 } else {
   execute();
 }
