@@ -2,6 +2,13 @@ const path = require('path');
 module.exports = {
   framework: 'larva',
   watchDirs: {
+    notLegal: {
+      path: 'app/custom',
+      trigger: ['add', 'unlink'],
+      generator() {
+        return null;
+      }
+    },
     custom: {
       path: 'app/custom',
       trigger: ['add', 'unlink'],
@@ -11,6 +18,11 @@ module.exports = {
           content: 'export const a: string;'
         }
       }
+    },
+    custom2: {
+      path: 'app/custom',
+      trigger: ['add', 'unlink'],
+      generator: './custom'
     },
     casestyle: {
       path: 'app/casestyle',

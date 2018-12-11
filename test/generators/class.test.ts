@@ -53,6 +53,7 @@ describe('generators/class.test.ts', () => {
 
   it('should support interfaceHandle with model without error', () => {
     const result = triggerGenerator<GeneratorResult>('model', appDir, undefined, {
+      generator: 'function',
       declareTo: 'Context.model',
       interfaceHandle: 'InstanceOf<{{ 0 }}>',
     });

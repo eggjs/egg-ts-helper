@@ -3,6 +3,7 @@ import d from 'debug';
 import { EventEmitter } from 'events';
 import fs from 'fs';
 import path from 'path';
+import Watcher, { BaseWatchItem, WatchItem } from './watcher';
 import * as utils from './utils';
 const debug = d('egg-ts-helper#index');
 const dtsComment =
@@ -14,16 +15,6 @@ declare global {
     [key: string]: any;
   }
 }
-
-export interface BaseWatchItem {
-  path: string;
-  generator: string;
-  enabled: boolean;
-  trigger?: string[];
-  pattern?: string;
-}
-
-export interface WatchItem extends PlainObject, BaseWatchItem { }
 
 export interface TsHelperOption {
   cwd?: string;
@@ -39,6 +30,7 @@ export interface TsHelperOption {
   configFile?: string;
 }
 
+export type WatchItem = WatchItem;
 export type TsHelperConfig = typeof defaultConfig;
 export type TsGenConfig = {
   dir: string;
@@ -46,15 +38,17 @@ export type TsGenConfig = {
   fileList: string[],
   file?: string;
 } & WatchItem;
+
 export interface GeneratorResult {
   dist: string;
   content?: string;
 }
-export type TsGenerator<T, U = GeneratorResult | GeneratorResult[] | void> = (
-  config: T,
+
+export type TsGenerator<T = GeneratorResult | GeneratorResult[] | void> = (
+  config: TsGenConfig,
   baseConfig: TsHelperConfig,
   tsHelper: TsHelper,
-) => U;
+) => T;
 
 // partial and exclude some properties
 type PartialExclude<T, K extends keyof T> = { [P in K]: T[P]; } & { [U in Exclude<keyof T, K>]?: T[U]; };
@@ -169,27 +163,9 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
   return watchConfig;
 }
 
-// preload generators
-const gd = path.resolve(__dirname, './generators');
-const generators = fs
-  .readdirSync(gd)
-  .filter(f => f.endsWith('.js'))
-  .map(f => {
-    const name = f.substring(0, f.lastIndexOf('.'));
-    return {
-      name,
-      genFn: require(path.resolve(gd, name)).default,
-    };
-  });
-
 export default class TsHelper extends EventEmitter {
-  readonly config: TsHelperConfig;
-  readonly watchDirs: string[];
-  readonly watchNameList: string[];
-  readonly generators: { [key: string]: TsGenerator<any> } = {};
-  private watchers: chokidar.FSWatcher[] = [];
-  private tickerMap: PlainObject = {};
-  private watched: boolean = false;
+  config: TsHelperConfig;
+  watcherList: Watcher[];
   private cacheDist: PlainObject = {};
   private dtsFileList: string[] = [];
 
@@ -199,89 +175,29 @@ export default class TsHelper extends EventEmitter {
   constructor(options: TsHelperOption = {}) {
     super();
 
-    const config = (this.config = this.configure(options));
+    // configure ets
+    this.configure(options);
 
-    debug('framework is %s', config.framework);
-
-    // add build-in generators
-    generators.forEach(({ name, genFn }) => this.register(name, genFn));
-
-    // cached watching name list
-    this.watchNameList = Object.keys(config.watchDirs).filter(key => {
-      const dir = config.watchDirs[key];
-      return dir.hasOwnProperty('enabled')
-        ? dir.enabled
-        : true;
-    });
-
-    // format watching dirs
-    this.watchDirs = this.watchNameList.map(key => {
-      const item = config.watchDirs[key];
-      const p = item.path.replace(/\/|\\/, path.sep);
-      return getAbsoluteUrlByCwd(p, config.cwd);
-    });
+    // init watcher
+    this.initWatcher();
 
     // generate d.ts at init
-    if (config.execAtInit) {
+    if (this.config.execAtInit) {
       debug('exec at init');
       this.build();
     }
-
-    // start watching dirs
-    if (config.watch) {
-      this.watch();
-    }
-  }
-
-  // register d.ts generator
-  register<T extends TsGenConfig = TsGenConfig>(
-    name: string,
-    tsGen: TsGenerator<T>,
-  ) {
-    this.generators[name] = tsGen;
   }
 
   // build all dirs
   build() {
-    this.watchDirs.map((_, i) => this.generateTs(i));
-  }
-
-  // init watcher
-  watch() {
-    if (this.watched) {
-      return;
-    }
-
-    // create watcher for each dir
-    this.watchDirs.forEach((item, index) => {
-      const conf = this.config.watchDirs[this.watchNameList[index]];
-
-      // glob only works with / in windows
-      const watchGlob = path
-        .join(item, conf.pattern || '**/*.(js|ts)')
-        .replace(/\/|\\/g, '/');
-
-      const watcher = chokidar.watch(watchGlob, this.config.watchOptions);
-
-      // listen watcher event
-      watcher.on('all', (event, p) => this.onChange(p, event, index));
-
-      // auto remove js while ts was deleted
-      if (this.config.autoRemoveJs) {
-        watcher.on('unlink', utils.removeSameNameJs);
-      }
-
-      this.watchers.push(watcher);
-    });
-
-    this.watched = true;
+    this.watcherList.forEach(watcher => watcher.execute());
   }
 
   // destroy
   destroy() {
     this.removeAllListeners();
-    this.watchers.forEach(watcher => watcher.close());
-    this.watchers.length = 0;
+    this.watcherList.forEach(item => item.destroy());
+    this.watcherList.length = 0;
   }
 
   // create oneForAll file
@@ -305,9 +221,35 @@ export default class TsHelper extends EventEmitter {
     utils.writeFileSync(oneForAllDist, distContent);
   }
 
+  // init watcher
+  private initWatcher() {
+    const config = this.config;
+    // format watching dirs
+    this.watcherList = [];
+    Object.keys(config.watchDirs).forEach(key => {
+      const conf = config.watchDirs[key] as WatchItem;
+      if (!conf.enabled) {
+        return;
+      }
+
+      const options = {
+        ...config.watchDirs[key] as WatchItem,
+        name: key,
+      };
+
+      const watcher = new Watcher(options, this);
+      this.watcherList.push(watcher);
+      watcher.on('update', this.generateTs.bind(this));
+
+      if (config.watch) {
+        watcher.watch();
+      }
+    });
+  }
+
   // configure
   // options > configFile > package.json
-  private configure(options: TsHelperOption): TsHelperConfig {
+  private configure(options: TsHelperOption) {
     // base config
     const config = { ...defaultConfig, watchDirs: getDefaultWatchDirs(options) };
     const cwd = options.cwd || config.cwd;
@@ -321,7 +263,7 @@ export default class TsHelper extends EventEmitter {
     }
 
     // read from local file
-    mergeConfig(config, utils.requireFile(getAbsoluteUrlByCwd(configFile, cwd)));
+    mergeConfig(config, utils.requireFile(utils.getAbsoluteUrlByCwd(configFile, cwd)));
     debug('%o', config);
 
     // merge local config and options to config
@@ -329,59 +271,15 @@ export default class TsHelper extends EventEmitter {
     debug('%o', options);
 
     // resolve config.typings to absolute url
-    config.typings = getAbsoluteUrlByCwd(config.typings, cwd);
+    config.typings = utils.getAbsoluteUrlByCwd(config.typings, cwd);
 
-    return config as TsHelperConfig;
+    this.config = config as TsHelperConfig;
   }
 
-  private generateTs(index: number, event?: string, file?: string) {
+  private generateTs(result: GeneratorResult | GeneratorResult[], file?: string) {
     const config = this.config;
-    const dir = this.watchDirs[index];
-    const watchName = this.watchNameList[index];
-    const generatorConfig = config.watchDirs[watchName] as WatchItem;
-
-    if (
-      !generatorConfig.trigger ||
-      (event && !generatorConfig.trigger.includes(event))
-    ) {
-      // check whether need to regenerate ts
-      return;
-    }
-
-    const generator =
-      typeof generatorConfig.generator === 'string'
-        ? this.generators[generatorConfig.generator]
-        : generatorConfig.generator;
-
-    if (typeof generator !== 'function') {
-      throw new Error(`ts generator: ${generatorConfig.generator} not exist!!`);
-    }
-
-    const dtsDir = path.resolve(config.typings, path.relative(config.cwd, dir));
-    let _fileList: string[] | undefined;
-    const newConfig = {
-      ...generatorConfig,
-      dir,
-      file,
-      dtsDir,
-
-      get fileList() {
-        if (!_fileList) {
-          _fileList = utils.loadFiles(dir, generatorConfig.pattern);
-        }
-        return _fileList;
-      },
-    };
-
-    // execute generator
-    const result = generator(newConfig, config, this);
-    debug('generate ts file result : %o', result);
-    if (!result) {
-      return;
-    }
-
     const resultList = Array.isArray(result) ? result : [ result ];
-    resultList.map(item => {
+    resultList.forEach(item => {
       // check cache
       if (this.isCached(item.dist, item.content)) {
         return;
@@ -432,37 +330,10 @@ export default class TsHelper extends EventEmitter {
     this.cacheDist[fileUrl] = content;
     return false;
   }
-
-  // trigger while file changed
-  private onChange(p: string, event: string, index: number) {
-    debug('%s trigger change', p);
-
-    this.throttleFn(p, () => {
-      debug('trigger change event in %s', index);
-      this.emit('change', p);
-      this.generateTs(index, event, p);
-    });
-  }
-
-  // throttling execution
-  private throttleFn(key, fn) {
-    if (this.tickerMap[key]) {
-      return;
-    }
-
-    this.tickerMap[key] = setTimeout(() => {
-      fn();
-      this.tickerMap[key] = null;
-    }, this.config.throttle);
-  }
 }
 
 export function createTsHelperInstance(options?: TsHelperOption) {
   return new TsHelper(options);
-}
-
-function getAbsoluteUrlByCwd(p: string, cwd: string) {
-  return path.isAbsolute(p) ? p : path.resolve(cwd, p);
 }
 
 // merge ts helper options
@@ -473,26 +344,26 @@ function mergeConfig(base: TsHelperConfig, ...args: TsHelperOption[]) {
     }
 
     Object.keys(opt).forEach(key => {
-      if (key === 'watchDirs') {
-        const watchDirs = opt.watchDirs || {};
-
-        Object.keys(watchDirs).forEach(k => {
-          const item = watchDirs[k];
-          if (typeof item === 'boolean') {
-            if (base.watchDirs[k]) {
-              base.watchDirs[k].enabled = item;
-            }
-          } else if (item) {
-            if (base.watchDirs[k]) {
-              Object.assign(base.watchDirs[k], item);
-            } else {
-              base.watchDirs[k] = formatWatchItem(item);
-            }
-          }
-        });
-      } else {
+      if (key !== 'watchDirs') {
         base[key] = opt[key] === undefined ? base[key] : opt[key];
+        return;
       }
+
+      const watchDirs = opt.watchDirs || {};
+      Object.keys(watchDirs).forEach(k => {
+        const item = watchDirs[k];
+        if (typeof item === 'boolean') {
+          if (base.watchDirs[k]) {
+            base.watchDirs[k].enabled = item;
+          }
+        } else if (item) {
+          if (base.watchDirs[k]) {
+            Object.assign(base.watchDirs[k], item);
+          } else {
+            base.watchDirs[k] = formatWatchItem(item);
+          }
+        }
+      });
     });
   });
 }

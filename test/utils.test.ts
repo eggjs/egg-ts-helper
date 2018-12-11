@@ -19,8 +19,8 @@ describe('utils.test.ts', () => {
     const exp2 = utils.requireFile(path.resolve(appDir, './test2.js'));
     const exp3 = utils.requireFile(path.resolve(appDir, './test3.js'));
     assert(exp.hello);
-    assert(exp2.hello);
-    assert(exp3.hello);
+    assert(typeof exp2 === 'function');
+    assert(typeof exp3 === 'function');
   });
 
   it('should removeSameNameJs without error', () => {
