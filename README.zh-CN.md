@@ -325,9 +325,9 @@ module.exports = {
 
 #### declareTo `string`
 
-( `1.15.0` 开始支持 )
+可以将生成的声明定义到 egg 的类型中，比如 egg 的 ctx 的类型是 `Context` ，就可以配置到 `Context` 下，然后通过 ctx.xxx 就可以拿到提示了。 ( `1.15.0` 开始支持 )
 
-`declareTo` 设置为 `Context.model`
+`declareTo` 设置为 `Context.model`，然后就可以通过 `ctx.model.xxx` 拿到代码提示了
 
 ```typescript
 import Station from '../../../app/model/station';
@@ -343,7 +343,7 @@ declare module 'egg' {
 }
 ```
 
-`declareTo` 设置为 `Application.model.subModel`
+`declareTo` 设置为 `Application.model.subModel`，然后就可以通过 `app.model.subModel.xxx` 拿到代码提示了
 
 ```typescript
 import Station from '../../../app/model/station';

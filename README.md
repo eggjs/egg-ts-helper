@@ -324,9 +324,9 @@ The generated typings is the same as above. `{{ 0 }}` means the first argument i
 
 #### declareTo `string`
 
-( Support since `1.15.0` )
+Declaring interface to definition of egg. ( Support since `1.15.0` )
 
-`declareTo` set to `Context.model`
+`declareTo` set to `Context.model` , and you can get intellisense by `ctx.model.xxx`
 
 ```typescript
 import Station from '../../../app/model/station';
@@ -342,7 +342,7 @@ declare module 'egg' {
 }
 ```
 
-`declareTo` set to `Application.model.subModel`
+`declareTo` set to `Application.model.subModel`, and you can get intellisense by `app.model.subModel.xxx`
 
 ```typescript
 import Station from '../../../app/model/station';
