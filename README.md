@@ -14,7 +14,7 @@
 [coveralls-url]: https://coveralls.io/r/whxaxes/egg-ts-helper
 [coveralls-image]: https://img.shields.io/coveralls/whxaxes/egg-ts-helper.svg
 
-A simple tool using to create `d.ts` for [egg](https://eggjs.org) application. Injecting `controller`,`proxy`,`service` and `extend` to egg by [Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html)
+A simple tool using to create `d.ts` for [egg](https://eggjs.org) application. Injecting `controller`,`proxy`,`service` etc to the types of egg by [Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html)
 
 
 ## Install
@@ -61,8 +61,7 @@ $ ets -h
     -v, --version           Output the version number
     -w, --watch             Watching files, d.ts will recreate if file is changed
     -c, --cwd [path]        Egg application base dir (default: process.cwd)
-    -C, --config [path]     Configuration file, The argument can be a file path to a valid JSON/JS configuration file.（default: {cwd}/tshelper.js
-    -f, --framework [name]  Egg framework(default: egg)
+    -C, --config [path]     Configuration file, The argument can be a file path to a valid JSON/JS configuration file.(default: {cwd}/tshelper.js)
     -o, --oneForAll [path]  Create a d.ts import all types (default: typings/ets.d.ts)
     -s, --silent            Running without output
     -i, --ignore [dirs]     Ignore watchDirs, your can ignore multiple dirs with comma like: -i controller,service
@@ -80,7 +79,6 @@ $ ets -h
 | name | type | default | description |
 | --- | --- | --- | --- |
 | cwd | `string` | process.cwd | egg application base dir |
-| framework | `string` | egg | egg framework |
 | typings | `string` | {cwd}/typings | typings dir |
 | caseStyle | `string` `Function` | lower | egg case style(lower,upper,camel) or `(filename) => {return 'YOUR_CASE'}`|
 | watch | `boolean` | false | watch file change or not |
@@ -134,11 +132,12 @@ In `package.json`
 
 ## Generators
 
-The generator is used to traverse the directory and collect modules, then import these modules and return `dist` and `content` of `d.ts`, `egg-ts-helper` will execute all generators in configuration to create `d.ts`.
+Generator is the core of `egg-ts-helper`. ( build-in generator: https://github.com/whxaxes/egg-ts-helper/tree/master/src/generators
+ )
 
-build-in generator: https://github.com/whxaxes/egg-ts-helper/tree/master/src/generators.
+In startup, `egg-ts-helper` executes all watcher's generator, the generator will traverse the directory and collect modules, then return fields `dist`( d.ts file path ) and `content`( import these modules and defined to interface of egg. ) to `egg-ts-helper`. `egg-ts-helper` will create `d.ts` by `dist` and `content` fields.
 
-You can configure generator in option `watchDirs` ( see `getDefaultWatchDirs` method in https://github.com/whxaxes/egg-ts-helper/blob/master/src/index.ts ). `egg-ts-helper` watch these directories `app/extend`,`app/controller`,`app/service`, `app/config`, `app/middleware`, `app/model` by default. When the files under these folders is changed, the `d.ts` will be created.
+You can configure watcher in option `watchDirs` ( see `getDefaultWatchDirs` method in https://github.com/whxaxes/egg-ts-helper/blob/master/src/index.ts to know default config of watcher ). `egg-ts-helper` watch these directories `app/extend`,`app/controller`,`app/service`, `app/config`, `app/middleware`, `app/model` by default. When the files under these folders is changed, the `d.ts` will be created ( config.watch should set to true ) .
 
 Watcher can be disabled by `-i` flag.
 
@@ -178,9 +177,9 @@ Or in `package.json` , setting is the same as above.
 
 ## Extend
 
-`egg-ts-helper` using generator to implement feature like loader in egg. So it also need to support custom loader.
+`egg-ts-helper` using generator to implement feature like loader in egg. and it also support custom loader.
 
-See the example below to know how to configure for custom loader.
+See the example below to know how to configure.
 
 ### Example
 
@@ -221,7 +220,7 @@ declare module 'egg' {
 }
 ```
 
-the options using to configure generator
+the options using to configure watcher
 
 - path
 - pattern
@@ -243,9 +242,19 @@ interface IOther {
 }
 ```
 
+It will use random interface name if `interface` is not set.
+
+```typescript
+interface T100 {
+  Station: Station;
+}
+```
+
+Should set `declareTo` if without `interface`.
+
 #### generator `string`
 
-The name of generator, see https://github.com/whxaxes/egg-ts-helper/tree/master/src/generators , but I recommend to use `class` `function` `object` only.
+The name of generator, ( the generator will be executed and recreate `d.ts` when the file is changed. ) but I recommend to use `class` `function` `object` only, because the other generator is not suitable for custom loader.
 
 `generator` set to `class`.
 
@@ -272,8 +281,6 @@ interface IModel {
 ```
 
 #### interfaceHandle `function|string`
-
-If you want to define your own type, just setting the `interfaceHandle`.
 
 ```js
 module.exports = {
@@ -309,7 +316,7 @@ module.exports = {
 }
 ```
 
-The generated typings is the same as above.
+The generated typings is the same as above. `{{ 0 }}` means the first argument in function.
 
 #### caseStyle `function|string`
 
@@ -386,7 +393,7 @@ module.exports = {
 
 ## Register
 
-`egg-ts-helper` offers a `register.js` for easyier to use with [egg-bin](https://github.com/eggjs/egg-bin).
+`egg-ts-helper` offers a `register.js` for easier to use with [egg-bin](https://github.com/eggjs/egg-bin).
 
 ```
 $ egg-bin dev -r egg-ts-helper/register
