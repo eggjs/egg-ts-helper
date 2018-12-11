@@ -22,7 +22,7 @@
 npm i egg-ts-helper -g
 ```
 
-or
+或者
 
 ```
 yarn global add egg-ts-helper
