@@ -43,7 +43,13 @@ It can auto recreate d.ts while the file has changed by `-w` flag.
 $ ets -w
 ```
 
-## Usage
+Or using `register` in `egg-bin`
+
+```
+$ egg-bin dev -r egg-ts-helper/register
+```
+
+## CLI
 
 ```
 $ ets -h
@@ -69,7 +75,7 @@ $ ets -h
     clean                   Clean js file when it has same name ts file
 ```
 
-## Options
+## Configuration
 
 | name | type | default | description |
 | --- | --- | --- | --- |
@@ -83,15 +89,64 @@ $ ets -h
 | configFile | `string` | {cwd}/tshelper.js | configure file path |
 | watchDirs | `object` | | generator configuration |
 
-egg-ts-helper watch `app/extend`,`app/controller`,`app/service`, `app/config`, `app/middleware`, `app/model` by default. The d.ts can recreate when the files under these folders is changed.
+You can configure the options above in `./tshelper.js` or `package.json`.
 
-You can disabled some folders by `-i` flag.
+In `tshelper.js`
+
+```js
+// {cwd}/tshelper.js
+
+module.exports = {
+  watch: true,
+  execAtInit: true,
+  watchDirs: {
+    model: {
+      enabled: true,
+      generator: "function",
+      interfaceHandle: "InstanceType<{{ 0 }}>"
+    },
+  }
+}
+```
+
+In `package.json`
+
+```json
+// {cwd}/package.json
+
+{
+  "egg": {
+    "framework": "egg",
+    "tsHelper": {
+      "watch": true,
+      "execAtInit": true,
+      "watchDirs": {
+        "model": {
+          "enabled": true,
+          "generator": "function",
+          "interfaceHandle": "InstanceType<{{ 0 }}>"
+        },
+      }
+    }
+  }
+}
+```
+
+## Generators
+
+The generator is used to traverse the directory and collect modules, then import these modules and return `dist` and `content` of `d.ts`, `egg-ts-helper` will execute all generators in configuration to create `d.ts`.
+
+build-in generator: https://github.com/whxaxes/egg-ts-helper/tree/master/src/generators.
+
+You can configure generator in option `watchDirs` ( see `getDefaultWatchDirs` method in https://github.com/whxaxes/egg-ts-helper/blob/master/src/index.ts ). `egg-ts-helper` watch these directories `app/extend`,`app/controller`,`app/service`, `app/config`, `app/middleware`, `app/model` by default. When the files under these folders is changed, the `d.ts` will be created.
+
+Watcher can be disabled by `-i` flag.
 
 ```
 $ ets -i extend,controller
 ```
 
-Or configure in `tshelper.js`
+Or configure in `tshelper.js`, setting `watchDirs.extend` and `watchDirs.controller` to `false`.
 
 ```
 // {cwd}/tshelper.js
@@ -104,7 +159,7 @@ module.exports = {
 }
 ```
 
-Or `package.json`
+Or in `package.json` , setting is the same as above.
 
 ```
 // {cwd}/package.json
@@ -123,11 +178,13 @@ Or `package.json`
 
 ## Extend
 
-`egg-ts-helper` not only support the base loader( controller, middleware ... ), but also support custom loader.
+`egg-ts-helper` using generator to implement feature like loader in egg. So it also need to support custom loader.
+
+See the example below to know how to configure for custom loader.
 
 ### Example
 
-Creating d.ts for `model` by `egg-ts-helper`.
+Creating `d.ts` for `model` by `egg-ts-helper`. Setting `watchDirs.model` in `tshelper.js`.
 
 ```typescript
 // ./tshelper.js
@@ -148,7 +205,7 @@ module.exports = {
 }
 ```
 
-The configuration can create d.ts like below.
+The configuration can create d.ts in below.
 
 ```typescript
 import Station from '../../../app/model/station';
@@ -164,7 +221,7 @@ declare module 'egg' {
 }
 ```
 
-option list
+the options using to configure generator
 
 - path
 - pattern
@@ -174,9 +231,9 @@ option list
 - interfaceHandle
 - trigger
 
-### Effect of different options.
+### Effect of different options
 
-- **interface** `string`
+#### interface `string`
 
 `interface` set to `IOther`.
 
@@ -186,11 +243,9 @@ interface IOther {
 }
 ```
 
-- **generator** `string`
+#### generator `string`
 
-see https://github.com/whxaxes/egg-ts-helper/tree/master/src/generators
-
-
+The name of generator, see https://github.com/whxaxes/egg-ts-helper/tree/master/src/generators , but I recommend to use `class` `function` `object` only.
 
 `generator` set to `class`.
 
@@ -216,7 +271,7 @@ interface IModel {
 }
 ```
 
-- **interfaceHandle** `function|string`
+#### interfaceHandle `function|string`
 
 If you want to define your own type, just setting the `interfaceHandle`.
 
@@ -256,11 +311,13 @@ module.exports = {
 
 The generated typings is the same as above.
 
-- **caseStyle** `string|function`
+#### caseStyle `function|string`
 
 `caseStyle` can set to `lower`、`upper`、`camel` or function
 
-- **declareTo** `string` ( Support since `1.15.0` )
+#### declareTo `string`
+
+( Support since `1.15.0` )
 
 `declareTo` set to `Context.model`
 
