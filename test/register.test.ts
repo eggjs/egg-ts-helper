@@ -34,7 +34,7 @@ describe('register.test.ts', () => {
       ps.stdout.on('data', data => {
         str += data.toString();
         clearTimeout(tick);
-        tick = setTimeout(resolve, 1000);
+        tick = setTimeout(resolve, 2000);
       });
     });
 
