@@ -85,10 +85,6 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
 // check config return type.
 export function checkConfigReturnType(f: string) {
   const result = utils.findExportNode(fs.readFileSync(f, 'utf-8'));
-  if (!result) {
-    return;
-  }
-
   if (result.exportDefaultNode) {
     return ts.isFunctionLike(result.exportDefaultNode)
       ? EXPORT_DEFAULT_FUNCTION

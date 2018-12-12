@@ -106,14 +106,7 @@ export function removeSameNameJs(f: string) {
 
 // find export node from sourcefile.
 export function findExportNode(code: string) {
-  let sourceFile;
-  try {
-    sourceFile = ts.createSourceFile('file.ts', code, ts.ScriptTarget.ES2017, true);
-  } catch (e) {
-    console.error(e);
-    return;
-  }
-
+  const sourceFile = ts.createSourceFile('file.ts', code, ts.ScriptTarget.ES2017, true);
   const cache: Map<ts.__String, ts.Node> = new Map();
   const exportNodeList: ts.Node[] = [];
   let exportDefaultNode: ts.Node | undefined;
