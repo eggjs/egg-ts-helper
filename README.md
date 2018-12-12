@@ -17,7 +17,7 @@
 [download-image]: https://img.shields.io/npm/dm/egg-ts-helper.svg?style=flat-square
 [download-url]: https://npmjs.org/package/egg-ts-helper
 
-A simple tool for creating `d.ts` in [egg](https://eggjs.org) application. Injecting `controller, proxy, service, etc.` to definition type of egg ( such as `Context` `Application` etc. ) by [Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html), and make typeCheck and IntelliSense works in egg.
+A simple tool for creating `d.ts` in [egg](https://eggjs.org) application. Injecting `controller, proxy, service, etc.` to definition type of egg ( such as `Context` `Application` etc. ) by [Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html), and make IntelliSense works in both egg-js and egg-ts.
 
 
 ## Install
