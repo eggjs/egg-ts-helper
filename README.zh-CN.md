@@ -456,7 +456,7 @@ module.exports = (config, baseConfig) => {
 }
 ```
 
-配置
+配置一下
 
 ```js
 // ./tshelper.js

@@ -456,7 +456,7 @@ module.exports = (config, baseConfig) => {
 }
 ```
 
-configuration
+configure in `tshelper.js` or `package.json`
 
 ```js
 // ./tshelper.js
