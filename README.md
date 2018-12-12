@@ -256,7 +256,7 @@ Should set `declareTo` if without `interface`.
 
 The name of generator, ( the generator will be executed and recreate `d.ts` when the file is changed. ) but I recommend to use `class` `function` `object` `auto` only, because the other generator is not suitable for custom loader.
 
-`generator` set to `class`.
+##### | `generator` set to `class`.
 
 ```typescript
 interface IModel {
@@ -270,7 +270,7 @@ suitable for module like this
 export default class XXXController extends Controller { }
 ```
 
-`generator` set to `function`. ( Support since `1.16.0` )
+##### | `generator` set to `function`. ( Support since `1.16.0` )
 
 ```typescript
 interface IModel {
@@ -286,7 +286,7 @@ export default () => {
 }
 ```
 
-`generator` set to `object`. ( Support since `1.16.0` )
+##### | `generator` set to `object`. ( Support since `1.16.0` )
 
 ```typescript
 interface IModel {
@@ -300,7 +300,7 @@ suitable for module like this
 export default {}
 ```
 
-`generator` set to `auto`. ( Support since `1.19.0` )
+##### | `generator` set to `auto`. ( Support since `1.19.0` )
 
 It will check types automatically.
 

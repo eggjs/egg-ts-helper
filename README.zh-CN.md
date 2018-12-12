@@ -255,7 +255,7 @@ interface T100 {
 
 生成器名称，watcher 监听到文件改动的时候会执行该生成器用来重新生成 d.ts，建议只使用 `class` `function` `object` 这三个生成器，因为其他几个比较定制化，不太适用于 custom loader。
 
-`generator` 设置为 `class`.
+##### | `generator` 设置为 `class`.
 
 ```typescript
 interface IModel {
@@ -269,7 +269,7 @@ interface IModel {
 export default class XXXController extends Controller { }
 ```
 
-`generator` 设置为 `function`. ( `1.16.0` 开始支持 )
+##### | `generator` 设置为 `function`. ( `1.16.0` 开始支持 )
 
 ```typescript
 interface IModel {
@@ -285,7 +285,7 @@ export default () => {
 }
 ```
 
-`generator` 设置为 `object`. ( `1.16.0` 开始支持 )
+##### | `generator` 设置为 `object`. ( `1.16.0` 开始支持 )
 
 ```typescript
 interface IModel {
@@ -299,7 +299,7 @@ interface IModel {
 export default {}
 ```
 
-`generator` 设置为 `auto`. ( `1.19.0` 开始支持 )
+##### | `generator` 设置为 `auto`. ( `1.19.0` 开始支持 )
 
 会自动判断 import 的类型是方法还是对象还是类。
 
