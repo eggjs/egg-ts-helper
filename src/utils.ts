@@ -19,19 +19,13 @@ export function loadFiles(cwd: string, pattern?: string) {
   });
 }
 
+// convert string to function
 export function strToFn(fn) {
   if (typeof fn === 'string') {
     return (...args: any[]) => fn.replace(/{{\s*(\d+)\s*}}/g, (_, index) => args[index]);
   } else {
     return fn;
   }
-}
-
-export function preWrapHandle(wrapper, fn) {
-  return val => {
-    const result = wrapper(val);
-    return fn ? fn(result) : result;
-  };
 }
 
 export function getAbsoluteUrlByCwd(p: string, cwd: string) {
