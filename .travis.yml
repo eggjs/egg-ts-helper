@@ -10,4 +10,5 @@ os:
   - linux
 script:
   - npm run cov
-after_script: "npm install coveralls && cat ./coverage/lcov.info | coveralls"
+after_script:
+  - npminstall codecov && codecov
