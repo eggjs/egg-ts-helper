@@ -64,7 +64,7 @@ describe('generators/config.test.ts', () => {
     assert(result.content!.includes('Config'));
   });
 
-  it('should works without empty config.ts', () => {
+  it('should works without error with empty config.ts', () => {
     const result = triggerGenerator<GeneratorResult>('config', path.resolve(__dirname, '../fixtures/app4'));
     assert(!result.content);
   });

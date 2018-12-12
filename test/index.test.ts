@@ -52,6 +52,7 @@ describe('index.test.ts', () => {
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/index.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/plugin.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/custom.d.ts')));
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/custom2.d.ts')));
 
     // caseStyle check
     const caseStylePath = path.resolve(__dirname, './fixtures/app/typings/app/casestyle/index.d.ts');
@@ -271,9 +272,8 @@ describe('index.test.ts', () => {
       watchDirs,
     });
 
-    debug('watchDirs : %o', tsHelper.watchDirs);
-    assert(tsHelper.watchNameList.length === 1);
-    assert(tsHelper.watchDirs[0].includes('proxy'));
+    assert(tsHelper.watcherList.length === 1);
+    assert(!!tsHelper.watcherList.find(watcher => watcher.name === 'proxy'));
   });
 
   it('should support read framework by package.json', () => {
@@ -300,8 +300,8 @@ describe('index.test.ts', () => {
       cwd: path.resolve(__dirname, './fixtures/app4'),
     });
     const len = Object.keys(watchDirs).filter(k => (watchDirs[k] as any).enabled).length;
-    assert(tsHelper.watchNameList.length === len - 2);
-    assert(tsHelper.watchDirs[0].includes('controller'));
+    assert(tsHelper.watcherList.length === len - 2);
+    assert(!!tsHelper.watcherList.find(watcher => watcher.name === 'controller'));
   });
 
   it('should works without error in real app', async () => {

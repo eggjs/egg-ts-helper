@@ -34,6 +34,10 @@ export function preWrapHandle(wrapper, fn) {
   };
 }
 
+export function getAbsoluteUrlByCwd(p: string, cwd: string) {
+  return path.isAbsolute(p) ? p : path.resolve(cwd, p);
+}
+
 // get import context
 export function getImportStr(
   from: string,
@@ -102,14 +106,7 @@ export function removeSameNameJs(f: string) {
 
 // find export node from sourcefile.
 export function findExportNode(code: string) {
-  let sourceFile;
-  try {
-    sourceFile = ts.createSourceFile('file.ts', code, ts.ScriptTarget.ES2017, true);
-  } catch (e) {
-    console.error(e);
-    return;
-  }
-
+  const sourceFile = ts.createSourceFile('file.ts', code, ts.ScriptTarget.ES2017, true);
   const cache: Map<ts.__String, ts.Node> = new Map();
   const exportNodeList: ts.Node[] = [];
   let exportDefaultNode: ts.Node | undefined;
@@ -223,10 +220,6 @@ export function requireFile(url) {
   let exp = require(url);
   if (exp.__esModule && 'default' in exp) {
     exp = exp.default;
-  }
-
-  if (typeof exp === 'function') {
-    exp = exp();
   }
 
   return exp;

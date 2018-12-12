@@ -253,9 +253,11 @@ interface T100 {
 
 #### generator `string`
 
-生成器名称，watcher 监听到文件改动的时候会执行该生成器用来重新生成 d.ts，建议只使用 `class` `function` `object` 这三个生成器，因为其他几个比较定制化，不太适用于 custom loader。
+生成器名称，watcher 监听到文件改动的时候会执行该生成器用来重新生成 d.ts，建议只使用 `class` `function` `object` `auto` 这几个生成器，因为其他几个比较定制化，不太适用于 custom loader。
 
-`generator` 设置为 `class`.
+##### | `generator` 设置为 `class`.
+
+生成的声明如下
 
 ```typescript
 interface IModel {
@@ -263,7 +265,15 @@ interface IModel {
 }
 ```
 
-`generator` 设置为 `function`. ( `1.16.0` 开始支持 )
+适合这样写的模块
+
+```typescript
+export default class XXXController extends Controller { }
+```
+
+##### | `generator` 设置为 `function`. ( `1.16.0` 开始支持 )
+
+生成的声明如下
 
 ```typescript
 interface IModel {
@@ -271,13 +281,43 @@ interface IModel {
 }
 ```
 
-`generator` 设置为 `object`. ( `1.16.0` 开始支持 )
+适合这样写的模块
+
+```typescript
+export default () => {
+  return {};
+}
+```
+
+##### | `generator` 设置为 `object`. ( `1.16.0` 开始支持 )
+
+生成的声明如下
 
 ```typescript
 interface IModel {
   Station: typeof Station;
 }
 ```
+
+适合这样写的模块
+
+```typescript
+export default {}
+```
+
+##### | `generator` 设置为 `auto`. ( `1.19.0` 开始支持 )
+
+生成的声明如下，会自动判断 import 的类型是方法还是对象还是类。
+
+```typescript
+type AutoInstanceType<T, U = T extends (...args: any[]) => any ? ReturnType<T> : T> = U extends { new (...args: any[]): any } ? InstanceType<U> : U;
+
+interface IModel {
+  Station: AutoInstanceType<typeof Station>;
+}
+```
+
+适合上面描述的所有模块。
 
 #### interfaceHandle `function|string`
 
@@ -375,17 +415,57 @@ function myGenerator(config, baseConfig) {
   console.info(config);
   console.info(baseConfig);
 
+  // 返回值可以是对象或者数组 { dist: string; content: string } | Array<{ dist: string; content: string }>
+  // 如果返回的 content 是 undefined，egg-ts-helper 会删除 dist 指向的文件
   return {
     dist: 'd.ts file url',
     content: 'd.ts content'
   }
 }
-
 module.exports = {
   watchDirs: {
     model: {
       path: 'app/model',
       generator: myGenerator,
+      trigger: ['add', 'unlink'],
+    }
+  }
+}
+```
+
+或者将自定义生成器定义到其他 js 中
+
+```javascript
+// ./my-generator.js
+
+// custom generator
+module.exports = (config, baseConfig) => {
+  // config.dir       dir
+  // config.dtsDir    d.ts dir
+  // config.file      changed file
+  // config.fileList  file list
+  console.info(config);
+  console.info(baseConfig);
+
+  // 返回值可以是对象或者数组 { dist: string; content: string } | Array<{ dist: string; content: string }>
+  // 如果返回的 content 是 undefined，egg-ts-helper 会删除 dist 指向的文件
+  return {
+    dist: 'd.ts file url',
+    content: 'd.ts content'
+  }
+}
+```
+
+配置一下
+
+```js
+// ./tshelper.js
+
+module.exports = {
+  watchDirs: {
+    model: {
+      path: 'app/model',
+      generator: './my-generator',
       trigger: ['add', 'unlink'],
     }
   }

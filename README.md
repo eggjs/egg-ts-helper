@@ -135,7 +135,7 @@ In `package.json`
 Generator is the core of `egg-ts-helper`. ( build-in generator: https://github.com/whxaxes/egg-ts-helper/tree/master/src/generators
  )
 
-In startup, `egg-ts-helper` executes all watcher's generator, the generator will traverse the directory and collect modules, then return fields `dist`( d.ts file path ) and `content`( import these modules and defined to interface of egg. ) to `egg-ts-helper`. `egg-ts-helper` will create `d.ts` by `dist` and `content` fields.
+On `egg-ts-helper` startup, it will executes all watcher's generator, and the generator will traverse the directory and collect modules, then return fields `dist`( d.ts file path ) and `content`( import these modules and defined to interface of egg. ) to `egg-ts-helper`. `egg-ts-helper` will create `d.ts` by `dist` and `content` fields.
 
 You can configure watcher in option `watchDirs` ( see `getDefaultWatchDirs` method in https://github.com/whxaxes/egg-ts-helper/blob/master/src/index.ts to know default config of watcher ). `egg-ts-helper` watch these directories `app/extend`,`app/controller`,`app/service`, `app/config`, `app/middleware`, `app/model` by default. When the files under these folders is changed, the `d.ts` will be created ( config.watch should set to true ) .
 
@@ -254,9 +254,11 @@ Should set `declareTo` if without `interface`.
 
 #### generator `string`
 
-The name of generator, ( the generator will be executed and recreate `d.ts` when the file is changed. ) but I recommend to use `class` `function` `object` only, because the other generator is not suitable for custom loader.
+The name of generator, ( the generator will be executed and recreate `d.ts` when the file is changed. ) but I recommend to use `class` `function` `object` `auto` only, because the other generator is not suitable for custom loader.
 
-`generator` set to `class`.
+##### | `generator` set to `class`
+
+the types created by `class` generator like below
 
 ```typescript
 interface IModel {
@@ -264,7 +266,15 @@ interface IModel {
 }
 ```
 
-`generator` set to `function`. ( Support since `1.16.0` )
+suitable for module like this
+
+```typescript
+export default class XXXController extends Controller { }
+```
+
+##### | `generator` set to `function` ( Support since `1.16.0` )
+
+the types created by `function` generator like below
 
 ```typescript
 interface IModel {
@@ -272,13 +282,43 @@ interface IModel {
 }
 ```
 
-`generator` set to `object`. ( Support since `1.16.0` )
+suitable for module like this
+
+```typescript
+export default () => {
+  return {};
+}
+```
+
+##### | `generator` set to `object` ( Support since `1.16.0` )
+
+the types created by `object` generator like below.
 
 ```typescript
 interface IModel {
   Station: typeof Station;
 }
 ```
+
+suitable for module like this
+
+```typescript
+export default {}
+```
+
+##### | `generator` set to `auto` ( Support since `1.19.0` )
+
+the types created by `auto` generator like below. It will check types automatically.
+
+```typescript
+type AutoInstanceType<T, U = T extends (...args: any[]) => any ? ReturnType<T> : T> = U extends { new (...args: any[]): any } ? InstanceType<U> : U;
+
+interface IModel {
+  Station: AutoInstanceType<typeof Station>;
+}
+```
+
+suitable for every module in above.
 
 #### interfaceHandle `function|string`
 
@@ -374,6 +414,8 @@ function myGenerator(config, baseConfig) {
   console.info(config);
   console.info(baseConfig);
 
+  // return type can be object or array { dist: string; content: string } | Array<{ dist: string; content: string }>
+  // egg-ts-helper will remove dist file when content is undefined.
   return {
     dist: 'd.ts file url',
     content: 'd.ts content'
@@ -385,6 +427,45 @@ module.exports = {
     model: {
       path: 'app/model',
       generator: myGenerator,
+      trigger: ['add', 'unlink'],
+    }
+  }
+}
+```
+
+or define generator to other js.
+
+```javascript
+// ./my-generator.js
+
+// custom generator
+module.exports = (config, baseConfig) => {
+  // config.dir       dir
+  // config.dtsDir    d.ts dir
+  // config.file      changed file
+  // config.fileList  file list
+  console.info(config);
+  console.info(baseConfig);
+
+  // return type can be object or array { dist: string; content: string } | Array<{ dist: string; content: string }>
+  // egg-ts-helper will remove dist file when content is undefined.
+  return {
+    dist: 'd.ts file url',
+    content: 'd.ts content'
+  }
+}
+```
+
+configure in `tshelper.js` or `package.json`
+
+```js
+// ./tshelper.js
+
+module.exports = {
+  watchDirs: {
+    model: {
+      path: 'app/model',
+      generator: './my-generator',
       trigger: ['add', 'unlink'],
     }
   }

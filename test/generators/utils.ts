@@ -1,12 +1,6 @@
 import path from 'path';
-import {
-  default as TsHelper,
-  GeneratorResult,
-  getDefaultWatchDirs,
-  TsGenerator,
-  WatchItem,
-} from '../../dist/';
-import { loadFiles } from '../../dist/utils';
+import TsHelper, { GeneratorResult } from '../../dist/';
+import assert = require('assert');
 
 export function triggerGenerator<T extends GeneratorResult[] | GeneratorResult = GeneratorResult[]>(
   name: string,
@@ -14,31 +8,20 @@ export function triggerGenerator<T extends GeneratorResult[] | GeneratorResult =
   file?: string,
   extra?: any,
 ) {
-  const defaultWatchDirs = getDefaultWatchDirs();
   const tsHelper = new TsHelper({
     cwd: appDir,
     watch: false,
     execAtInit: false,
   });
 
-  const watchDir = defaultWatchDirs[name] as WatchItem;
-  const generator = tsHelper.generators[watchDir.generator] as TsGenerator<any, T>;
-  const dir = path.resolve(appDir, watchDir.path);
-  const dtsDir = path.resolve(tsHelper.config.typings, path.relative(tsHelper.config.cwd, dir));
-  const config = {
-    ...watchDir,
+  const watcher = tsHelper.watcherList.find(watcher => watcher.name === name)!;
+  assert(watcher, 'watcher is not exist');
+  const dir = path.resolve(appDir, watcher.options.path);
+  watcher.options = {
+    ...watcher.options,
     ...extra,
   };
+  watcher.init();
 
-  return generator(
-    {
-      ...config,
-      dir,
-      file: file ? path.resolve(dir, file) : '',
-      fileList: loadFiles(dir, config.pattern),
-      dtsDir,
-    },
-    tsHelper.config,
-    tsHelper,
-  );
+  return watcher.execute(file ? path.resolve(dir, file) : '') as any as T;
 }
