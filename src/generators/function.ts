@@ -1,12 +1,7 @@
 import { TsGenConfig, TsHelperConfig } from '..';
 import classGen from './class';
-import * as utils from '../utils';
 
 export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
-  config.interfaceHandle = utils.preWrapHandle(
-    val => `ReturnType<typeof ${val}>`,
-    utils.strToFn(config.interfaceHandle),
-  );
-
+  config.interfaceHandle = config.interfaceHandle || (val => `ReturnType<typeof ${val}>`);
   return classGen(config, baseConfig);
 }

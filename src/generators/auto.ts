@@ -1,12 +1,8 @@
 import { TsGenConfig, TsHelperConfig } from '..';
 import classGen from './class';
-import * as utils from '../utils';
 
 export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
-  config.interfaceHandle = utils.preWrapHandle(
-    val => `AutoInstanceType<typeof ${val}>`,
-    utils.strToFn(config.interfaceHandle),
-  );
+  config.interfaceHandle = config.interfaceHandle || 'AutoInstanceType<typeof {{ 0 }}>';
 
   const result = classGen(config, baseConfig);
   /* istanbul ignore else */

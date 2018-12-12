@@ -55,7 +55,7 @@ describe('generators/class.test.ts', () => {
     const result = triggerGenerator<GeneratorResult>('model', appDir, undefined, {
       generator: 'function',
       declareTo: 'Context.model',
-      interfaceHandle: 'InstanceOf<{{ 0 }}>',
+      interfaceHandle: 'InstanceOf<ReturnType<typeof {{ 0 }}>>',
     });
 
     assert(result.content!.includes('User: InstanceOf<ReturnType<typeof ExportUser>>;'));
@@ -63,10 +63,40 @@ describe('generators/class.test.ts', () => {
 
   it('should support interfaceHandle with middleware without error', () => {
     const result = triggerGenerator<GeneratorResult>('middleware', appDir, undefined, {
-      interfaceHandle: 'InstanceOf<{{ 0 }}>',
+      interfaceHandle: 'InstanceOf<typeof {{ 0 }}>',
     });
 
     assert(result.content!.includes('uuid: InstanceOf<typeof ExportUuid>;'));
+  });
+
+  it('should support function generator', () => {
+    const result = triggerGenerator<GeneratorResult>('model', appDir, undefined, {
+      generator: 'function',
+      declareTo: 'Context.model',
+      interfaceHandle: undefined,
+    });
+
+    assert(result.content!.includes('User: ReturnType<typeof ExportUser>;'));
+  });
+
+  it('should support object generator', () => {
+    const result = triggerGenerator<GeneratorResult>('model', appDir, undefined, {
+      generator: 'object',
+      declareTo: 'Context.model',
+      interfaceHandle: undefined,
+    });
+
+    assert(result.content!.includes('User: typeof ExportUser;'));
+  });
+
+  it('should support auto generator', () => {
+    const result = triggerGenerator<GeneratorResult>('model', appDir, undefined, {
+      generator: 'auto',
+      declareTo: 'Context.model',
+      interfaceHandle: undefined,
+    });
+
+    assert(result.content!.includes('User: AutoInstanceType<typeof ExportUser>;'));
   });
 
   it('should support appoint framework', () => {
