@@ -257,6 +257,8 @@ interface T100 {
 
 ##### | `generator` 设置为 `class`.
 
+生成的声明如下
+
 ```typescript
 interface IModel {
   Station: Station;
@@ -270,6 +272,8 @@ export default class XXXController extends Controller { }
 ```
 
 ##### | `generator` 设置为 `function`. ( `1.16.0` 开始支持 )
+
+生成的声明如下
 
 ```typescript
 interface IModel {
@@ -287,6 +291,8 @@ export default () => {
 
 ##### | `generator` 设置为 `object`. ( `1.16.0` 开始支持 )
 
+生成的声明如下
+
 ```typescript
 interface IModel {
   Station: typeof Station;
@@ -301,7 +307,7 @@ export default {}
 
 ##### | `generator` 设置为 `auto`. ( `1.19.0` 开始支持 )
 
-会自动判断 import 的类型是方法还是对象还是类。
+生成的声明如下，会自动判断 import 的类型是方法还是对象还是类。
 
 ```typescript
 type AutoInstanceType<T, U = T extends (...args: any[]) => any ? ReturnType<T> : T> = U extends { new (...args: any[]): any } ? InstanceType<U> : U;
