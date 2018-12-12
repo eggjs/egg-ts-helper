@@ -253,7 +253,7 @@ interface T100 {
 
 #### generator `string`
 
-生成器名称，watcher 监听到文件改动的时候会执行该生成器用来重新生成 d.ts，建议只使用 `class` `function` `object` 这三个生成器，因为其他几个比较定制化，不太适用于 custom loader。
+生成器名称，watcher 监听到文件改动的时候会执行该生成器用来重新生成 d.ts，建议只使用 `class` `function` `object` `auto` 这几个生成器，因为其他几个比较定制化，不太适用于 custom loader。
 
 ##### | `generator` 设置为 `class`.
 
