@@ -254,7 +254,7 @@ Should set `declareTo` if without `interface`.
 
 #### generator `string`
 
-The name of generator, ( the generator will be executed and recreate `d.ts` when the file is changed. ) but I recommend to use `class` `function` `object` only, because the other generator is not suitable for custom loader.
+The name of generator, ( the generator will be executed and recreate `d.ts` when the file is changed. ) but I recommend to use `class` `function` `object` `auto` only, because the other generator is not suitable for custom loader.
 
 `generator` set to `class`.
 
@@ -262,6 +262,12 @@ The name of generator, ( the generator will be executed and recreate `d.ts` when
 interface IModel {
   Station: Station;
 }
+```
+
+suitable for module like this
+
+```typescript
+export default class XXXController extends Controller { }
 ```
 
 `generator` set to `function`. ( Support since `1.16.0` )
@@ -272,6 +278,14 @@ interface IModel {
 }
 ```
 
+suitable for module like this
+
+```typescript
+export default () => {
+  return {};
+}
+```
+
 `generator` set to `object`. ( Support since `1.16.0` )
 
 ```typescript
@@ -279,6 +293,26 @@ interface IModel {
   Station: typeof Station;
 }
 ```
+
+suitable for module like this
+
+```typescript
+export default {}
+```
+
+`generator` set to `auto`. ( Support since `1.19.0` )
+
+It will check types automatically.
+
+```typescript
+type AutoInstanceType<T, U = T extends (...args: any[]) => any ? ReturnType<T> : T> = U extends { new (...args: any[]): any } ? InstanceType<U> : U;
+
+interface IModel {
+  Station: AutoInstanceType<typeof Station>;
+}
+```
+
+suitable for every module in above.
 
 #### interfaceHandle `function|string`
 

@@ -263,11 +263,25 @@ interface IModel {
 }
 ```
 
+适合这样写的模块
+
+```typescript
+export default class XXXController extends Controller { }
+```
+
 `generator` 设置为 `function`. ( `1.16.0` 开始支持 )
 
 ```typescript
 interface IModel {
   Station: ReturnType<typeof Station>;
+}
+```
+
+适合这样写的模块
+
+```typescript
+export default () => {
+  return {};
 }
 ```
 
@@ -278,6 +292,26 @@ interface IModel {
   Station: typeof Station;
 }
 ```
+
+适合这样写的模块
+
+```typescript
+export default {}
+```
+
+`generator` 设置为 `auto`. ( `1.19.0` 开始支持 )
+
+会自动判断 import 的类型是方法还是对象还是类。
+
+```typescript
+type AutoInstanceType<T, U = T extends (...args: any[]) => any ? ReturnType<T> : T> = U extends { new (...args: any[]): any } ? InstanceType<U> : U;
+
+interface IModel {
+  Station: AutoInstanceType<typeof Station>;
+}
+```
+
+适合上面描述的所有模块。
 
 #### interfaceHandle `function|string`
 
