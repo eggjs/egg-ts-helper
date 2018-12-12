@@ -1,4 +1,11 @@
 
+1.19.0 / 2018-12-12
+===================
+
+  * feat: generator of configure support file path
+  * feat: add a new generator: auto
+  * refactor: code splitting and add a new class Watcher
+
 1.18.0 / 2018-12-10
 ===================
 

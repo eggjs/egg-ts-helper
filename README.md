@@ -3,7 +3,8 @@
 [![NPM version][npm-image]][npm-url]
 [![Build Status][travis-image]][travis-url]
 [![Appveyor status][appveyor-image]][appveyor-url]
-[![Coverage Status][coveralls-image]][coveralls-url]
+[![Test coverage][codecov-image]][codecov-url]
+[![NPM download][download-image]][download-url]
 
 [npm-image]: https://img.shields.io/npm/v/egg-ts-helper.svg?style=flat-square
 [npm-url]: https://npmjs.org/package/egg-ts-helper
@@ -11,10 +12,12 @@
 [travis-image]: http://img.shields.io/travis/whxaxes/egg-ts-helper.svg
 [appveyor-url]: https://ci.appveyor.com/project/whxaxes/egg-ts-helper/branch/master
 [appveyor-image]: https://ci.appveyor.com/api/projects/status/github/whxaxes/egg-ts-helper?branch=master&svg=true
-[coveralls-url]: https://coveralls.io/r/whxaxes/egg-ts-helper
-[coveralls-image]: https://img.shields.io/coveralls/whxaxes/egg-ts-helper.svg
+[codecov-image]: https://codecov.io/gh/whxaxes/egg-ts-helper/branch/master/graph/badge.svg
+[codecov-url]: https://codecov.io/gh/whxaxes/egg-ts-helper
+[download-image]: https://img.shields.io/npm/dm/egg-ts-helper.svg?style=flat-square
+[download-url]: https://npmjs.org/package/egg-ts-helper
 
-A simple tool using to create `d.ts` for [egg](https://eggjs.org) application. Injecting `controller, proxy, service, etc.` to the types of egg by [Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html) for typeCheck and IntelliSense
+A simple tool for creating `d.ts` in [egg](https://eggjs.org) application. Injecting `controller, proxy, service, etc.` to definition type of egg ( such as `Context` `Application` etc. ) by [Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html), and make IntelliSense works in both egg-js and egg-ts.
 
 
 ## Install
