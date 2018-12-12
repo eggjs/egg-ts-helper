@@ -8,7 +8,7 @@ import * as utils from './utils';
 const debug = d('egg-ts-helper#index');
 const dtsComment =
   '// This file is created by egg-ts-helper\n' +
-  '// Do not modify this file!!!!!!!!!\n\n';
+  '// Do not modify this file!!!!!!!!!\n';
 
 declare global {
   interface PlainObject {
@@ -288,7 +288,12 @@ export default class TsHelper extends EventEmitter {
       let isRemove = false;
       if (item.content) {
         // create file
-        const dtsContent = `${dtsComment}import '${config.framework}';\n${item.content}`;
+        const dtsContent = [
+          dtsComment,
+          `import '${config.framework}';`,
+          item.content,
+        ].join('\n');
+
         debug('created d.ts : %s', item.dist);
         utils.writeFileSync(item.dist, dtsContent);
         this.emit('update', item.dist, file);

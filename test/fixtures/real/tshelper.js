@@ -7,5 +7,11 @@ module.exports = {
       declareTo: 'Application.model', // declare to this interface
       interfaceHandle: val => `ReturnType<typeof ${val}>`, // interfaceHandle
     },
+
+    custom: {
+      path: 'app/custom', // dir path
+      generator: 'auto', // generator name
+      declareTo: 'Application.custom', // declare to this interface
+    }
   }
 };

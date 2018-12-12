@@ -10,7 +10,7 @@ export interface BaseWatchItem {
   path: string;
   generator: string;
   enabled: boolean;
-  trigger: string[];
+  trigger: Array<'add' | 'unlink' | 'change'>;
   pattern: string;
 }
 
@@ -37,7 +37,10 @@ export default class Watcher extends EventEmitter {
   throttleTick: any = null;
   throttleStack: string[] = [];
 
-  constructor(public options: WatchItem & { name: string; }, public helper: TsHelper) {
+  constructor(
+    public options: WatchItem & { name: string; },
+    public helper: TsHelper,
+  ) {
     super();
     this.init();
   }
