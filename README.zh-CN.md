@@ -415,17 +415,57 @@ function myGenerator(config, baseConfig) {
   console.info(config);
   console.info(baseConfig);
 
+  // 返回值可以是对象或者数组 { dist: string; content: string } | Array<{ dist: string; content: string }>
+  // 如果返回的 content 是 undefined，egg-ts-helper 会删除 dist 指向的文件
   return {
     dist: 'd.ts file url',
     content: 'd.ts content'
   }
 }
-
 module.exports = {
   watchDirs: {
     model: {
       path: 'app/model',
       generator: myGenerator,
+      trigger: ['add', 'unlink'],
+    }
+  }
+}
+```
+
+或者将自定义生成器定义到其他 js 中
+
+```javascript
+// ./my-generator.js
+
+// custom generator
+module.exports = (config, baseConfig) => {
+  // config.dir       dir
+  // config.dtsDir    d.ts dir
+  // config.file      changed file
+  // config.fileList  file list
+  console.info(config);
+  console.info(baseConfig);
+
+  // 返回值可以是对象或者数组 { dist: string; content: string } | Array<{ dist: string; content: string }>
+  // 如果返回的 content 是 undefined，egg-ts-helper 会删除 dist 指向的文件
+  return {
+    dist: 'd.ts file url',
+    content: 'd.ts content'
+  }
+}
+```
+
+配置
+
+```js
+// ./tshelper.js
+
+module.exports = {
+  watchDirs: {
+    model: {
+      path: 'app/model',
+      generator: './my-generator',
       trigger: ['add', 'unlink'],
     }
   }

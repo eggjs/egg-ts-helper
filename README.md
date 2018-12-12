@@ -414,6 +414,8 @@ function myGenerator(config, baseConfig) {
   console.info(config);
   console.info(baseConfig);
 
+  // return type can be object or array { dist: string; content: string } | Array<{ dist: string; content: string }>
+  // egg-ts-helper will remove dist file when content is undefined.
   return {
     dist: 'd.ts file url',
     content: 'd.ts content'
@@ -425,6 +427,45 @@ module.exports = {
     model: {
       path: 'app/model',
       generator: myGenerator,
+      trigger: ['add', 'unlink'],
+    }
+  }
+}
+```
+
+or define generator to other js.
+
+```javascript
+// ./my-generator.js
+
+// custom generator
+module.exports = (config, baseConfig) => {
+  // config.dir       dir
+  // config.dtsDir    d.ts dir
+  // config.file      changed file
+  // config.fileList  file list
+  console.info(config);
+  console.info(baseConfig);
+
+  // return type can be object or array { dist: string; content: string } | Array<{ dist: string; content: string }>
+  // egg-ts-helper will remove dist file when content is undefined.
+  return {
+    dist: 'd.ts file url',
+    content: 'd.ts content'
+  }
+}
+```
+
+configuration
+
+```js
+// ./tshelper.js
+
+module.exports = {
+  watchDirs: {
+    model: {
+      path: 'app/model',
+      generator: './my-generator',
       trigger: ['add', 'unlink'],
     }
   }
