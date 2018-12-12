@@ -17,7 +17,7 @@
 [download-image]: https://img.shields.io/npm/dm/egg-ts-helper.svg?style=flat-square
 [download-url]: https://npmjs.org/package/egg-ts-helper
 
-A simple tool using to create `d.ts` for [egg](https://eggjs.org) application. Injecting `controller, proxy, service, etc.` to the types of egg by [Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html) for typeCheck and IntelliSense
+A simple tool for creating `d.ts` in [egg](https://eggjs.org) application. Injecting `controller, proxy, service, etc.` to the types of egg by [Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html) for typeCheck and IntelliSense
 
 
 ## Install
