@@ -140,17 +140,17 @@ In `package.json`
 Generator is the core of `egg-ts-helper`. ( build-in generator: https://github.com/whxaxes/egg-ts-helper/tree/master/src/generators
  )
 
-On `egg-ts-helper` startup, it will executes all watcher's generator for traversing the directory and collect modules, after executing, generator return fields `dist`( d.ts file path ) and `content`( import these modules and defined to interface of egg. ) to `egg-ts-helper`, then `egg-ts-helper` write file to `dist` path with `content` content ( remove file if `content` is undefined ).
+On `egg-ts-helper` startup, it will executes all watcher's generator for traversing directories and collect modules, after executing, generator return fields `dist`( d.ts file path ) and `content`( import these modules and defined to interface of egg. ) to `egg-ts-helper`, then writes `content` to `dist`  ( remove file if `content` is undefined ).
 
-You can configure watcher in option `watchDirs` ( see `getDefaultWatchDirs` method in https://github.com/whxaxes/egg-ts-helper/blob/master/src/index.ts to know default config of watcher ). `egg-ts-helper` watch these directories `app/extend`,`app/controller`,`app/service`, `app/config`, `app/middleware`, `app/model` by default. When the file under these folders are changed, the `d.ts` will be recreated ( config.watch should set to true ) .
+Watcher can be configured in option `watchDirs` ( see `getDefaultWatchDirs` method in https://github.com/whxaxes/egg-ts-helper/blob/master/src/index.ts to know default config of watcher ). `egg-ts-helper` watch these directories `app/extend`,`app/controller`,`app/service`, `app/config`, `app/middleware`, `app/model` by default. The `d.ts` will be recreated when files under these folders are changed ( config.watch should set to `true` ) .
 
-Watcher can be disabled by `-i` flag.
+You can disable watcher by `-i` flag.
 
 ```
 $ ets -i extend,controller
 ```
 
-Or configure in `tshelper.js`, setting `watchDirs.extend` and `watchDirs.controller` to `false`.
+Or in `tshelper.js`, setting `watchDirs.extend` and `watchDirs.controller` to `false`.
 
 ```
 // {cwd}/tshelper.js
