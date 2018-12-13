@@ -21,31 +21,33 @@
 
 ## 安装
 
+打开应用目录并且安装
+
 ```
-npm i egg-ts-helper -g
+npm i egg-ts-helper --save-dev
 ```
 
 或者
 
 ```
-yarn global add egg-ts-helper
+yarn add egg-ts-helper --dev
 ```
 
 ## 快速开始
 
-打开你的 egg 应用，执行以下命令
+打开你的 egg 应用，通过 [npx](https://github.com/zkat/npx) 来执行 ets 指令
 
 ```
-$ ets
+$ npx ets
 ```
 
 可以通过 `-w` 来监听文件改动并且重新生成 `d.ts`
 
 ```
-$ ets -w
+$ npx ets -w
 ```
 
-再或者可以在 `egg-bin` 中使用 `register`
+如果不想用 npx ，可以装到全局，或者在 `egg-bin` 中使用 `register`
 
 ```
 $ egg-bin dev -r egg-ts-helper/register

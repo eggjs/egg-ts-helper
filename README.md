@@ -22,31 +22,33 @@ A simple tool for creating `d.ts` in [egg](https://eggjs.org) application. Injec
 
 ## Install
 
+open your application and install.
+
 ```
-npm i egg-ts-helper -g
+npm i egg-ts-helper --save-dev
 ```
 
 or
 
 ```
-yarn global add egg-ts-helper
+yarn add egg-ts-helper --dev
 ```
 
 ## QuickStart
 
-Open your egg application, executing the command
+Open your egg application, executing ets by [npx](https://github.com/zkat/npx)
 
 ```
-$ ets
+$ npx ets
 ```
 
 It can auto recreate d.ts while the file has changed by `-w` flag.
 
 ```
-$ ets -w
+$ npx ets -w
 ```
 
-Or using `register` in `egg-bin`
+If you don't want to use npx, just install it in global or use `register` in `egg-bin`.
 
 ```
 $ egg-bin dev -r egg-ts-helper/register
