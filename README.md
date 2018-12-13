@@ -142,7 +142,7 @@ Generator is the core of `egg-ts-helper`. ( build-in generator: https://github.c
 
 On `egg-ts-helper` startup, it will executes all watcher's generator for traversing the directory and collect modules, after executing, generator return fields `dist`( d.ts file path ) and `content`( import these modules and defined to interface of egg. ) to `egg-ts-helper`, then `egg-ts-helper` write file to `dist` path with `content` content ( remove file if `content` is undefined ).
 
-You can configure watcher in option `watchDirs` ( see `getDefaultWatchDirs` method in https://github.com/whxaxes/egg-ts-helper/blob/master/src/index.ts to know default config of watcher ). `egg-ts-helper` watch these directories `app/extend`,`app/controller`,`app/service`, `app/config`, `app/middleware`, `app/model` by default. When the files under these folders is changed, the `d.ts` will be recreated ( config.watch should set to true ) .
+You can configure watcher in option `watchDirs` ( see `getDefaultWatchDirs` method in https://github.com/whxaxes/egg-ts-helper/blob/master/src/index.ts to know default config of watcher ). `egg-ts-helper` watch these directories `app/extend`,`app/controller`,`app/service`, `app/config`, `app/middleware`, `app/model` by default. When the file under these folders are changed, the `d.ts` will be recreated ( config.watch should set to true ) .
 
 Watcher can be disabled by `-i` flag.
 
@@ -361,7 +361,7 @@ module.exports = {
 }
 ```
 
-The generated typings is the same as above. `{{ 0 }}` means the first argument in function.
+The generated typings are the same as above. `{{ 0 }}` means the first argument in function.
 
 #### caseStyle `function|string`
 
