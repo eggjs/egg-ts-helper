@@ -42,7 +42,7 @@ Open your egg application, executing ets by [npx](https://github.com/zkat/npx)
 $ npx ets
 ```
 
-It can auto recreate d.ts while the file has changed by `-w` flag.
+Watching files by `-w` flag.
 
 ```
 $ npx ets -w
@@ -140,7 +140,7 @@ In `package.json`
 Generator is the core of `egg-ts-helper`. ( build-in generator: https://github.com/whxaxes/egg-ts-helper/tree/master/src/generators
  )
 
-On `egg-ts-helper` startup, it will executes all watcher's generator, and the generator will traverse the directory and collect modules, then return fields `dist`( d.ts file path ) and `content`( import these modules and defined to interface of egg. ) to `egg-ts-helper`. `egg-ts-helper` will create `d.ts` by `dist` and `content` fields.
+On `egg-ts-helper` startup, it will executes all watcher's generator for traversing the directory and collect modules, after executing, generator return fields `dist`( d.ts file path ) and `content`( import these modules and defined to interface of egg. ) to `egg-ts-helper`, then `egg-ts-helper` write file to `dist` path with `content` content ( remove file if `content` is undefined ).
 
 You can configure watcher in option `watchDirs` ( see `getDefaultWatchDirs` method in https://github.com/whxaxes/egg-ts-helper/blob/master/src/index.ts to know default config of watcher ). `egg-ts-helper` watch these directories `app/extend`,`app/controller`,`app/service`, `app/config`, `app/middleware`, `app/model` by default. When the files under these folders is changed, the `d.ts` will be recreated ( config.watch should set to true ) .
 
