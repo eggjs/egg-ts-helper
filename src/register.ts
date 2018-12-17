@@ -1,4 +1,3 @@
-import { exec, fork } from 'child_process';
 import cluster from 'cluster';
 import d from 'debug';
 import fs from 'fs';
@@ -31,37 +30,18 @@ if (cluster.isMaster) {
 
 // start to register
 function register() {
-  const argv = [ '-w' ];
-  if (process.env.NODE_ENV === 'test') {
-    // silent in unittest
-    argv.push('-s');
-  }
-
-  // fork a process to watch files change
-  const ps = fork(path.resolve(__dirname, './bin'), argv, { execArgv: [] });
-
-  // kill child process while process exit
-  function close() {
-    if (!ps.killed) {
-      if (process.platform === 'win32') {
-        exec('taskkill /pid ' + ps.pid + ' /T /F');
-      } else {
-        ps.kill('SIGHUP');
-      }
-    }
-  }
-
-  process.on('exit', close);
-  process.on('SIGINT', close);
-  process.on('SIGTERM', close);
-  process.on('SIGHUP', close);
-
   // clean local js file at first.
   // because egg-loader cannot load the same property name to egg.
   cleanJs(process.cwd());
 
-  // exec building at first
-  createTsHelperInstance().build();
+  // exec building
+  createTsHelperInstance({ watch: true })
+    .on('update', p => {
+      if (process.env.NODE_ENV !== 'test') {
+        console.info(`[egg-ts-helper] ${p} created`);
+      }
+    })
+    .build();
 
   // cache pid
   fs.writeFileSync(cacheFileDir, process.pid);
