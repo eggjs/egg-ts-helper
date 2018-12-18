@@ -13,7 +13,13 @@ function sleep(time) {
 describe('bin.test.ts', () => {
   let ps: ChildProcess | undefined;
   function triggerBin(...args: string[]) {
-    ps = spawn('node', [ path.resolve(__dirname, '../dist/bin.js') ].concat(args));
+    ps = spawn('node', [ path.resolve(__dirname, '../dist/bin.js') ].concat(args), {
+      env: {
+        ...process.env,
+        NODE_ENV: 'local',
+      },
+    });
+
     return ps;
   }
 

@@ -35,13 +35,7 @@ function register() {
   cleanJs(process.cwd());
 
   // exec building
-  createTsHelperInstance({ watch: true })
-    .on('update', p => {
-      if (process.env.NODE_ENV !== 'test') {
-        console.info(`[egg-ts-helper] ${p} created`);
-      }
-    })
-    .build();
+  createTsHelperInstance({ watch: true }).build();
 
   // cache pid
   fs.writeFileSync(cacheFileDir, process.pid);

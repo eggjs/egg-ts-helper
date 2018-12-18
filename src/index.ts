@@ -28,6 +28,7 @@ export interface TsHelperOption {
   throttle?: number;
   execAtInit?: boolean;
   configFile?: string;
+  silent?: boolean;
 }
 
 export type WatchItem = WatchItem;
@@ -63,6 +64,7 @@ export const defaultConfig = {
   watch: false,
   watchOptions: undefined,
   execAtInit: false,
+  silent: process.env.NODE_ENV === 'test',
   watchDirs: {},
   configFile: './tshelper.js',
 };
@@ -191,6 +193,7 @@ export default class TsHelper extends EventEmitter {
   // build all dirs
   build() {
     this.watcherList.forEach(watcher => watcher.execute());
+    return this;
   }
 
   // destroy
@@ -198,6 +201,15 @@ export default class TsHelper extends EventEmitter {
     this.removeAllListeners();
     this.watcherList.forEach(item => item.destroy());
     this.watcherList.length = 0;
+  }
+
+  // log
+  log(info) {
+    if (this.config.silent) {
+      return;
+    }
+
+    console.info(`[egg-ts-helper] ${info}`);
   }
 
   // create oneForAll file
@@ -297,16 +309,18 @@ export default class TsHelper extends EventEmitter {
         debug('created d.ts : %s', item.dist);
         utils.writeFileSync(item.dist, dtsContent);
         this.emit('update', item.dist, file);
+        this.log(`${file} created`);
       } else {
         if (!fs.existsSync(item.dist)) {
           return;
         }
 
         // remove file
+        isRemove = true;
         debug('remove d.ts : %s', item.dist);
         fs.unlinkSync(item.dist);
         this.emit('remove', item.dist, file);
-        isRemove = true;
+        this.log(`${file} removed`);
       }
 
       // update distFiles

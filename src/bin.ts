@@ -49,26 +49,22 @@ function execute() {
   (program.ignore || '').split(',').forEach(key => (watchDirs[key] = false));
   (program.enabled || '').split(',').forEach(key => (watchDirs[key] = true));
 
-  const extraConfig = program.extra ? JSON.parse(program.extra) : {};
-
-  // create instance
-  const tsHelper = createTsHelperInstance({
+  const tsHelperConfig = {
     cwd,
     framework: program.framework,
     watch: watchFiles,
     watchDirs,
     configFile: program.config,
-    ...extraConfig,
-  })
-    .on('update', p => {
-      if (program.silent) {
-        return;
-      }
+    ...(program.extra ? JSON.parse(program.extra) : {}),
+  };
 
-      console.info(`[${packInfo.name}] ${p} created`);
-    });
+  // silent
+  if (program.silent) {
+    tsHelperConfig.silent = true;
+  }
 
-  tsHelper.build();
+  // create instance
+  const tsHelper = createTsHelperInstance(tsHelperConfig).build();
 
   if (program.oneForAll) {
     // create one for all
