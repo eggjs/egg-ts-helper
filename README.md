@@ -90,15 +90,15 @@ $ ets -h
 | watch | `boolean` | false | watch file change or not |
 | watchOptions | `object` | undefined | chokidar [options](https://github.com/paulmillr/chokidar#api) |
 | execAtInit | `boolean` | false | execute d.ts generation while instance was created |
-| configFile | `string` | {cwd}/tshelper.js | configure file path |
+| configFile | `string` | {cwd}/tshelper.(js|json) | configure file path |
 | watchDirs | `object` | | generator configuration |
 
-You can configure the options above in `./tshelper.js` or `package.json`.
+You can configure the options above in `./tshelper.js` `./tshelper.json` or `package.json`.
 
 In `tshelper.js`
 
 ```js
-// {cwd}/tshelper.js
+// {cwd}/tshelper.json
 
 module.exports = {
   watch: true,
@@ -108,6 +108,24 @@ module.exports = {
       enabled: true,
       generator: "function",
       interfaceHandle: "InstanceType<{{ 0 }}>"
+    },
+  }
+}
+```
+
+In `tshelper.json`
+
+```json
+// {cwd}/tshelper.json
+
+{
+  "watch": true,
+  "execAtInit": true,
+  "watchDirs": {
+    "model": {
+      "enabled": true,
+      "generator": "function",
+      "interfaceHandle": "InstanceType<{{ 0 }}>"
     },
   }
 }

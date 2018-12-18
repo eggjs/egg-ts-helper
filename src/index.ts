@@ -66,7 +66,7 @@ export const defaultConfig = {
   execAtInit: false,
   silent: process.env.NODE_ENV === 'test',
   watchDirs: {},
-  configFile: './tshelper.js',
+  configFile: './tshelper',
 };
 
 export function formatWatchItem(watchItem: WatchItem) {

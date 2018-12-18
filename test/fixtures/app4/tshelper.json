@@ -1,0 +1,9 @@
+{
+  "framework": "chair",
+  "watchDirs": {
+    "service": {
+      "enabled": false
+    },
+    "extend": false
+  }
+}

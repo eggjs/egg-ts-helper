@@ -195,19 +195,25 @@ export function eachSourceFile(node: ts.Node, cb: (n: ts.Node) => any) {
   });
 }
 
+// resolve module
+export function resolveModule(url) {
+  try {
+    return require.resolve(url);
+  } catch (e) {
+    return undefined;
+  }
+}
+
 // check whether module is exist
 export function moduleExist(mod: string, cwd?: string) {
   const nodeModulePath = path.resolve(cwd || process.cwd(), 'node_modules', mod);
-  try {
-    return fs.existsSync(nodeModulePath) || require.resolve(mod);
-  } catch (e) {
-    return;
-  }
+  return fs.existsSync(nodeModulePath) || resolveModule(mod);
 }
 
 // require modules
 export function requireFile(url) {
-  if (!fs.existsSync(url)) {
+  url = url && resolveModule(url);
+  if (!url) {
     return undefined;
   }
 

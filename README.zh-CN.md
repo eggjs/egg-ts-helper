@@ -89,15 +89,15 @@ $ ets -h
 | watch | `boolean` | false | 是否监听文件改动 |
 | watchOptions | `object` | undefined | chokidar 的[配置](https://github.com/paulmillr/chokidar#api) |
 | execAtInit | `boolean` | false | 是否启动的时候就执行声明生成 |
-| configFile | `string` | {cwd}/tshelper.js | 配置文件路径 |
+| configFile | `string` | {cwd}/tshelper.(js|json) | 配置文件路径 |
 | watchDirs | `object` | | 生成器配置 |
 
-可以在 `./tshelper.js` 或者 `package.json` 中配置上面的配置
+可以在  `./tshelper.js`  `./tshelper.json` 或者 `package.json` 中配置上面的配置
 
 在 `tshelper.js`
 
 ```js
-// {cwd}/tshelper.js
+// {cwd}/tshelper.json
 
 module.exports = {
   watch: true,
@@ -107,6 +107,24 @@ module.exports = {
       enabled: true,
       generator: "function",
       interfaceHandle: "InstanceType<{{ 0 }}>"
+    },
+  }
+}
+```
+
+在 `tshelper.json`
+
+```json
+// {cwd}/tshelper.json
+
+{
+  "watch": true,
+  "execAtInit": true,
+  "watchDirs": {
+    "model": {
+      "enabled": true,
+      "generator": "function",
+      "interfaceHandle": "InstanceType<{{ 0 }}>"
     },
   }
 }
