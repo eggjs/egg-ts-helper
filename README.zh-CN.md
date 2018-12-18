@@ -85,6 +85,7 @@ $ ets -h
 | cwd | `string` | process.cwd | Egg 的项目目录 |
 | typings | `string` | {cwd}/typings | 生成的声明放置目录 |
 | caseStyle | `string` `Function` | lower | egg 的模块命名方式 (lower (首字母小写), upper (首字母大写), camel (驼峰) ) ，也可以传方法 `(filename) => {return 'YOUR_CASE'}`|
+| silent | `boolean` | false | 静默执行，不输出日志 |
 | watch | `boolean` | false | 是否监听文件改动 |
 | watchOptions | `object` | undefined | chokidar 的[配置](https://github.com/paulmillr/chokidar#api) |
 | execAtInit | `boolean` | false | 是否启动的时候就执行声明生成 |

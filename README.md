@@ -68,7 +68,7 @@ $ ets -h
     -c, --cwd [path]        Egg application base dir (default: process.cwd)
     -C, --config [path]     Configuration file, The argument can be a file path to a valid JSON/JS configuration file.(default: {cwd}/tshelper.js)
     -o, --oneForAll [path]  Create a d.ts import all types (default: typings/ets.d.ts)
-    -s, --silent            Running without output
+    -s, --silent            Running without logging
     -i, --ignore [dirs]     Ignore watchDirs, your can ignore multiple dirs with comma like: -i controller,service
     -e, --enabled [dirs]    Enable watchDirs, your can enable multiple dirs with comma like: -e proxy,other
     -E, --extra [json]      Extra config, the value should be json string
@@ -86,6 +86,7 @@ $ ets -h
 | cwd | `string` | process.cwd | egg application base dir |
 | typings | `string` | {cwd}/typings | typings dir |
 | caseStyle | `string` `Function` | lower | egg case style(lower,upper,camel) or `(filename) => {return 'YOUR_CASE'}`|
+| silent | `boolean` | false | ignore logging |
 | watch | `boolean` | false | watch file change or not |
 | watchOptions | `object` | undefined | chokidar [options](https://github.com/paulmillr/chokidar#api) |
 | execAtInit | `boolean` | false | execute d.ts generation while instance was created |
