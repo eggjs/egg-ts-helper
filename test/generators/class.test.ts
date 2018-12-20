@@ -51,6 +51,13 @@ describe('generators/class.test.ts', () => {
     assert(result.content!.includes('Person: ReturnType<typeof ExportPerson>;'));
   });
 
+  it('should support sequelize with model', () => {
+    const newAppDir = path.resolve(__dirname, '../fixtures/app4');
+    const result = triggerGenerator<GeneratorResult>('model', newAppDir, undefined);
+    assert(result.content!.includes('declare module \'sequelize\' {'));
+    assert(result.content!.includes('interface Sequelize'));
+  });
+
   it('should support interfaceHandle with model without error', () => {
     const result = triggerGenerator<GeneratorResult>('model', appDir, undefined, {
       generator: 'function',
