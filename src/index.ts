@@ -89,7 +89,7 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
     interface: {
       context: 'Context',
       application: 'Application',
-      agent: 'Application',
+      agent: 'Agent',
       request: 'Request',
       response: 'Response',
       helper: 'IHelper',
