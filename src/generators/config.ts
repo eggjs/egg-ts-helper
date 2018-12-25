@@ -16,6 +16,12 @@ export interface ImportItem {
 
 const cache: { [key: string]: ImportItem } = {};
 
+export const defaultConfig = {
+  // only need to parse config.default.ts or config.ts
+  pattern: 'config(.default|).(ts|js)',
+  interface: 'EggAppConfig',
+};
+
 export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
   const fileList = config.fileList;
   const dist = path.resolve(config.dtsDir, 'index.d.ts');

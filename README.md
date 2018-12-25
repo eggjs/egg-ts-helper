@@ -462,6 +462,10 @@ or define generator to other js.
 ```javascript
 // ./my-generator.js
 
+module.exports.defaultConfig = {
+  // default watchDir config
+}
+
 // custom generator
 module.exports = (config, baseConfig) => {
   // config.dir       dir

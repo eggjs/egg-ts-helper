@@ -430,12 +430,12 @@ declare module 'egg' {
 ```javascript
 // ./tshelper.js
 
-// custom generator
+// 自定义 generator
 function myGenerator(config, baseConfig) {
   // config.dir       dir
-  // config.dtsDir    d.ts dir
-  // config.file      changed file
-  // config.fileList  file list
+  // config.dtsDir    d.ts 目录
+  // config.file      发生更改的文件 file
+  // config.fileList  path 下的文件列表
   console.info(config);
   console.info(baseConfig);
 
@@ -462,12 +462,16 @@ module.exports = {
 ```javascript
 // ./my-generator.js
 
-// custom generator
+module.exports.defaultConfig = {
+  // 默认的 watchDir config
+}
+
+// 自定义 generator
 module.exports = (config, baseConfig) => {
   // config.dir       dir
-  // config.dtsDir    d.ts dir
-  // config.file      changed file
-  // config.fileList  file list
+  // config.dtsDir    d.ts 目录
+  // config.file      发生更改的文件 file
+  // config.fileList  path 下的文件列表
   console.info(config);
   console.info(baseConfig);
 

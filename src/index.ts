@@ -3,7 +3,7 @@ import d from 'debug';
 import { EventEmitter } from 'events';
 import fs from 'fs';
 import path from 'path';
-import Watcher, { BaseWatchItem, WatchItem } from './watcher';
+import Watcher, { WatchItem } from './watcher';
 import * as utils from './utils';
 const debug = d('egg-ts-helper#index');
 const dtsComment =
@@ -45,14 +45,11 @@ export interface GeneratorResult {
   content?: string;
 }
 
-export type TsGenerator<T = GeneratorResult | GeneratorResult[] | void> = (
+export type TsGenerator<T = GeneratorResult | GeneratorResult[] | void> = ((
   config: TsGenConfig,
   baseConfig: TsHelperConfig,
   tsHelper: TsHelper,
-) => T;
-
-// partial and exclude some properties
-type PartialExclude<T, K extends keyof T> = { [P in K]: T[P]; } & { [U in Exclude<keyof T, K>]?: T[U]; };
+) => T) & { defaultConfig?: WatchItem; };
 
 export const defaultConfig = {
   cwd: process.cwd(),
@@ -69,31 +66,13 @@ export const defaultConfig = {
   configFile: './tshelper',
 };
 
-export function formatWatchItem(watchItem: WatchItem) {
-  return {
-    trigger: [ 'add', 'unlink' ],
-    generator: 'class',
-    enabled: true,
-    ...watchItem,
-  };
-}
-
 // default watch dir
 export function getDefaultWatchDirs(opt?: TsHelperOption) {
-  const baseConfig: { [key: string]: PartialExclude<BaseWatchItem, 'path'> & PlainObject } = {};
-  const watchConfig: { [key: string]: WatchItem | boolean } = {};
+  const baseConfig: PlainObject = {};
 
   // extend
   baseConfig.extend = {
     path: 'app/extend',
-    interface: {
-      context: 'Context',
-      application: 'Application',
-      agent: 'Agent',
-      request: 'Request',
-      response: 'Response',
-      helper: 'IHelper',
-    },
     generator: 'extend',
   };
 
@@ -135,9 +114,6 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
   // config
   baseConfig.config = {
     path: 'config',
-    // only need to parse config.default.ts or config.ts
-    pattern: 'config(.default|).(ts|js)',
-    interface: 'EggAppConfig',
     generator: 'config',
     trigger: [ 'add', 'unlink', 'change' ],
   };
@@ -145,7 +121,6 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
   // plugin
   baseConfig.plugin = {
     path: 'config',
-    pattern: 'plugin*.(ts|js)',
     generator: 'plugin',
     trigger: [ 'add', 'unlink', 'change' ],
   };
@@ -157,12 +132,7 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
     generator: 'class',
   };
 
-  // format config
-  Object.keys(baseConfig).forEach(k => {
-    watchConfig[k] = formatWatchItem(baseConfig[k] as WatchItem);
-  });
-
-  return watchConfig;
+  return baseConfig;
 }
 
 export default class TsHelper extends EventEmitter {
@@ -240,16 +210,11 @@ export default class TsHelper extends EventEmitter {
     this.watcherList = [];
     Object.keys(config.watchDirs).forEach(key => {
       const conf = config.watchDirs[key] as WatchItem;
-      if (!conf.enabled) {
+      if (conf.hasOwnProperty('enabled') && !conf.enabled) {
         return;
       }
 
-      const options = {
-        ...config.watchDirs[key] as WatchItem,
-        name: key,
-      };
-
-      const watcher = new Watcher(options, this);
+      const watcher = new Watcher({ ...conf, name: key }, this);
       this.watcherList.push(watcher);
       watcher.on('update', this.generateTs.bind(this));
 
@@ -379,7 +344,7 @@ function mergeConfig(base: TsHelperConfig, ...args: TsHelperOption[]) {
           if (base.watchDirs[k]) {
             Object.assign(base.watchDirs[k], item);
           } else {
-            base.watchDirs[k] = formatWatchItem(item);
+            base.watchDirs[k] = item;
           }
         }
       });

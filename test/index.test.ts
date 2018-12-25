@@ -299,7 +299,10 @@ describe('index.test.ts', () => {
     tsHelper = createTsHelperInstance({
       cwd: path.resolve(__dirname, './fixtures/app4'),
     });
-    const len = Object.keys(watchDirs).filter(k => (watchDirs[k] as any).enabled).length;
+    const len = Object.keys(watchDirs).filter(k => {
+      const item = (watchDirs[k] as any);
+      return !item.hasOwnProperty('enabled') || item.enabled;
+    }).length;
     assert(tsHelper.watcherList.length === len - 2);
     assert(!!tsHelper.watcherList.find(watcher => watcher.name === 'controller'));
   });

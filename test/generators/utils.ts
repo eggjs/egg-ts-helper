@@ -17,11 +17,10 @@ export function triggerGenerator<T extends GeneratorResult[] | GeneratorResult =
   const watcher = tsHelper.watcherList.find(watcher => watcher.name === name)!;
   assert(watcher, 'watcher is not exist');
   const dir = path.resolve(appDir, watcher.options.path);
-  watcher.options = {
+  watcher.init({
     ...watcher.options,
     ...extra,
-  };
-  watcher.init();
+  });
 
   return watcher.execute(file ? path.resolve(dir, file) : '') as any as T;
 }
