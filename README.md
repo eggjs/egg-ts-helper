@@ -5,7 +5,6 @@
 [![Appveyor status][appveyor-image]][appveyor-url]
 [![Test coverage][codecov-image]][codecov-url]
 [![NPM download][download-image]][download-url]
-[![Easter Egg][easter-image]](https://wanghx.cn/easteregg)
 
 [npm-image]: https://img.shields.io/npm/v/egg-ts-helper.svg?style=flat-square
 [npm-url]: https://npmjs.org/package/egg-ts-helper
