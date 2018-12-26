@@ -60,8 +60,8 @@ export default class Watcher extends EventEmitter {
       ...options,
     };
 
-    const p = options.path.replace(/\/|\\/, path.sep);
-    this.dir = utils.getAbsoluteUrlByCwd(p, this.config.cwd);
+    const baseDir = options.path.replace(/\/|\\/, path.sep);
+    this.dir = utils.getAbsoluteUrlByCwd(baseDir, this.config.cwd);
     this.dtsDir = path.resolve(
       this.config.typings,
       path.relative(this.config.cwd, this.dir),
