@@ -274,7 +274,7 @@ export default class TsHelper extends EventEmitter {
         debug('created d.ts : %s', item.dist);
         utils.writeFileSync(item.dist, dtsContent);
         this.emit('update', item.dist, file);
-        this.log(`${file} created`);
+        this.log(`${item.dist} created`);
       } else {
         if (!fs.existsSync(item.dist)) {
           return;
@@ -285,7 +285,7 @@ export default class TsHelper extends EventEmitter {
         debug('remove d.ts : %s', item.dist);
         fs.unlinkSync(item.dist);
         this.emit('remove', item.dist, file);
-        this.log(`${file} removed`);
+        this.log(`${item.dist} removed`);
       }
 
       // update distFiles
