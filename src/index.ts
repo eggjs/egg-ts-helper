@@ -179,7 +179,7 @@ export default class TsHelper extends EventEmitter {
       return;
     }
 
-    console.info(`[egg-ts-helper] ${info}`);
+    utils.log(info);
   }
 
   // create oneForAll file
@@ -231,7 +231,7 @@ export default class TsHelper extends EventEmitter {
     const config = { ...defaultConfig, watchDirs: getDefaultWatchDirs(options) };
     const cwd = options.cwd || config.cwd;
     const configFile = options.configFile || config.configFile;
-    const pkgInfo = utils.requireFile(path.resolve(cwd, './package.json')) || {};
+    const pkgInfo = utils.getPkgInfo(cwd);
     config.framework = options.framework || defaultConfig.framework;
 
     // read from package.json
@@ -274,7 +274,7 @@ export default class TsHelper extends EventEmitter {
         debug('created d.ts : %s', item.dist);
         utils.writeFileSync(item.dist, dtsContent);
         this.emit('update', item.dist, file);
-        this.log(`${item.dist} created`);
+        this.log(`create ${item.dist}`);
       } else {
         if (!fs.existsSync(item.dist)) {
           return;
@@ -285,7 +285,7 @@ export default class TsHelper extends EventEmitter {
         debug('remove d.ts : %s', item.dist);
         fs.unlinkSync(item.dist);
         this.emit('remove', item.dist, file);
-        this.log(`${item.dist} removed`);
+        this.log(`delete ${item.dist}`);
       }
 
       // update distFiles

@@ -19,6 +19,24 @@ export function loadFiles(cwd: string, pattern?: string) {
   });
 }
 
+// load modules to object
+export function loadModules<T = any>(cwd: string, loadDefault?: boolean) {
+  const modules: { [key: string]: T } = {};
+  fs
+    .readdirSync(cwd)
+    .filter(f => f.endsWith('.js'))
+    .map(f => {
+      const name = f.substring(0, f.lastIndexOf('.'));
+      const obj = require(path.resolve(cwd, name));
+      if (loadDefault && obj.default) {
+        modules[name] = obj.default;
+      } else {
+        modules[name] = obj;
+      }
+    });
+  return modules;
+}
+
 // convert string to function
 export function strToFn(fn) {
   if (typeof fn === 'string') {
@@ -26,6 +44,11 @@ export function strToFn(fn) {
   } else {
     return fn;
   }
+}
+
+// log
+export function log(msg: string, prefix: boolean = true) {
+  console.info(`${prefix ? '[egg-ts-helper] ' : ''}${msg}`);
 }
 
 export function getAbsoluteUrlByCwd(p: string, cwd: string) {
@@ -223,6 +246,11 @@ export function requireFile(url) {
   }
 
   return exp;
+}
+
+// require package.json
+export function getPkgInfo(cwd: string) {
+  return requireFile(path.resolve(cwd, './package.json')) || {};
 }
 
 // format property

@@ -1,19 +1,26 @@
 #! /usr/bin/env node
 
+import path from 'path';
 import { Command } from 'commander';
 import packInfo from '../package.json';
 import { createTsHelperInstance, defaultConfig } from './';
-import { cleanJs } from './utils';
+import { loadModules } from './utils';
+const commands = loadModules<SubCommand>(path.resolve(__dirname, './cmd'), true);
+let executeCmd: string | undefined;
 
-const noArgv = !process.argv.slice(2).length;
-const oldParseArgs = Command.prototype.parseArgs;
-Command.prototype.parseArgs = function(args: string[], unknown) {
-  return noArgv ? this : oldParseArgs.call(this, args, unknown);
+// override executeSubCommand to support async subcommand.
+Command.prototype.addImplicitHelpCommand = () => {};
+Command.prototype.executeSubCommand = async function(argv, args, unknown) {
+  const cwd = this.cwd || defaultConfig.cwd;
+  const command = commands[executeCmd!];
+  if (!command) {
+    throw new Error(executeCmd + ' does not exist');
+  }
+
+  await command.run(this, { cwd, argv, args: args.slice(0, args.length - 2), unknown });
 };
 
-const program = new Command();
-
-program
+const program = new Command()
   .version(packInfo.version, '-v, --version')
   .usage('[commands] [options]')
   .option('-w, --watch', 'Watching files, d.ts would recreated while file changed')
@@ -26,20 +33,21 @@ program
   .option('-e, --enabled [dirs]', 'Enable watchDirs, your can enable multiple dirs with comma like: -e proxy,other')
   .option('-E, --extra [json]', 'Extra config, the value should be json string');
 
-let cmd: string | undefined;
-program
-  .command('clean', 'Clean js file while it has the same name ts file')
-  .action(command => cmd = command);
-
-program.parse(process.argv);
-
-// clean js file.
-const cwd = program.cwd || defaultConfig.cwd;
-if (cmd === 'clean') {
-  cleanJs(cwd);
-  process.exit(0);
-} else {
+if (!process.argv.slice(2).length) {
   execute();
+} else {
+  Object.keys(commands).forEach(cmd => {
+    const subCommand = commands[cmd];
+    const cmdName = subCommand.options ? `${cmd} ${subCommand.options}` : cmd;
+    program.command(cmdName, subCommand.description)
+      .action(command => executeCmd = command);
+  });
+
+  program.parse(process.argv);
+
+  if (!executeCmd) {
+    execute();
+  }
 }
 
 // execute fn
@@ -50,7 +58,7 @@ function execute() {
   (program.enabled || '').split(',').forEach(key => (watchDirs[key] = true));
 
   const tsHelperConfig = {
-    cwd,
+    cwd: program.cwd || defaultConfig.cwd,
     framework: program.framework,
     watch: watchFiles,
     watchDirs,

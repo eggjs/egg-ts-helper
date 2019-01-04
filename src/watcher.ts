@@ -1,4 +1,3 @@
-import fs from 'fs';
 import path from 'path';
 import chokidar from 'chokidar';
 import { EventEmitter } from 'events';
@@ -6,6 +5,8 @@ import { TsGenerator, TsGenConfig, TsHelperConfig, default as TsHelper } from '.
 import * as utils from './utils';
 import d from 'debug';
 const debug = d('egg-ts-helper#watcher');
+let generators;
+
 export interface BaseWatchItem {
   path: string;
   generator: string;
@@ -19,17 +20,6 @@ export interface WatchItem extends PlainObject, BaseWatchItem { }
 interface WatcherOptions extends WatchItem {
   name: string;
 }
-
-// preload build-in generators
-const gd = path.resolve(__dirname, './generators');
-const generators: PlainObject = {};
-fs
-  .readdirSync(gd)
-  .filter(f => f.endsWith('.js'))
-  .map(f => {
-    const name = f.substring(0, f.lastIndexOf('.'));
-    generators[name] = require(path.resolve(gd, name));
-  });
 
 export default class Watcher extends EventEmitter {
   name: string;
@@ -152,6 +142,7 @@ export default class Watcher extends EventEmitter {
   private getGenerator(name: string): TsGenerator {
     const type = typeof name;
     const typeIsString = type === 'string';
+    generators = generators || utils.loadModules(path.resolve(__dirname, './generators'));
     let generator = typeIsString ? generators[name] : name;
 
     if (!generator && typeIsString) {

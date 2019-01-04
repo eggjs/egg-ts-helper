@@ -38,7 +38,7 @@ describe('register.test.ts', () => {
       });
     });
 
-    assert(str.includes('created'));
+    assert(str.includes('create'));
     assert(str.includes('done'));
     process.kill(ps.pid);
   });
@@ -70,7 +70,7 @@ describe('register.test.ts', () => {
       });
     });
 
-    assert(!str.includes('created'));
+    assert(!str.includes('create'));
     assert(str.includes('done'));
     process.kill(ps.pid);
   });
