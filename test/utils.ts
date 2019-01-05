@@ -20,8 +20,8 @@ export function triggerBin(...args: string[]) {
 
 export function tsc(cwd: string) {
   const bin = path.resolve(__dirname, '../node_modules/.bin/tsc' + (os.platform() === 'win32' ? '.cmd' : ''));
-  const p = spawn(bin, [], { cwd });
-  return new Promise(resolve => p.on('exit', resolve));
+  const p = spawn(bin, [ '-p', path.resolve(cwd, './tsconfig.json') ], { cwd });
+  return new Promise(resolve => p.on('close', resolve));
 }
 
 export function getOutput(...args: string[]) {

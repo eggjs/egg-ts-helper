@@ -40,7 +40,7 @@ describe('register.test.ts', () => {
 
     assert(str.includes('create'));
     assert(str.includes('done'));
-    process.kill(ps.pid);
+    ps.kill('SIGINT');
   });
 
   it('should silent when NODE_ENV is test', async () => {
@@ -72,6 +72,6 @@ describe('register.test.ts', () => {
 
     assert(!str.includes('create'));
     assert(str.includes('done'));
-    process.kill(ps.pid);
+    ps.kill('SIGINT');
   });
 });

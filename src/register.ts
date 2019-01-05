@@ -7,6 +7,7 @@ import { createTsHelperInstance } from './';
 import { cleanJs } from './utils';
 const debug = d('egg-ts-helper#register');
 const cacheFileDir = path.resolve(__dirname, '../.cache');
+const isTesting = process.env.NODE_ENV === 'test';
 
 // make sure ets only run once
 if (cluster.isMaster) {
@@ -15,8 +16,8 @@ if (cluster.isMaster) {
     existPid = +fs.readFileSync(cacheFileDir).toString();
   }
 
-  if (!existPid) {
-    register();
+  if (!existPid || isTesting) {
+    register(!isTesting);
   } else {
     processExists(existPid).then(exists => {
       if (!exists) {
@@ -29,14 +30,16 @@ if (cluster.isMaster) {
 }
 
 // start to register
-function register() {
+function register(watch: boolean = true) {
   // clean local js file at first.
   // because egg-loader cannot load the same property name to egg.
   cleanJs(process.cwd());
 
   // exec building
-  createTsHelperInstance({ watch: true }).build();
+  createTsHelperInstance({ watch }).build();
 
   // cache pid
-  fs.writeFileSync(cacheFileDir, process.pid);
+  if (!watch) {
+    fs.writeFileSync(cacheFileDir, process.pid);
+  }
 }

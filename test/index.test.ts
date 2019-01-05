@@ -5,8 +5,11 @@ import fs from 'fs';
 import mkdirp from 'mkdirp';
 import os from 'os';
 import path from 'path';
+import { sleep } from './utils';
+import { fork } from 'coffee';
 import assert = require('assert');
 import TsHelper, { createTsHelperInstance, getDefaultWatchDirs } from '../dist/';
+const eggBin = path.resolve(__dirname, '../node_modules/.bin/egg-bin' + (os.platform() === 'win32' ? '.cmd' : ''));
 const debug = d('egg-ts-helper#index.test');
 const noop = () => {};
 const timeout = (delay, callback: () => any) => {
@@ -18,10 +21,6 @@ const timeout = (delay, callback: () => any) => {
   });
 };
 
-function sleep(time) {
-  return new Promise(res => setTimeout(res, time));
-}
-
 describe('index.test.ts', () => {
   let tsHelper: TsHelper;
   before(() => {
@@ -29,7 +28,7 @@ describe('index.test.ts', () => {
   });
 
   afterEach(() => {
-    tsHelper.destroy();
+    if (tsHelper) tsHelper.destroy();
   });
 
   it('should works without error', async () => {
@@ -315,9 +314,6 @@ describe('index.test.ts', () => {
       autoRemoveJs: false,
     });
 
-    await sleep(4000);
-
-    const eggBin = path.resolve(__dirname, '../node_modules/.bin/egg-bin' + (os.platform() === 'win32' ? '.cmd' : ''));
     const proc = spawn(eggBin, [ 'dev', '--ts', '--baseDir', baseDir, '--port', '7661' ], {
       stdio: 'pipe',
       env: {
@@ -347,6 +343,34 @@ describe('index.test.ts', () => {
         }, 3000);
       });
     });
+  });
+
+  it('should works without error in unittest', async () => {
+    const baseDir = path.join(__dirname, './fixtures/real-unittest/');
+    del.sync(path.resolve(baseDir, './typings'));
+    del.sync(path.resolve(baseDir, './node_modules'));
+    fs.symlinkSync(path.resolve(__dirname, '../node_modules'), path.resolve(baseDir, './node_modules'), 'dir');
+    await fork(eggBin, [ 'test', '--ts', '-r', path.resolve(__dirname, '../register') ], {
+      cwd: baseDir,
+    })
+      // .debug()
+      .expect('code', 0)
+      .expect('stdout', /passing/)
+      .end();
+  });
+
+  it('should works without error in coverage', async () => {
+    const baseDir = path.join(__dirname, './fixtures/real-unittest/');
+    del.sync(path.resolve(baseDir, './typings'));
+    del.sync(path.resolve(baseDir, './node_modules'));
+    fs.symlinkSync(path.resolve(__dirname, '../node_modules'), path.resolve(baseDir, './node_modules'), 'dir');
+    await fork(eggBin, [ 'cov', '--ts', '-r', path.resolve(__dirname, '../register') ], {
+      cwd: baseDir,
+    })
+      // .debug()
+      .expect('code', 0)
+      .expect('stdout', /passing/)
+      .end();
   });
 
   it('should works in real-js app', async () => {
