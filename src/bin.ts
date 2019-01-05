@@ -17,7 +17,7 @@ Command.prototype.executeSubCommand = async function(argv, args, unknown) {
     throw new Error(executeCmd + ' does not exist');
   }
 
-  await command.run(this, { cwd, argv, args: args.slice(0, args.length - 2), unknown });
+  await command.run(this, { cwd, argv, args: args.filter(item => item !== this), unknown });
 };
 
 const program = new Command()

@@ -54,28 +54,29 @@ class InitCommand implements SubCommand {
     const pkgInfo = utils.getPkgInfo(cwd);
     const jsconfigPath = path.resolve(cwd, './jsconfig.json');
     const jsConfigExist = fs.existsSync(jsconfigPath);
+    const typeList = [ TYPE_TS, TYPE_JS ];
 
     pkgInfo.egg = pkgInfo.egg || {};
 
     // verify type
-    if (![ TYPE_TS, TYPE_JS ].includes(type)) {
+    if (!typeList.includes(type)) {
       const result = await prompt<{ type: string }>({
         type: 'autocomplete',
         name: 'type',
         message: 'Choose the type of your project',
-        choices: jsConfigExist ? [ TYPE_JS, TYPE_TS ] : [ TYPE_TS, TYPE_JS ],
+        choices: jsConfigExist ? typeList.reverse() : typeList,
       }).catch(() => ({ type: '' }));
 
       type = result.type;
     }
 
-    /** istanbul ignore else */
     if (type === TYPE_JS) {
       // create jsconfig.json
       if (!jsConfigExist) {
         utils.log('create ' + jsconfigPath);
         fs.writeFileSync(jsconfigPath, JSON.stringify(JS_CONFIG, null, 2));
       }
+
     } else if (type === TYPE_TS) {
       pkgInfo.egg.typescript = true;
 

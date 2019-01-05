@@ -42,11 +42,11 @@ describe('cmd/init.test.ts', () => {
     assert(fs.readFileSync(path.resolve(appPath, 'tsconfig.json')).toString() === alreadyJsonStr);
   });
 
-  it('tsconfig exist & without prompt', async () => {
+  it('jsconfig exist & prompt', async () => {
     const alreadyJsonStr = JSON.stringify({});
-    fs.writeFileSync(path.resolve(appPath, 'tsconfig.json'), alreadyJsonStr);
-    await getOutput('init', 'typescript', '-c', appPath);
-    assert(fs.readFileSync(path.resolve(appPath, 'tsconfig.json')).toString() === alreadyJsonStr);
+    fs.writeFileSync(path.resolve(appPath, 'jsconfig.json'), alreadyJsonStr);
+    await runInit('javascript');
+    assert(fs.readFileSync(path.resolve(appPath, 'jsconfig.json')).toString() === alreadyJsonStr);
   });
 
   it('jsconfig exist & without prompt', async () => {
