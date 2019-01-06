@@ -54,7 +54,6 @@
     "@types/mocha": "^5.0.0",
     "@types/node": "^9.4.5",
     "@types/power-assert": "^1.4.29",
-    "coffee": "^5.2.1",
     "del": "^3.0.0",
     "egg": "^2.10.0",
     "egg-bin": "^4.3.7",

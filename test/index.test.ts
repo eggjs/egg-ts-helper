@@ -1,12 +1,10 @@
-import { spawn } from 'child_process';
 import d from 'debug';
 import del from 'del';
 import fs from 'fs';
 import mkdirp from 'mkdirp';
 import os from 'os';
 import path from 'path';
-import { sleep } from './utils';
-import { fork } from 'coffee';
+import { sleep, spawn, getStd } from './utils';
 import assert = require('assert');
 import TsHelper, { createTsHelperInstance, getDefaultWatchDirs } from '../dist/';
 const eggBin = path.resolve(__dirname, '../node_modules/.bin/egg-bin' + (os.platform() === 'win32' ? '.cmd' : ''));
@@ -326,25 +324,9 @@ describe('index.test.ts', () => {
       },
     });
 
-    await new Promise((resolve, reject) => {
-      proc.stdout.on('data', info => {
-        if (info.toString().match(/egg started on http/)) {
-          proc.kill('SIGINT');
-          resolve();
-        }
-      });
-
-      let errorInfo = '';
-      let tick;
-      proc.stderr.on('data', info => {
-        errorInfo += info.toString();
-        clearTimeout(tick);
-        tick = setTimeout(() => {
-          reject(new Error(errorInfo));
-          proc.kill('SIGINT');
-        }, 3000);
-      });
-    });
+    const { stdout, stderr } = await getStd(proc, true);
+    assert(stdout.includes('egg started on http'));
+    assert(!stderr);
   });
 
   it('should works without error in unittest', async () => {
@@ -353,13 +335,12 @@ describe('index.test.ts', () => {
     del.sync(path.resolve(baseDir, './typings'));
     del.sync(path.resolve(baseDir, './node_modules'));
     fs.symlinkSync(path.resolve(__dirname, '../node_modules'), path.resolve(baseDir, './node_modules'), 'dir');
-    await fork(eggBin, [ 'test', '--ts', '-r', path.resolve(__dirname, '../register') ], {
+    const proc = spawn(eggBin, [ 'test', '--ts', '-r', path.resolve(__dirname, '../register') ], {
       cwd: baseDir,
-    })
-      .debug()
-      .expect('code', 0)
-      .expect('stdout', /passing/)
-      .end();
+    });
+    const { stdout, stderr } = await getStd(proc, true);
+    assert(stdout.includes('passing'));
+    assert(!stderr);
   });
 
   it('should works without error in coverage', async () => {
@@ -367,13 +348,12 @@ describe('index.test.ts', () => {
     del.sync(path.resolve(baseDir, './typings'));
     del.sync(path.resolve(baseDir, './node_modules'));
     fs.symlinkSync(path.resolve(__dirname, '../node_modules'), path.resolve(baseDir, './node_modules'), 'dir');
-    await fork(eggBin, [ 'cov', '--ts', '-r', path.resolve(__dirname, '../register') ], {
+    const proc = spawn(eggBin, [ 'cov', '--ts', '-r', path.resolve(__dirname, '../register') ], {
       cwd: baseDir,
-    })
-      .debug()
-      .expect('code', 0)
-      .expect('stdout', /passing/)
-      .end();
+    });
+    const { stdout, stderr } = await getStd(proc, true);
+    assert(stdout.includes('passing'));
+    assert(!stderr);
   });
 
   it('should works in real-js app', async () => {
