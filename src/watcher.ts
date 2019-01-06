@@ -78,7 +78,7 @@ export default class Watcher extends EventEmitter {
 
     // glob only works with / in windows
     const watchGlob = path
-      .join(this.dir, this.options.pattern || '**/*.(js|ts)')
+      .join(this.dir, this.options.pattern)
       .replace(/\/|\\/g, '/');
 
     const watcher = chokidar.watch(watchGlob, this.config.watchOptions);

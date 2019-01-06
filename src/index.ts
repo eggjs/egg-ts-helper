@@ -144,7 +144,7 @@ export default class TsHelper extends EventEmitter {
   // utils
   public utils = utils;
 
-  constructor(options: TsHelperOption = {}) {
+  constructor(options: TsHelperOption) {
     super();
 
     // configure ets
@@ -316,7 +316,7 @@ export default class TsHelper extends EventEmitter {
   }
 }
 
-export function createTsHelperInstance(options?: TsHelperOption) {
+export function createTsHelperInstance(options: TsHelperOption) {
   return new TsHelper(options);
 }
 

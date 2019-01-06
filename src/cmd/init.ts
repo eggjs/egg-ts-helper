@@ -65,7 +65,10 @@ class InitCommand implements SubCommand {
         name: 'type',
         message: 'Choose the type of your project',
         choices: jsConfigExist ? typeList.reverse() : typeList,
-      }).catch(() => ({ type: '' }));
+      }).catch(() => {
+        utils.log('cancel initialization');
+        return { type: '' };
+      });
 
       type = result.type;
     }

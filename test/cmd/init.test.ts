@@ -1,7 +1,7 @@
 import del from 'del';
 import fs from 'fs';
 import path from 'path';
-import { triggerBin, getOutput } from '../utils';
+import { triggerBin, getOutput, sleep } from '../utils';
 import assert = require('assert');
 
 describe('cmd/init.test.ts', () => {
@@ -15,6 +15,16 @@ describe('cmd/init.test.ts', () => {
 
   afterEach(() => {
     del.sync(path.resolve(appPath, './*.json'));
+  });
+
+  it('prompt can be cancel', async () => {
+    const cp = triggerBin('init', '-c', appPath);
+    let stdout = '';
+    await sleep(1000);
+    cp.stdout.on('data', data => (stdout += data.toString()));
+    cp.stdin.write('\x03');
+    await sleep(1000);
+    assert(stdout.includes('cancel initialization'));
   });
 
   it('ts & prompt', async () => {
@@ -54,5 +64,15 @@ describe('cmd/init.test.ts', () => {
     fs.writeFileSync(path.resolve(appPath, 'jsconfig.json'), alreadyJsonStr);
     await getOutput('init', 'javascript', '-c', appPath);
     assert(fs.readFileSync(path.resolve(appPath, 'jsconfig.json')).toString() === alreadyJsonStr);
+  });
+
+  it('egg.require exist', async () => {
+    fs.writeFileSync(path.resolve(appPath, 'package.json'), JSON.stringify({
+      egg: { require: [ 'egg-ts-helper/register' ] },
+    }));
+    await runInit('javascript');
+    const newPkg = JSON.parse(fs.readFileSync(path.resolve(appPath, 'package.json')).toString());
+    assert(newPkg.egg.require.length === 1);
+    assert(newPkg.egg.require[0] === 'egg-ts-helper/register');
   });
 });
