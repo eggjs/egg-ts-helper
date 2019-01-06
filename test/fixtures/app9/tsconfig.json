@@ -4,9 +4,13 @@
     "target": "es2017",
     "module": "commonjs",
     "moduleResolution": "node",
+    "skipLibCheck": true,
     "watch": false
   },
   "include": [
     "./**/*"
+  ],
+  "exclude": [
+    "node_modules/"
   ]
 }

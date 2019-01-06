@@ -1,44 +1,13 @@
-import { ChildProcess, spawn } from 'child_process';
 import del from 'del';
 import fs from 'fs';
 import mkdirp from 'mkdirp';
-import os from 'os';
 import path from 'path';
 import assert = require('assert');
-
-function sleep(time) {
-  return new Promise(res => setTimeout(res, time));
-}
+import { triggerBin, getOutput, sleep } from './utils';
 
 describe('bin.test.ts', () => {
-  let ps: ChildProcess | undefined;
-  function triggerBin(...args: string[]) {
-    ps = spawn('node', [ path.resolve(__dirname, '../dist/bin.js') ].concat(args));
-    return ps;
-  }
-
-  function getOutput(...args: string[]) {
-    ps = triggerBin.apply(null, args);
-    return new Promise<string>(resolve => {
-      let info = '';
-      ps!.stdout.on('data', data => {
-        info += data.toString();
-      });
-
-      ps!.on('close', () => {
-        resolve(info);
-      });
-    });
-  }
-
   before(() => {
     del.sync(path.resolve(__dirname, './fixtures/*/typings'), { force: true });
-  });
-
-  afterEach(() => {
-    if (ps && !ps.killed) {
-      ps.kill();
-    }
   });
 
   it('should works with -h correctly', async () => {
@@ -54,9 +23,9 @@ describe('bin.test.ts', () => {
 
   it('should works with -s correctly', async () => {
     const data = await getOutput('-c', path.resolve(__dirname, './fixtures/app4'));
-    assert(data.includes('created'));
+    assert(data.includes('create'));
     const data2 = await getOutput('-s', '-c', path.resolve(__dirname, './fixtures/app4'));
-    assert(!data2.includes('created'));
+    assert(!data2.includes('create'));
   });
 
   it('should works with empty flags correctly', async () => {
@@ -84,24 +53,8 @@ describe('bin.test.ts', () => {
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app5/typings/app/extend/helper.d.ts')));
   });
 
-  it('should works with clean command correctly', async () => {
-    const tscBin = path.resolve(__dirname, '../node_modules/.bin/tsc' + (os.platform() === 'win32' ? '.cmd' : ''));
-    const appPath = path.resolve(__dirname, './fixtures/app9');
-    const p = spawn(tscBin, [], { cwd: appPath });
-    await sleep(8000);
-    p.kill('SIGINT');
-    assert(fs.existsSync(path.resolve(appPath, './test.js')));
-    assert(fs.existsSync(path.resolve(appPath, './app/test.js')));
-    assert(fs.existsSync(path.resolve(appPath, './app/app/test.js')));
-    await new Promise(resolve => triggerBin('clean', '-c', appPath).on('exit', resolve));
-    assert(fs.existsSync(path.resolve(appPath, './test2.js')));
-    assert(!fs.existsSync(path.resolve(appPath, './test.js')));
-    assert(!fs.existsSync(path.resolve(appPath, './app/test.js')));
-    assert(!fs.existsSync(path.resolve(appPath, './app/app/test.js')));
-  });
-
   it('should created d.ts correctly', async () => {
-    triggerBin('-c', path.resolve(__dirname, './fixtures/app8'));
+    triggerBin('-c', path.resolve(__dirname, './fixtures/app8'), '-E', '{}');
     await sleep(3000);
     const content = fs
       .readFileSync(path.resolve(__dirname, './fixtures/app8/typings/app/controller/index.d.ts'))

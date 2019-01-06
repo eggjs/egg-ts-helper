@@ -5,6 +5,18 @@ import * as utils from '../utils';
 import { GeneratorResult, TsGenConfig, TsHelperConfig } from '..';
 const debug = d('egg-ts-helper#generators_extend');
 
+// default config
+export const defaultConfig = {
+  interface: {
+    context: 'Context',
+    application: 'Application',
+    agent: 'Agent',
+    request: 'Request',
+    response: 'Response',
+    helper: 'IHelper',
+  },
+};
+
 export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
   const fileList = config.file ? [ config.file ] : config.fileList;
 

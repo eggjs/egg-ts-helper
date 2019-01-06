@@ -19,6 +19,24 @@ export function loadFiles(cwd: string, pattern?: string) {
   });
 }
 
+// load modules to object
+export function loadModules<T = any>(cwd: string, loadDefault?: boolean) {
+  const modules: { [key: string]: T } = {};
+  fs
+    .readdirSync(cwd)
+    .filter(f => f.endsWith('.js'))
+    .map(f => {
+      const name = f.substring(0, f.lastIndexOf('.'));
+      const obj = require(path.resolve(cwd, name));
+      if (loadDefault && obj.default) {
+        modules[name] = obj.default;
+      } else {
+        modules[name] = obj;
+      }
+    });
+  return modules;
+}
+
 // convert string to function
 export function strToFn(fn) {
   if (typeof fn === 'string') {
@@ -26,6 +44,11 @@ export function strToFn(fn) {
   } else {
     return fn;
   }
+}
+
+// log
+export function log(msg: string, prefix: boolean = true) {
+  console.info(`${prefix ? '[egg-ts-helper] ' : ''}${msg}`);
 }
 
 export function getAbsoluteUrlByCwd(p: string, cwd: string) {
@@ -195,19 +218,25 @@ export function eachSourceFile(node: ts.Node, cb: (n: ts.Node) => any) {
   });
 }
 
+// resolve module
+export function resolveModule(url) {
+  try {
+    return require.resolve(url);
+  } catch (e) {
+    return undefined;
+  }
+}
+
 // check whether module is exist
 export function moduleExist(mod: string, cwd?: string) {
   const nodeModulePath = path.resolve(cwd || process.cwd(), 'node_modules', mod);
-  try {
-    return fs.existsSync(nodeModulePath) || require.resolve(mod);
-  } catch (e) {
-    return;
-  }
+  return fs.existsSync(nodeModulePath) || resolveModule(mod);
 }
 
 // require modules
 export function requireFile(url) {
-  if (!fs.existsSync(url)) {
+  url = url && resolveModule(url);
+  if (!url) {
     return undefined;
   }
 
@@ -217,6 +246,11 @@ export function requireFile(url) {
   }
 
   return exp;
+}
+
+// require package.json
+export function getPkgInfo(cwd: string) {
+  return requireFile(path.resolve(cwd, './package.json')) || {};
 }
 
 // format property

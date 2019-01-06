@@ -1,4 +1,3 @@
-import { exec, fork } from 'child_process';
 import cluster from 'cluster';
 import d from 'debug';
 import fs from 'fs';
@@ -7,21 +6,23 @@ import processExists from 'process-exists';
 import { createTsHelperInstance } from './';
 import { cleanJs } from './utils';
 const debug = d('egg-ts-helper#register');
-const cacheFileDir = path.resolve(__dirname, '../.cache');
+const cacheFile = path.resolve(__dirname, '../.cache');
+const isTesting = process.env.NODE_ENV === 'test';
 
-// make sure ets only run once
+/* istanbul ignore else */
 if (cluster.isMaster) {
+  // make sure ets only run once
   let existPid: number | undefined;
-  if (fs.existsSync(cacheFileDir)) {
-    existPid = +fs.readFileSync(cacheFileDir).toString();
+  if (fs.existsSync(cacheFile)) {
+    existPid = +fs.readFileSync(cacheFile).toString();
   }
 
-  if (!existPid) {
-    register();
+  if (!existPid || isTesting) {
+    register(!isTesting);
   } else {
     processExists(existPid).then(exists => {
       if (!exists) {
-        register();
+        register(true);
       } else {
         debug('process %s was exits, ignore register', existPid);
       }
@@ -30,39 +31,23 @@ if (cluster.isMaster) {
 }
 
 // start to register
-function register() {
-  const argv = [ '-w' ];
-  if (process.env.NODE_ENV === 'test') {
-    // silent in unittest
-    argv.push('-s');
-  }
-
-  // fork a process to watch files change
-  const ps = fork(path.resolve(__dirname, './bin'), argv, { execArgv: [] });
-
-  // kill child process while process exit
-  function close() {
-    if (!ps.killed) {
-      if (process.platform === 'win32') {
-        exec('taskkill /pid ' + ps.pid + ' /T /F');
-      } else {
-        ps.kill('SIGHUP');
-      }
-    }
-  }
-
-  process.on('exit', close);
-  process.on('SIGINT', close);
-  process.on('SIGTERM', close);
-  process.on('SIGHUP', close);
-
+function register(watch: boolean) {
   // clean local js file at first.
   // because egg-loader cannot load the same property name to egg.
   cleanJs(process.cwd());
 
-  // exec building at first
-  createTsHelperInstance().build();
+  // exec building
+  createTsHelperInstance({ watch }).build();
 
   // cache pid
-  fs.writeFileSync(cacheFileDir, process.pid);
+  if (watch) {
+    fs.writeFileSync(cacheFile, process.pid);
+
+    const clean = () => fs.existsSync(cacheFile) && fs.unlinkSync(cacheFile);
+
+    // delete cache file on exit.
+    process.once('beforeExit', clean);
+    process.once('uncaughtException', clean);
+    process.once('SIGINT', clean);
+  }
 }

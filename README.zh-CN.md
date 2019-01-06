@@ -76,6 +76,7 @@ $ ets -h
   Commands:
 
     clean                   清除所有包含同名 ts 文件的 js 文件
+    init <type>             在你的项目中初始化 egg-ts-helper
 ```
 
 ## 配置
@@ -85,13 +86,14 @@ $ ets -h
 | cwd | `string` | process.cwd | Egg 的项目目录 |
 | typings | `string` | {cwd}/typings | 生成的声明放置目录 |
 | caseStyle | `string` `Function` | lower | egg 的模块命名方式 (lower (首字母小写), upper (首字母大写), camel (驼峰) ) ，也可以传方法 `(filename) => {return 'YOUR_CASE'}`|
+| silent | `boolean` | false | 静默执行，不输出日志 |
 | watch | `boolean` | false | 是否监听文件改动 |
 | watchOptions | `object` | undefined | chokidar 的[配置](https://github.com/paulmillr/chokidar#api) |
 | execAtInit | `boolean` | false | 是否启动的时候就执行声明生成 |
-| configFile | `string` | {cwd}/tshelper.js | 配置文件路径 |
+| configFile | `string` | {cwd}/tshelper.(js|json) | 配置文件路径 |
 | watchDirs | `object` | | 生成器配置 |
 
-可以在 `./tshelper.js` 或者 `package.json` 中配置上面的配置
+可以在  `./tshelper.js`  `./tshelper.json` 或者 `package.json` 中配置上面的配置
 
 在 `tshelper.js`
 
@@ -106,6 +108,24 @@ module.exports = {
       enabled: true,
       generator: "function",
       interfaceHandle: "InstanceType<{{ 0 }}>"
+    },
+  }
+}
+```
+
+在 `tshelper.json`
+
+```json
+// {cwd}/tshelper.json
+
+{
+  "watch": true,
+  "execAtInit": true,
+  "watchDirs": {
+    "model": {
+      "enabled": true,
+      "generator": "function",
+      "interfaceHandle": "InstanceType<{{ 0 }}>"
     },
   }
 }
@@ -411,12 +431,12 @@ declare module 'egg' {
 ```javascript
 // ./tshelper.js
 
-// custom generator
+// 自定义 generator
 function myGenerator(config, baseConfig) {
   // config.dir       dir
-  // config.dtsDir    d.ts dir
-  // config.file      changed file
-  // config.fileList  file list
+  // config.dtsDir    d.ts 目录
+  // config.file      发生更改的文件 file
+  // config.fileList  path 下的文件列表
   console.info(config);
   console.info(baseConfig);
 
@@ -443,12 +463,16 @@ module.exports = {
 ```javascript
 // ./my-generator.js
 
-// custom generator
+module.exports.defaultConfig = {
+  // 默认的 watchDir config
+}
+
+// 自定义 generator
 module.exports = (config, baseConfig) => {
   // config.dir       dir
-  // config.dtsDir    d.ts dir
-  // config.file      changed file
-  // config.fileList  file list
+  // config.dtsDir    d.ts 目录
+  // config.file      发生更改的文件 file
+  // config.fileList  path 下的文件列表
   console.info(config);
   console.info(baseConfig);
 

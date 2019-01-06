@@ -3,7 +3,7 @@ import d from 'debug';
 import { EventEmitter } from 'events';
 import fs from 'fs';
 import path from 'path';
-import Watcher, { BaseWatchItem, WatchItem } from './watcher';
+import Watcher, { WatchItem } from './watcher';
 import * as utils from './utils';
 const debug = d('egg-ts-helper#index');
 const dtsComment =
@@ -28,6 +28,7 @@ export interface TsHelperOption {
   throttle?: number;
   execAtInit?: boolean;
   configFile?: string;
+  silent?: boolean;
 }
 
 export type WatchItem = WatchItem;
@@ -44,14 +45,11 @@ export interface GeneratorResult {
   content?: string;
 }
 
-export type TsGenerator<T = GeneratorResult | GeneratorResult[] | void> = (
+export type TsGenerator<T = GeneratorResult | GeneratorResult[] | void> = ((
   config: TsGenConfig,
   baseConfig: TsHelperConfig,
   tsHelper: TsHelper,
-) => T;
-
-// partial and exclude some properties
-type PartialExclude<T, K extends keyof T> = { [P in K]: T[P]; } & { [U in Exclude<keyof T, K>]?: T[U]; };
+) => T) & { defaultConfig?: WatchItem; };
 
 export const defaultConfig = {
   cwd: process.cwd(),
@@ -63,35 +61,18 @@ export const defaultConfig = {
   watch: false,
   watchOptions: undefined,
   execAtInit: false,
+  silent: process.env.NODE_ENV === 'test',
   watchDirs: {},
-  configFile: './tshelper.js',
+  configFile: './tshelper',
 };
-
-export function formatWatchItem(watchItem: WatchItem) {
-  return {
-    trigger: [ 'add', 'unlink' ],
-    generator: 'class',
-    enabled: true,
-    ...watchItem,
-  };
-}
 
 // default watch dir
 export function getDefaultWatchDirs(opt?: TsHelperOption) {
-  const baseConfig: { [key: string]: PartialExclude<BaseWatchItem, 'path'> & PlainObject } = {};
-  const watchConfig: { [key: string]: WatchItem | boolean } = {};
+  const baseConfig: PlainObject = {};
 
   // extend
   baseConfig.extend = {
     path: 'app/extend',
-    interface: {
-      context: 'Context',
-      application: 'Application',
-      agent: 'Agent',
-      request: 'Request',
-      response: 'Response',
-      helper: 'IHelper',
-    },
     generator: 'extend',
   };
 
@@ -133,9 +114,6 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
   // config
   baseConfig.config = {
     path: 'config',
-    // only need to parse config.default.ts or config.ts
-    pattern: 'config(.default|).(ts|js)',
-    interface: 'EggAppConfig',
     generator: 'config',
     trigger: [ 'add', 'unlink', 'change' ],
   };
@@ -143,7 +121,6 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
   // plugin
   baseConfig.plugin = {
     path: 'config',
-    pattern: 'plugin*.(ts|js)',
     generator: 'plugin',
     trigger: [ 'add', 'unlink', 'change' ],
   };
@@ -155,12 +132,7 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
     generator: 'class',
   };
 
-  // format config
-  Object.keys(baseConfig).forEach(k => {
-    watchConfig[k] = formatWatchItem(baseConfig[k] as WatchItem);
-  });
-
-  return watchConfig;
+  return baseConfig;
 }
 
 export default class TsHelper extends EventEmitter {
@@ -172,7 +144,7 @@ export default class TsHelper extends EventEmitter {
   // utils
   public utils = utils;
 
-  constructor(options: TsHelperOption = {}) {
+  constructor(options: TsHelperOption) {
     super();
 
     // configure ets
@@ -191,6 +163,7 @@ export default class TsHelper extends EventEmitter {
   // build all dirs
   build() {
     this.watcherList.forEach(watcher => watcher.execute());
+    return this;
   }
 
   // destroy
@@ -198,6 +171,15 @@ export default class TsHelper extends EventEmitter {
     this.removeAllListeners();
     this.watcherList.forEach(item => item.destroy());
     this.watcherList.length = 0;
+  }
+
+  // log
+  log(info) {
+    if (this.config.silent) {
+      return;
+    }
+
+    utils.log(info);
   }
 
   // create oneForAll file
@@ -228,16 +210,11 @@ export default class TsHelper extends EventEmitter {
     this.watcherList = [];
     Object.keys(config.watchDirs).forEach(key => {
       const conf = config.watchDirs[key] as WatchItem;
-      if (!conf.enabled) {
+      if (conf.hasOwnProperty('enabled') && !conf.enabled) {
         return;
       }
 
-      const options = {
-        ...config.watchDirs[key] as WatchItem,
-        name: key,
-      };
-
-      const watcher = new Watcher(options, this);
+      const watcher = new Watcher({ ...conf, name: key }, this);
       this.watcherList.push(watcher);
       watcher.on('update', this.generateTs.bind(this));
 
@@ -254,7 +231,7 @@ export default class TsHelper extends EventEmitter {
     const config = { ...defaultConfig, watchDirs: getDefaultWatchDirs(options) };
     const cwd = options.cwd || config.cwd;
     const configFile = options.configFile || config.configFile;
-    const pkgInfo = utils.requireFile(path.resolve(cwd, './package.json')) || {};
+    const pkgInfo = utils.getPkgInfo(cwd);
     config.framework = options.framework || defaultConfig.framework;
 
     // read from package.json
@@ -297,16 +274,18 @@ export default class TsHelper extends EventEmitter {
         debug('created d.ts : %s', item.dist);
         utils.writeFileSync(item.dist, dtsContent);
         this.emit('update', item.dist, file);
+        this.log(`create ${item.dist}`);
       } else {
         if (!fs.existsSync(item.dist)) {
           return;
         }
 
         // remove file
+        isRemove = true;
         debug('remove d.ts : %s', item.dist);
         fs.unlinkSync(item.dist);
         this.emit('remove', item.dist, file);
-        isRemove = true;
+        this.log(`delete ${item.dist}`);
       }
 
       // update distFiles
@@ -337,7 +316,7 @@ export default class TsHelper extends EventEmitter {
   }
 }
 
-export function createTsHelperInstance(options?: TsHelperOption) {
+export function createTsHelperInstance(options: TsHelperOption) {
   return new TsHelper(options);
 }
 
@@ -365,7 +344,7 @@ function mergeConfig(base: TsHelperConfig, ...args: TsHelperOption[]) {
           if (base.watchDirs[k]) {
             Object.assign(base.watchDirs[k], item);
           } else {
-            base.watchDirs[k] = formatWatchItem(item);
+            base.watchDirs[k] = item;
           }
         }
       });

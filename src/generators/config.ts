@@ -4,9 +4,10 @@ import ts from 'typescript';
 import { TsGenConfig, TsHelperConfig } from '..';
 import * as utils from '../utils';
 
-export const EXPORT_DEFAULT_FUNCTION = 1;
-export const EXPORT_DEFAULT = 2;
-export const EXPORT = 3;
+const EXPORT_DEFAULT_FUNCTION = 1;
+const EXPORT_DEFAULT = 2;
+const EXPORT = 3;
+const cache: { [key: string]: ImportItem } = {};
 
 export interface ImportItem {
   import: string;
@@ -14,7 +15,11 @@ export interface ImportItem {
   moduleName: string;
 }
 
-const cache: { [key: string]: ImportItem } = {};
+export const defaultConfig = {
+  // only need to parse config.default.ts or config.ts
+  pattern: 'config(.default|).(ts|js)',
+  interface: 'EggAppConfig',
+};
 
 export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
   const fileList = config.fileList;

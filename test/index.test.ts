@@ -1,12 +1,13 @@
-import { spawn } from 'child_process';
 import d from 'debug';
 import del from 'del';
 import fs from 'fs';
 import mkdirp from 'mkdirp';
 import os from 'os';
 import path from 'path';
+import { sleep, spawn, getStd } from './utils';
 import assert = require('assert');
 import TsHelper, { createTsHelperInstance, getDefaultWatchDirs } from '../dist/';
+const eggBin = path.resolve(__dirname, '../node_modules/.bin/egg-bin' + (os.platform() === 'win32' ? '.cmd' : ''));
 const debug = d('egg-ts-helper#index.test');
 const noop = () => {};
 const timeout = (delay, callback: () => any) => {
@@ -18,10 +19,6 @@ const timeout = (delay, callback: () => any) => {
   });
 };
 
-function sleep(time) {
-  return new Promise(res => setTimeout(res, time));
-}
-
 describe('index.test.ts', () => {
   let tsHelper: TsHelper;
   before(() => {
@@ -29,7 +26,7 @@ describe('index.test.ts', () => {
   });
 
   afterEach(() => {
-    tsHelper.destroy();
+    if (tsHelper) tsHelper.destroy();
   });
 
   it('should works without error', async () => {
@@ -299,7 +296,10 @@ describe('index.test.ts', () => {
     tsHelper = createTsHelperInstance({
       cwd: path.resolve(__dirname, './fixtures/app4'),
     });
-    const len = Object.keys(watchDirs).filter(k => (watchDirs[k] as any).enabled).length;
+    const len = Object.keys(watchDirs).filter(k => {
+      const item = (watchDirs[k] as any);
+      return !item.hasOwnProperty('enabled') || item.enabled;
+    }).length;
     assert(tsHelper.watcherList.length === len - 2);
     assert(!!tsHelper.watcherList.find(watcher => watcher.name === 'controller'));
   });
@@ -312,38 +312,46 @@ describe('index.test.ts', () => {
       autoRemoveJs: false,
     });
 
-    await sleep(4000);
-
-    const eggBin = path.resolve(__dirname, '../node_modules/.bin/egg-bin' + (os.platform() === 'win32' ? '.cmd' : ''));
     const proc = spawn(eggBin, [ 'dev', '--ts', '--baseDir', baseDir, '--port', '7661' ], {
       stdio: 'pipe',
       env: {
         ...process.env,
         ...{
+          NODE_ENV: 'development',
           TS_NODE_PROJECT: path.resolve(baseDir, './tsconfig.json'),
         },
       },
     });
 
-    await new Promise((resolve, reject) => {
-      proc.stdout.on('data', info => {
-        if (info.toString().match(/egg started on http/)) {
-          proc.kill('SIGINT');
-          resolve();
-        }
-      });
+    const { stdout, stderr } = await getStd(proc, true);
+    assert(stdout.includes('egg started on http'));
+    assert(!stderr);
+  });
 
-      let errorInfo = '';
-      let tick;
-      proc.stderr.on('data', info => {
-        errorInfo += info.toString();
-        clearTimeout(tick);
-        tick = setTimeout(() => {
-          reject(new Error(errorInfo));
-          proc.kill('SIGINT');
-        }, 3000);
-      });
+  it('should works without error in unittest', async () => {
+    const baseDir = path.join(__dirname, './fixtures/real-unittest/');
+    del.sync(path.resolve(baseDir, './typings'));
+    del.sync(path.resolve(baseDir, './node_modules'));
+    fs.symlinkSync(path.resolve(__dirname, '../node_modules'), path.resolve(baseDir, './node_modules'), 'dir');
+    const proc = spawn(eggBin, [ 'test', '--ts', '-r', path.resolve(__dirname, '../register') ], {
+      cwd: baseDir,
     });
+    const { stdout, stderr } = await getStd(proc, true);
+    assert(stdout.includes('passing'));
+    assert(!stderr);
+  });
+
+  it('should works without error in coverage', async () => {
+    const baseDir = path.join(__dirname, './fixtures/real-unittest/');
+    del.sync(path.resolve(baseDir, './typings'));
+    del.sync(path.resolve(baseDir, './node_modules'));
+    fs.symlinkSync(path.resolve(__dirname, '../node_modules'), path.resolve(baseDir, './node_modules'), 'dir');
+    const proc = spawn(eggBin, [ 'cov', '--ts', '-r', path.resolve(__dirname, '../register') ], {
+      cwd: baseDir,
+    });
+    const { stdout, stderr } = await getStd(proc, true);
+    assert(stdout.includes('passing'));
+    assert(!stderr);
   });
 
   it('should works in real-js app', async () => {

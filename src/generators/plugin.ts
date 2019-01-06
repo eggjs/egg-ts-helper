@@ -6,6 +6,10 @@ import * as utils from '../utils';
 
 const cache: { [key: string]: string[] } = {};
 
+export const defaultConfig = {
+  pattern: 'plugin*.(ts|js)',
+};
+
 export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
   const fileList = config.fileList;
   const dist = path.resolve(config.dtsDir, 'plugin.d.ts');
