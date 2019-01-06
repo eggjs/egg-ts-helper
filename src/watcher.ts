@@ -1,5 +1,6 @@
 import path from 'path';
 import chokidar from 'chokidar';
+import assert from 'assert';
 import { EventEmitter } from 'events';
 import { TsGenerator, TsGenConfig, TsHelperConfig, default as TsHelper } from './';
 import * as utils from './utils';
@@ -164,9 +165,7 @@ export default class Watcher extends EventEmitter {
       generator = generator.default;
     }
 
-    if (typeof generator !== 'function') {
-      throw new Error(`generator: ${name} not exist!!`);
-    }
+    assert(typeof generator === 'function', `generator: ${name} not exist!!`);
 
     return generator;
   }
