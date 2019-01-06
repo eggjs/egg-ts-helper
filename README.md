@@ -60,24 +60,24 @@ $ egg-bin dev -r egg-ts-helper/register
 ```
 $ ets -h
 
-  Usage: ets [commands] [options]
+  Usage: bin [commands] [options]
 
   Options:
-
-    -v, --version           Output the version number
-    -w, --watch             Watching files, d.ts will recreate if file is changed
+    -v, --version           output the version number
+    -w, --watch             Watching files, d.ts would recreated while file changed
     -c, --cwd [path]        Egg application base dir (default: process.cwd)
-    -C, --config [path]     Configuration file, The argument can be a file path to a valid JSON/JS configuration file.(default: {cwd}/tshelper.js)
+    -C, --config [path]     Configuration file, The argument can be a file path to a valid JSON/JS configuration file.（default: {cwd}/tshelper.js
+    -f, --framework [name]  Egg framework(default: egg)
     -o, --oneForAll [path]  Create a d.ts import all types (default: typings/ets.d.ts)
-    -s, --silent            Running without logging
+    -s, --silent            Running without output
     -i, --ignore [dirs]     Ignore watchDirs, your can ignore multiple dirs with comma like: -i controller,service
     -e, --enabled [dirs]    Enable watchDirs, your can enable multiple dirs with comma like: -e proxy,other
     -E, --extra [json]      Extra config, the value should be json string
-    -h, --help              Output usage information
+    -h, --help              output usage information
 
   Commands:
-
-    clean                   Clean js file when it has same name ts file
+    clean                   Clean js file while it has the same name ts file
+    init <type>             Init egg-ts-helper in your existing project
 ```
 
 ## Configuration
@@ -99,7 +99,7 @@ You can configure the options above in `./tshelper.js` `./tshelper.json` or `pac
 In `tshelper.js`
 
 ```js
-// {cwd}/tshelper.json
+// {cwd}/tshelper.js
 
 module.exports = {
   watch: true,

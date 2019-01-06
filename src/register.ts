@@ -6,14 +6,14 @@ import processExists from 'process-exists';
 import { createTsHelperInstance } from './';
 import { cleanJs } from './utils';
 const debug = d('egg-ts-helper#register');
-const cacheFileDir = path.resolve(__dirname, '../.cache');
+const cacheFile = path.resolve(__dirname, '../.cache');
 const isTesting = process.env.NODE_ENV === 'test';
 
 // make sure ets only run once
 if (cluster.isMaster) {
   let existPid: number | undefined;
-  if (fs.existsSync(cacheFileDir)) {
-    existPid = +fs.readFileSync(cacheFileDir).toString();
+  if (fs.existsSync(cacheFile)) {
+    existPid = +fs.readFileSync(cacheFile).toString();
   }
 
   if (!existPid || isTesting) {
@@ -40,6 +40,9 @@ function register(watch: boolean = true) {
 
   // cache pid
   if (!watch) {
-    fs.writeFileSync(cacheFileDir, process.pid);
+    fs.writeFileSync(cacheFile, process.pid);
+
+    // delete cache file on exit.
+    process.once('exit', () => fs.existsSync(cacheFile) && fs.unlinkSync(cacheFile));
   }
 }
