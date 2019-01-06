@@ -3,7 +3,7 @@ import fs from 'fs';
 import mkdirp from 'mkdirp';
 import path from 'path';
 import assert = require('assert');
-import { triggerBin, getOutput, sleep, getStd } from './utils';
+import { triggerBin, getOutput, sleep } from './utils';
 
 describe('bin.test.ts', () => {
   before(() => {
