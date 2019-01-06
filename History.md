@@ -1,4 +1,12 @@
 
+1.20.0 / 2019-01-06
+===================
+
+  * generator support default config
+  * add silent to options of TsHelper
+  * ext of config file default to .js or .json
+  * add init command
+
 1.19.2 / 2018-12-20
 ===================
 
