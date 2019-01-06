@@ -12,8 +12,9 @@
     "url": "git@github.com:whxaxes/egg-ts-helper.git"
   },
   "scripts": {
-    "build": "del ./dist && tsc -d",
-    "build:w": "del ./dist && tsc -d -w",
+    "build": "tsc -d",
+    "build:w": "tsc -d -w",
+    "release": "del ./dist && npm run build",
     "lint": "tslint ./src/**/*.ts ./test/**/*.test.ts",
     "check": "npm run build && npm run lint",
     "test": "npm run check && npm run test-local",
