@@ -9,8 +9,9 @@ const debug = d('egg-ts-helper#register');
 const cacheFile = path.resolve(__dirname, '../.cache');
 const isTesting = process.env.NODE_ENV === 'test';
 
-// make sure ets only run once
+/** istanbul ignore else */
 if (cluster.isMaster) {
+  // make sure ets only run once
   let existPid: number | undefined;
   if (fs.existsSync(cacheFile)) {
     existPid = +fs.readFileSync(cacheFile).toString();
@@ -42,7 +43,10 @@ function register(watch: boolean) {
   if (watch) {
     fs.writeFileSync(cacheFile, process.pid);
 
+    const clean = () => fs.existsSync(cacheFile) && fs.unlinkSync(cacheFile);
+
     // delete cache file on exit.
-    process.once('exit', () => fs.existsSync(cacheFile) && fs.unlinkSync(cacheFile));
+    process.once('beforeExit', clean);
+    process.once('uncaughtException', clean);
   }
 }

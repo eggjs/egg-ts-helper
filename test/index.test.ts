@@ -305,7 +305,6 @@ describe('index.test.ts', () => {
   });
 
   it('should works without error in real app', async () => {
-    fs.writeFileSync(path.resolve(__dirname, '../.cache'), process.pid);
     const baseDir = path.resolve(__dirname, './fixtures/real/');
     tsHelper = createTsHelperInstance({
       cwd: baseDir,
@@ -330,7 +329,6 @@ describe('index.test.ts', () => {
   });
 
   it('should works without error in unittest', async () => {
-    fs.writeFileSync(path.resolve(__dirname, '../.cache'), process.pid);
     const baseDir = path.join(__dirname, './fixtures/real-unittest/');
     del.sync(path.resolve(baseDir, './typings'));
     del.sync(path.resolve(baseDir, './node_modules'));
