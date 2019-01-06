@@ -3,7 +3,7 @@ import fs from 'fs';
 import mkdirp from 'mkdirp';
 import path from 'path';
 import assert = require('assert');
-import { triggerBin, getOutput, sleep } from './utils';
+import { triggerBin, getOutput, sleep, getStd } from './utils';
 
 describe('bin.test.ts', () => {
   before(() => {
@@ -54,7 +54,7 @@ describe('bin.test.ts', () => {
   });
 
   it('should created d.ts correctly', async () => {
-    triggerBin('-c', path.resolve(__dirname, './fixtures/app8'));
+    triggerBin('-c', path.resolve(__dirname, './fixtures/app8'), '-E', '{}');
     await sleep(3000);
     const content = fs
       .readFileSync(path.resolve(__dirname, './fixtures/app8/typings/app/controller/index.d.ts'))

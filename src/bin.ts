@@ -2,6 +2,7 @@
 
 import path from 'path';
 import { Command } from 'commander';
+import assert from 'assert';
 import packInfo from '../package.json';
 import { createTsHelperInstance, defaultConfig } from './';
 import { loadModules } from './utils';
@@ -13,10 +14,7 @@ Command.prototype.addImplicitHelpCommand = () => {};
 Command.prototype.executeSubCommand = async function(argv, args, unknown) {
   const cwd = this.cwd || defaultConfig.cwd;
   const command = commands[executeCmd!];
-  if (!command) {
-    throw new Error(executeCmd + ' does not exist');
-  }
-
+  assert(command, executeCmd + ' does not exist');
   await command.run(this, { cwd, argv, args: args.filter(item => item !== this), unknown });
 };
 

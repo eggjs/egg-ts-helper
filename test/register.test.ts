@@ -1,6 +1,6 @@
 import del from 'del';
 import fs from 'fs';
-import { getStd, fork, spawn } from './utils';
+import { getStd, fork, spawn, sleep } from './utils';
 import path from 'path';
 import assert = require('assert');
 const options = {
@@ -37,7 +37,8 @@ describe('register.test.ts', () => {
   it('should works while cache pid is not exist', async () => {
     const pid = '23567';
     fs.writeFileSync(path.resolve(__dirname, '../.cache'), pid);
-    await getStd(runRegister(), true);
+    getStd(runRegister(), true);
+    await sleep(2000);
     assert(pid !== fs.readFileSync(path.resolve(__dirname, '../.cache')).toString());
   });
 

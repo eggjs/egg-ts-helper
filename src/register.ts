@@ -9,7 +9,7 @@ const debug = d('egg-ts-helper#register');
 const cacheFile = path.resolve(__dirname, '../.cache');
 const isTesting = process.env.NODE_ENV === 'test';
 
-/** istanbul ignore else */
+/* istanbul ignore else */
 if (cluster.isMaster) {
   // make sure ets only run once
   let existPid: number | undefined;
@@ -48,5 +48,6 @@ function register(watch: boolean) {
     // delete cache file on exit.
     process.once('beforeExit', clean);
     process.once('uncaughtException', clean);
+    process.once('SIGINT', clean);
   }
 }
