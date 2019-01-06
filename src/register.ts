@@ -21,7 +21,7 @@ if (cluster.isMaster) {
   } else {
     processExists(existPid).then(exists => {
       if (!exists) {
-        register();
+        register(true);
       } else {
         debug('process %s was exits, ignore register', existPid);
       }
@@ -30,7 +30,7 @@ if (cluster.isMaster) {
 }
 
 // start to register
-function register(watch: boolean = true) {
+function register(watch: boolean) {
   // clean local js file at first.
   // because egg-loader cannot load the same property name to egg.
   cleanJs(process.cwd());
@@ -39,7 +39,7 @@ function register(watch: boolean = true) {
   createTsHelperInstance({ watch }).build();
 
   // cache pid
-  if (!watch) {
+  if (watch) {
     fs.writeFileSync(cacheFile, process.pid);
 
     // delete cache file on exit.
