@@ -12,8 +12,8 @@
     "url": "git@github.com:whxaxes/egg-ts-helper.git"
   },
   "scripts": {
-    "build": "tsc -d",
-    "build:w": "tsc -d -w",
+    "build": "del ./dist && tsc -d",
+    "build:w": "del ./dist && tsc -d -w",
     "lint": "tslint ./src/**/*.ts ./test/**/*.test.ts",
     "check": "npm run build && npm run lint",
     "test": "npm run check && npm run test-local",
@@ -55,6 +55,7 @@
     "@types/node": "^9.4.5",
     "@types/power-assert": "^1.4.29",
     "del": "^3.0.0",
+    "del-cli": "^1.1.0",
     "egg": "^2.10.0",
     "egg-bin": "^4.3.7",
     "egg-mock": "^3.21.0",
