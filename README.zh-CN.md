@@ -1,6 +1,7 @@
 # egg-ts-helper
 
 [![NPM version][npm-image]][npm-url]
+[![Package Quality](http://npm.packagequality.com/shield/egg-ts-helper.svg)](http://packagequality.com/#?package=egg-ts-helper)
 [![Build Status][travis-image]][travis-url]
 [![Appveyor status][appveyor-image]][appveyor-url]
 [![Test coverage][codecov-image]][codecov-url]
