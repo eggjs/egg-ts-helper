@@ -14,7 +14,7 @@ export default function() {
   };
 
   return {
-    ...config,
+    ...config as {},
     ...bizConfig,
   };
 }

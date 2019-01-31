@@ -222,6 +222,7 @@ module.exports = {
       generator: 'class', // generator name
       interface: 'IModel',  // interface name
       declareTo: 'Context.model', // declare to this interface
+      // watch: true, // whether need to watch files
       // caseStyle: 'upper', // caseStyle for loader
       // interfaceHandle: val => `ReturnType<typeof ${val}>`, // interfaceHandle
       // trigger: ['add', 'unlink'], // recreate d.ts when receive these events, all events: ['add', 'unlink', 'change']

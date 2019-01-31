@@ -324,8 +324,8 @@ describe('index.test.ts', () => {
     });
 
     const { stdout, stderr } = await getStd(proc, true);
-    assert(stdout.includes('egg started on http'));
     assert(!stderr);
+    assert(stdout.includes('egg started on http'));
   });
 
   it('should works without error in unittest', async () => {
