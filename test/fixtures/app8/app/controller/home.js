@@ -7,3 +7,5 @@ process.stdout.write(
     ? 'done'
     : 'fail'
 );
+
+module.exports = class Controller {};

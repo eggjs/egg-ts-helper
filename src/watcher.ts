@@ -14,6 +14,7 @@ export interface BaseWatchItem {
   enabled: boolean;
   trigger: Array<'add' | 'unlink' | 'change'>;
   pattern: string;
+  watch: boolean;
 }
 
 export interface WatchItem extends PlainObject, BaseWatchItem { }
@@ -47,6 +48,7 @@ export default class Watcher extends EventEmitter {
       trigger: [ 'add', 'unlink' ],
       generator: generatorName,
       pattern: '**/*.(ts|js)',
+      watch: true,
       ...this.generator.defaultConfig,
       ...options,
     };
@@ -72,6 +74,10 @@ export default class Watcher extends EventEmitter {
 
   // watch file change
   public watch() {
+    if (!this.options.watch) {
+      return;
+    }
+
     if (this.fsWatcher) {
       this.fsWatcher.close();
     }

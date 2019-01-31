@@ -1,8 +1,6 @@
-import { EggAppConfig, PowerPartial } from 'egg';
-
 export default function() {
   // built-in config
-  const config: PowerPartial<EggAppConfig> = {};
+  const config: Egg.PowerPartial<Egg.EggAppConfig> = {};
 
   config.keys = '123123';
 

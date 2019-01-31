@@ -68,7 +68,7 @@ export const defaultConfig = {
 
 // default watch dir
 export function getDefaultWatchDirs(opt?: TsHelperOption) {
-  const baseConfig: PlainObject = {};
+  const baseConfig: { [key: string]: Partial<WatchItem> } = {};
 
   // extend
   baseConfig.extend = {
@@ -132,7 +132,14 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
     generator: 'class',
   };
 
-  return baseConfig;
+  // egg
+  baseConfig.egg = {
+    path: 'app',
+    generator: 'egg',
+    watch: false,
+  };
+
+  return baseConfig as PlainObject;
 }
 
 export default class TsHelper extends EventEmitter {

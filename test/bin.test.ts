@@ -3,7 +3,7 @@ import fs from 'fs';
 import mkdirp from 'mkdirp';
 import path from 'path';
 import assert = require('assert');
-import { triggerBin, getOutput, sleep } from './utils';
+import { triggerBin, getOutput, sleep, spawn, getStd } from './utils';
 
 describe('bin.test.ts', () => {
   before(() => {
@@ -29,8 +29,16 @@ describe('bin.test.ts', () => {
   });
 
   it('should works with empty flags correctly', async () => {
-    const data = await getOutput();
-    assert(!data);
+    const ps = spawn('node', [ path.resolve(__dirname, '../dist/bin.js') ], {
+      cwd: path.resolve(__dirname, './fixtures/app7'),
+      env: {
+        ...process.env,
+        NODE_ENV: 'development',
+      },
+    });
+    const { stdout, stderr } = await getStd(ps, true);
+    assert(!stderr);
+    assert(stdout.includes('create'));
   });
 
   it('should works with -e correctly', async () => {
