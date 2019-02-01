@@ -221,6 +221,7 @@ module.exports = {
       generator: 'class', // 生成器名称
       interface: 'IModel',  // interface 名称，如果不填的话，将会随机生成个 interface
       declareTo: 'Context.model', // 指定定义到 egg 的某个类型下
+      // watch: true, // 是否需要监听文件改动
       // caseStyle: 'upper', // 模块命名格式
       // interfaceHandle: val => `ReturnType<typeof ${val}>`, // interface 预处理方法
       // trigger: ['add', 'unlink'], // 当接收到这些文件更改事件的时候，会触发 d.ts 的重新生成, 所有事件: ['add', 'unlink', 'change']

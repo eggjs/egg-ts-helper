@@ -30,14 +30,14 @@ export async function getOutput(...args: string[]) {
   return stdout;
 }
 
-export function fork (...args) {
-  const ps = child_process.fork.apply(child_process, args as any);
+export function fork(modulePath: string, args?: string[], opt?: child_process.ForkOptions) {
+  const ps = child_process.fork(modulePath, args, opt);
   addProc(ps);
   return ps;
 }
 
-export function spawn (...args) {
-  const ps = child_process.spawn.apply(undefined, args as any);
+export function spawn(cmd: string, args?: string[], opt?: child_process.SpawnOptions) {
+  const ps = child_process.spawn(cmd, args, opt);
   addProc(ps);
   return ps;
 }
