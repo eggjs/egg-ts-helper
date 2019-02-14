@@ -21,6 +21,7 @@ describe('utils.test.ts', () => {
     assert(utils.convertString<number>('asd', 123) === 123);
     assert(utils.convertString<number>(undefined, 123) === 123);
     assert(utils.convertString<number>({} as any, 123) === 123);
+    assert(typeof utils.convertString<any>('123', {}) === 'object');
   });
 
   it('should require file without error', () => {
