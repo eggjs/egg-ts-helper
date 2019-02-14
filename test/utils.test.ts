@@ -4,6 +4,7 @@ import assert = require('assert');
 import ts from 'typescript';
 import del from 'del';
 import * as utils from '../dist/utils';
+import { tsc } from './utils';
 
 describe('utils.test.ts', () => {
   const appDir = path.resolve(__dirname, './fixtures/app7');
@@ -13,6 +14,19 @@ describe('utils.test.ts', () => {
     assert(!fileList.includes('test.js'));
     assert(fileList.includes('go.js'));
     assert(!fileList.includes('index.d.ts'));
+  });
+
+  it('should clean js without error', async () => {
+    const appPath = path.resolve(__dirname, '../fixtures/app9');
+    await tsc(appPath);
+    assert(fs.existsSync(path.resolve(appPath, './test.js')));
+    assert(fs.existsSync(path.resolve(appPath, './app/test.js')));
+    assert(fs.existsSync(path.resolve(appPath, './app/app/test.js')));
+    utils.cleanJs(appPath);
+    assert(fs.existsSync(path.resolve(appPath, './test2.js')));
+    assert(!fs.existsSync(path.resolve(appPath, './test.js')));
+    assert(!fs.existsSync(path.resolve(appPath, './app/test.js')));
+    assert(!fs.existsSync(path.resolve(appPath, './app/app/test.js')));
   });
 
   it('should convertString without error', () => {
