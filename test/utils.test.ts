@@ -17,7 +17,7 @@ describe('utils.test.ts', () => {
   });
 
   it('should clean js without error', async () => {
-    const appPath = path.resolve(__dirname, '../fixtures/app9');
+    const appPath = path.resolve(__dirname, './fixtures/app9');
     await tsc(appPath);
     assert(fs.existsSync(path.resolve(appPath, './test.js')));
     assert(fs.existsSync(path.resolve(appPath, './app/test.js')));
