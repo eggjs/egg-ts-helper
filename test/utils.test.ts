@@ -25,6 +25,14 @@ describe('utils.test.ts', () => {
     assert(typeof utils.convertString<any>('123', {}) === 'object');
   });
 
+  it('should checkMaybeIsJsProj without error', () => {
+    const cwd = path.resolve(__dirname, './fixtures/init');
+    utils.writeJsConfig(cwd);
+    assert(utils.checkMaybeIsJsProj(cwd));
+    del.sync(path.resolve(cwd, './jsconfig.json'));
+    assert(!utils.checkMaybeIsJsProj(cwd));
+  });
+
   it('should write tsconfig without error', () => {
     const cwd = path.resolve(__dirname, './fixtures/init');
     const jsonPath = path.resolve(cwd, './tsconfig.json');
