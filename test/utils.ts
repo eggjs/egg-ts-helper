@@ -69,7 +69,7 @@ export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, wai
         end();
         proc.removeListener('close', end);
         if (autoKill) {
-          proc.kill('SIGINT');
+          proc.emit('SIGINT');
         }
       }, waitTime);
     };
