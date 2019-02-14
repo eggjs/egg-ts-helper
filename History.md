@@ -1,4 +1,9 @@
 
+1.22.0 / 2019-02-14
+===================
+
+  * feat: auto gen jsconfig in js project & pass options from env (#31)
+
 1.21.0 / 2019-02-02
 ===================
 
