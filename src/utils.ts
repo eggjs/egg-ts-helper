@@ -3,6 +3,53 @@ import mkdirp from 'mkdirp';
 import glob from 'globby';
 import path from 'path';
 import ts from 'typescript';
+import yn from 'yn';
+
+export const JS_CONFIG = {
+  include: [ '**/*' ],
+};
+
+export const TS_CONFIG = {
+  compilerOptions: {
+    target: 'es2017',
+    module: 'commonjs',
+    strict: true,
+    noImplicitAny: false,
+    experimentalDecorators: true,
+    emitDecoratorMetadata: true,
+    allowSyntheticDefaultImports: true,
+    charset: 'utf8',
+    allowJs: false,
+    pretty: true,
+    lib: [ 'es6' ],
+    noEmitOnError: false,
+    noUnusedLocals: true,
+    noUnusedParameters: true,
+    allowUnreachableCode: false,
+    allowUnusedLabels: false,
+    strictPropertyInitialization: false,
+    noFallthroughCasesInSwitch: true,
+    skipLibCheck: true,
+    skipDefaultLibCheck: true,
+    inlineSourceMap: true,
+  },
+};
+
+// convert string to same type with default value
+export function convertString<T>(val: string | undefined, defaultVal: T): T {
+  if (val === undefined) return defaultVal;
+  switch (typeof defaultVal) {
+    case 'boolean':
+      return yn(val, { default: defaultVal }) as any;
+    case 'number':
+      const num = +val;
+      return (isNaN(num) ? defaultVal : num) as any;
+    case 'string':
+      return val as any;
+    default:
+      return defaultVal;
+  }
+}
 
 // load ts/js files
 export function loadFiles(cwd: string, pattern?: string) {
@@ -17,6 +64,37 @@ export function loadFiles(cwd: string, pattern?: string) {
       fileList.includes(f.substring(0, f.length - 2) + 'ts')
     );
   });
+}
+
+// write jsconfig.json to cwd
+export function writeJsConfig(cwd: string) {
+  const jsconfigUrl = path.resolve(cwd, './jsconfig.json');
+  if (!fs.existsSync(jsconfigUrl)) {
+    fs.writeFileSync(jsconfigUrl, JSON.stringify(JS_CONFIG, null, 2));
+    return jsconfigUrl;
+  }
+}
+
+// write tsconfig.json to cwd
+export function writeTsConfig(cwd: string) {
+  const tsconfigUrl = path.resolve(cwd, './tsconfig.json');
+  if (!fs.existsSync(tsconfigUrl)) {
+    fs.writeFileSync(tsconfigUrl, JSON.stringify(TS_CONFIG, null, 2));
+    return tsconfigUrl;
+  }
+}
+
+export function checkMaybeIsJsProj(cwd: string) {
+  const pkgInfo = getPkgInfo(cwd);
+  const isJs = !(pkgInfo.egg && pkgInfo.egg.typescript) &&
+    !fs.existsSync(path.resolve(cwd, './tsconfig.json')) &&
+    !fs.existsSync(path.resolve(cwd, './config/config.default.ts')) &&
+    (
+      fs.existsSync(path.resolve(cwd, './config/config.default.js')) ||
+      fs.existsSync(path.resolve(cwd, './jsconfig.json'))
+    );
+
+  return isJs;
 }
 
 // load modules to object

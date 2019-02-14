@@ -4,10 +4,10 @@ import fs from 'fs';
 import path from 'path';
 import processExists from 'process-exists';
 import { createTsHelperInstance } from './';
-import { cleanJs } from './utils';
+import * as util from './utils';
 const debug = d('egg-ts-helper#register');
 const cacheFile = path.resolve(__dirname, '../.cache');
-const isTesting = process.env.NODE_ENV === 'test';
+const shouldWatch = util.convertString(process.env.ETS_WATCH, process.env.NODE_ENV !== 'test');
 
 /* istanbul ignore else */
 if (cluster.isMaster) {
@@ -17,8 +17,8 @@ if (cluster.isMaster) {
     existPid = +fs.readFileSync(cacheFile).toString();
   }
 
-  if (!existPid || isTesting) {
-    register(!isTesting);
+  if (!existPid || !shouldWatch) {
+    register(shouldWatch);
   } else {
     processExists(existPid).then(exists => {
       if (!exists) {
@@ -32,9 +32,16 @@ if (cluster.isMaster) {
 
 // start to register
 function register(watch: boolean) {
-  // clean local js file at first.
-  // because egg-loader cannot load the same property name to egg.
-  cleanJs(process.cwd());
+  const cwd = process.cwd();
+  if (util.checkMaybeIsJsProj(cwd)) {
+    // write jsconfig if the project is wrote by js
+    util.writeJsConfig(cwd);
+  } else {
+    // no need to clean in js project
+    // clean local js file at first.
+    // because egg-loader cannot load the same property name to egg.
+    util.cleanJs(cwd);
+  }
 
   // exec building
   createTsHelperInstance({ watch }).build();
@@ -48,6 +55,9 @@ function register(watch: boolean) {
     // delete cache file on exit.
     process.once('beforeExit', clean);
     process.once('uncaughtException', clean);
-    process.once('SIGINT', clean);
+    process.once('SIGINT', () => {
+      clean();
+      process.exit(0);
+    });
   }
 }

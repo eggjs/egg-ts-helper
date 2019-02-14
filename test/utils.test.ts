@@ -2,7 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import assert = require('assert');
 import ts from 'typescript';
+import del from 'del';
 import * as utils from '../dist/utils';
+import { tsc } from './utils';
 
 describe('utils.test.ts', () => {
   const appDir = path.resolve(__dirname, './fixtures/app7');
@@ -12,6 +14,73 @@ describe('utils.test.ts', () => {
     assert(!fileList.includes('test.js'));
     assert(fileList.includes('go.js'));
     assert(!fileList.includes('index.d.ts'));
+  });
+
+  it('should clean js without error', async () => {
+    const appPath = path.resolve(__dirname, './fixtures/app9');
+    await tsc(appPath);
+    assert(fs.existsSync(path.resolve(appPath, './test.js')));
+    assert(fs.existsSync(path.resolve(appPath, './app/test.js')));
+    assert(fs.existsSync(path.resolve(appPath, './app/app/test.js')));
+    utils.cleanJs(appPath);
+    assert(fs.existsSync(path.resolve(appPath, './test2.js')));
+    assert(!fs.existsSync(path.resolve(appPath, './test.js')));
+    assert(!fs.existsSync(path.resolve(appPath, './app/test.js')));
+    assert(!fs.existsSync(path.resolve(appPath, './app/app/test.js')));
+  });
+
+  it('should convertString without error', () => {
+    assert(utils.convertString<boolean>('true', false) === true);
+    assert(utils.convertString<string>('true', '123') === 'true');
+    assert(utils.convertString<number>('1234', 123) === 1234);
+    assert(utils.convertString<number>('asd', 123) === 123);
+    assert(utils.convertString<number>(undefined, 123) === 123);
+    assert(utils.convertString<number>({} as any, 123) === 123);
+    assert(typeof utils.convertString<any>('123', {}) === 'object');
+  });
+
+  it('should checkMaybeIsJsProj without error', () => {
+    const cwd = path.resolve(__dirname, './fixtures/init');
+    utils.writeJsConfig(cwd);
+    assert(utils.checkMaybeIsJsProj(cwd));
+    del.sync(path.resolve(cwd, './jsconfig.json'));
+    assert(!utils.checkMaybeIsJsProj(cwd));
+  });
+
+  it('should write tsconfig without error', () => {
+    const cwd = path.resolve(__dirname, './fixtures/init');
+    const jsonPath = path.resolve(cwd, './tsconfig.json');
+    del.sync(jsonPath);
+    utils.writeTsConfig(cwd);
+    fs.existsSync(jsonPath);
+    const json = JSON.parse(fs.readFileSync(jsonPath).toString());
+    json.mySpecConfig = true;
+    assert(!!json.compilerOptions);
+    fs.writeFileSync(jsonPath, JSON.stringify(json, null, 2));
+
+    // should not cover exist file
+    utils.writeTsConfig(cwd);
+    const json2 = JSON.parse(fs.readFileSync(jsonPath).toString());
+    assert(json2.mySpecConfig);
+    del.sync(jsonPath);
+  });
+
+  it('should write jsconfig without error', () => {
+    const cwd = path.resolve(__dirname, './fixtures/init');
+    const jsonPath = path.resolve(cwd, './jsconfig.json');
+    del.sync(jsonPath);
+    utils.writeJsConfig(cwd);
+    fs.existsSync(jsonPath);
+    const json = JSON.parse(fs.readFileSync(jsonPath).toString());
+    json.mySpecConfig = true;
+    assert(!!json.include);
+    fs.writeFileSync(jsonPath, JSON.stringify(json, null, 2));
+
+    // should not cover exist file
+    utils.writeJsConfig(cwd);
+    const json2 = JSON.parse(fs.readFileSync(jsonPath).toString());
+    assert(json2.mySpecConfig);
+    del.sync(jsonPath);
   });
 
   it('should require file without error', () => {
