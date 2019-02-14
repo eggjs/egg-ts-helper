@@ -2,12 +2,10 @@ import d from 'debug';
 import del from 'del';
 import fs from 'fs';
 import mkdirp from 'mkdirp';
-import os from 'os';
 import path from 'path';
-import { sleep, spawn, getStd } from './utils';
+import { sleep, spawn, getStd, eggBin } from './utils';
 import assert = require('assert');
 import TsHelper, { createTsHelperInstance, getDefaultWatchDirs } from '../dist/';
-const eggBin = path.resolve(__dirname, '../node_modules/.bin/egg-bin' + (os.platform() === 'win32' ? '.cmd' : ''));
 const debug = d('egg-ts-helper#index.test');
 const noop = () => {};
 const timeout = (delay, callback: () => any) => {

@@ -3,6 +3,13 @@ import path from 'path';
 import os from 'os';
 const psList: child_process.ChildProcess[] = [];
 
+export const tscBin = getBin('tsc');
+export const eggBin = getBin('egg-bin');
+
+export function getBin(name) {
+  return path.resolve(__dirname, `../node_modules/.bin/${name}${(os.platform() === 'win32' ? '.cmd' : '')}`);
+}
+
 export function triggerBin(...args: string[]) {
   const ps = spawn(
     'node',
@@ -19,8 +26,7 @@ export function triggerBin(...args: string[]) {
 }
 
 export function tsc(cwd: string) {
-  const bin = path.resolve(__dirname, '../node_modules/.bin/tsc' + (os.platform() === 'win32' ? '.cmd' : ''));
-  const p = spawn(bin, [ '-p', path.resolve(cwd, './tsconfig.json') ], { cwd });
+  const p = spawn(tscBin, [ '-p', path.resolve(cwd, './tsconfig.json') ], { cwd });
   return new Promise(resolve => p.on('close', resolve));
 }
 

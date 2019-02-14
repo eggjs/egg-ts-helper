@@ -81,4 +81,38 @@ describe('register.test.ts', () => {
     assert(!stdout.includes('create'));
     assert(stdout.includes('done'));
   });
+
+  it('should auto gen jsconfig in js proj', async () => {
+    const appPath = path.resolve(__dirname, './fixtures/app10');
+    const jsConfigPath = path.resolve(appPath, './jsconfig.json');
+    del.sync(jsConfigPath);
+    const ps = fork(path.resolve(__dirname, '../register.js'), undefined, {
+      ...options,
+      cwd: appPath,
+      env: {
+        ...process.env,
+        NODE_ENV: 'test',
+      },
+    });
+    const { stderr } = await getStd(ps);
+    assert(!stderr);
+    assert(fs.existsSync(jsConfigPath));
+  });
+
+  it('should not cover exists jsconfig.json in js proj', async () => {
+    const appPath = path.resolve(__dirname, './fixtures/app11');
+    const jsConfigPath = path.resolve(appPath, './jsconfig.json');
+    const ps = fork(path.resolve(__dirname, '../register.js'), undefined, {
+      ...options,
+      cwd: appPath,
+      env: {
+        ...process.env,
+        NODE_ENV: 'test',
+      },
+    });
+    const { stderr } = await getStd(ps);
+    assert(!stderr);
+    assert(fs.existsSync(jsConfigPath));
+    assert(!!JSON.parse(fs.readFileSync(jsConfigPath).toString()).mySpecConfig);
+  });
 });

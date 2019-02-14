@@ -6,43 +6,6 @@ import { createTsHelperInstance } from '../';
 
 const TYPE_TS = 'typescript';
 const TYPE_JS = 'javascript';
-const JS_CONFIG = {
-  include: [ '**/*' ],
-  exclude: [
-    'node_modules/',
-    'app/web/',
-    'app/view/',
-    'public/',
-    'app/mocks/',
-    'coverage/',
-    'logs/',
-  ],
-};
-const TS_CONFIG = {
-  compilerOptions: {
-    target: 'es2017',
-    module: 'commonjs',
-    strict: true,
-    noImplicitAny: false,
-    experimentalDecorators: true,
-    emitDecoratorMetadata: true,
-    allowSyntheticDefaultImports: true,
-    charset: 'utf8',
-    allowJs: false,
-    pretty: true,
-    lib: [ 'es6' ],
-    noEmitOnError: false,
-    noUnusedLocals: true,
-    noUnusedParameters: true,
-    allowUnreachableCode: false,
-    allowUnusedLabels: false,
-    strictPropertyInitialization: false,
-    noFallthroughCasesInSwitch: true,
-    skipLibCheck: true,
-    skipDefaultLibCheck: true,
-    inlineSourceMap: true,
-  },
-};
 
 class InitCommand implements SubCommand {
   description = 'Init egg-ts-helper in your existing project';
@@ -52,8 +15,6 @@ class InitCommand implements SubCommand {
   async run(_, { args, cwd }: SubCommandOption) {
     let type = args[1];
     const pkgInfo = utils.getPkgInfo(cwd);
-    const jsconfigPath = path.resolve(cwd, './jsconfig.json');
-    const jsConfigExist = fs.existsSync(jsconfigPath);
     const typeList = [ TYPE_TS, TYPE_JS ];
 
     pkgInfo.egg = pkgInfo.egg || {};
@@ -64,7 +25,7 @@ class InitCommand implements SubCommand {
         type: 'autocomplete',
         name: 'type',
         message: 'Choose the type of your project',
-        choices: jsConfigExist ? typeList.reverse() : typeList,
+        choices: utils.checkMaybeIsJsProj(cwd) ? typeList.reverse() : typeList,
       }).catch(() => {
         utils.log('cancel initialization');
         return { type: '' };
@@ -75,19 +36,17 @@ class InitCommand implements SubCommand {
 
     if (type === TYPE_JS) {
       // create jsconfig.json
-      if (!jsConfigExist) {
-        utils.log('create ' + jsconfigPath);
-        fs.writeFileSync(jsconfigPath, JSON.stringify(JS_CONFIG, null, 2));
+      const result = utils.writeJsConfig(cwd);
+      if (result) {
+        utils.log('create ' + result);
       }
-
     } else if (type === TYPE_TS) {
       pkgInfo.egg.typescript = true;
 
       // create tsconfig.json
-      const tsconfigPath = path.resolve(cwd, './tsconfig.json');
-      if (!fs.existsSync(tsconfigPath)) {
-        utils.log('create ' + tsconfigPath);
-        fs.writeFileSync(tsconfigPath, JSON.stringify(TS_CONFIG, null, 2));
+      const result = utils.writeTsConfig(cwd);
+      if (result) {
+        utils.log('create ' + result);
       }
     } else {
       return;

@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import processExists from 'process-exists';
 import { createTsHelperInstance } from './';
-import { cleanJs } from './utils';
+import * as util from './utils';
 const debug = d('egg-ts-helper#register');
 const cacheFile = path.resolve(__dirname, '../.cache');
 const isTesting = process.env.NODE_ENV === 'test';
@@ -32,9 +32,16 @@ if (cluster.isMaster) {
 
 // start to register
 function register(watch: boolean) {
-  // clean local js file at first.
-  // because egg-loader cannot load the same property name to egg.
-  cleanJs(process.cwd());
+  const cwd = process.cwd();
+  if (util.checkMaybeIsJsProj(cwd)) {
+    // write jsconfig if the project is wrote by js
+    util.writeJsConfig(cwd);
+  } else {
+    // no need to clean in js project
+    // clean local js file at first.
+    // because egg-loader cannot load the same property name to egg.
+    util.cleanJs(cwd);
+  }
 
   // exec building
   createTsHelperInstance({ watch }).build();
