@@ -33,7 +33,7 @@ describe('bin.test.ts', () => {
       cwd: path.resolve(__dirname, './fixtures/app7'),
       env: {
         ...process.env,
-        NODE_ENV: 'development',
+        ETS_SILENT: 'false',
       },
     });
     const { stdout, stderr } = await getStd(ps, true);

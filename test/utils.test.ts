@@ -14,6 +14,15 @@ describe('utils.test.ts', () => {
     assert(!fileList.includes('index.d.ts'));
   });
 
+  it('should convertString without error', () => {
+    assert(utils.convertString<boolean>('true', false) === true);
+    assert(utils.convertString<string>('true', '123') === 'true');
+    assert(utils.convertString<number>('1234', 123) === 1234);
+    assert(utils.convertString<number>('asd', 123) === 123);
+    assert(utils.convertString<number>(undefined, 123) === 123);
+    assert(utils.convertString<number>({} as any, 123) === 123);
+  });
+
   it('should require file without error', () => {
     const exp = utils.requireFile(path.resolve(appDir, './go.js'));
     const exp2 = utils.requireFile(path.resolve(appDir, './test2.js'));

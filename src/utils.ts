@@ -3,6 +3,7 @@ import mkdirp from 'mkdirp';
 import glob from 'globby';
 import path from 'path';
 import ts from 'typescript';
+import yn from 'yn';
 
 export const JS_CONFIG = {
   include: [ '**/*' ],
@@ -33,6 +34,22 @@ export const TS_CONFIG = {
     inlineSourceMap: true,
   },
 };
+
+// convert string to same type with default value
+export function convertString<T>(val: string | undefined, defaultVal: T): T {
+  if (val === undefined) return defaultVal;
+  switch (typeof defaultVal) {
+    case 'boolean':
+      return yn(val, { default: defaultVal }) as any;
+    case 'number':
+      const num = +val;
+      return (isNaN(num) ? defaultVal : num) as any;
+    case 'string':
+      return val as any;
+    default:
+      return defaultVal;
+  }
+}
 
 // load ts/js files
 export function loadFiles(cwd: string, pattern?: string) {

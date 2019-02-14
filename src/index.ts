@@ -52,18 +52,18 @@ export type TsGenerator<T = GeneratorResult | GeneratorResult[] | void> = ((
 ) => T) & { defaultConfig?: WatchItem; };
 
 export const defaultConfig = {
-  cwd: process.cwd(),
-  framework: 'egg',
-  typings: './typings',
-  caseStyle: 'lower',
-  autoRemoveJs: true,
-  throttle: 500,
-  watch: false,
+  cwd: utils.convertString(process.env.ETS_CWD, process.cwd()),
+  framework: utils.convertString(process.env.ETS_FRAMEWORK, 'egg'),
+  typings: utils.convertString(process.env.ETS_TYPINGS, './typings'),
+  caseStyle: utils.convertString(process.env.ETS_CASE_STYLE, 'lower'),
+  autoRemoveJs: utils.convertString(process.env.ETS_AUTO_REMOVE_JS, true),
+  throttle: utils.convertString(process.env.ETS_THROTTLE, 500),
+  watch: utils.convertString(process.env.ETS_WATCH, false),
   watchOptions: undefined,
-  execAtInit: false,
-  silent: process.env.NODE_ENV === 'test',
+  execAtInit: utils.convertString(process.env.ETS_EXEC_AT_INIT, false),
+  silent: utils.convertString(process.env.ETS_SILENT, process.env.NODE_ENV === 'test'),
   watchDirs: {},
-  configFile: './tshelper',
+  configFile: utils.convertString(process.env.ETS_CONFIG_FILE, './tshelper'),
 };
 
 // default watch dir

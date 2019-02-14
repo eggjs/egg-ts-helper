@@ -7,7 +7,7 @@ import { createTsHelperInstance } from './';
 import * as util from './utils';
 const debug = d('egg-ts-helper#register');
 const cacheFile = path.resolve(__dirname, '../.cache');
-const isTesting = process.env.NODE_ENV === 'test';
+const shouldWatch = util.convertString(process.env.ETS_WATCH, process.env.NODE_ENV !== 'test');
 
 /* istanbul ignore else */
 if (cluster.isMaster) {
@@ -17,8 +17,8 @@ if (cluster.isMaster) {
     existPid = +fs.readFileSync(cacheFile).toString();
   }
 
-  if (!existPid || isTesting) {
-    register(!isTesting);
+  if (!existPid || !shouldWatch) {
+    register(shouldWatch);
   } else {
     processExists(existPid).then(exists => {
       if (!exists) {
@@ -55,6 +55,9 @@ function register(watch: boolean) {
     // delete cache file on exit.
     process.once('beforeExit', clean);
     process.once('uncaughtException', clean);
-    process.once('SIGINT', clean);
+    process.once('SIGINT', () => {
+      clean();
+      process.exit(0);
+    });
   }
 }

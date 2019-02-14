@@ -17,7 +17,7 @@ export function triggerBin(...args: string[]) {
     {
       env: {
         ...process.env,
-        NODE_ENV: 'development',
+        ETS_SILENT: 'false',
       },
     },
   );
@@ -75,11 +75,17 @@ export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, wai
     };
 
     proc.stdout.on('data', data => {
+      if (process.env.DEBUG) {
+        process.stdout.write(data);
+      }
       stdout += data.toString();
       wait();
     });
 
     proc.stderr.on('data', data => {
+      if (process.env.DEBUG) {
+        process.stderr.write(data);
+      }
       stderr += data.toString();
       wait();
     });
