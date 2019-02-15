@@ -48,11 +48,13 @@ $ npx ets
 $ npx ets -w
 ```
 
-如果不想用 npx ，可以装到全局，或者在 `egg-bin` 中使用 `register`
+`egg-ts-helper` 已经内置在 `egg-bin` 中，可以通过以下命令方便使用
 
 ```
-$ egg-bin dev -r egg-ts-helper/register
+$ egg-bin dev --dts
 ```
+
+再或者在 `package.json` 中配置 `egg.declarations` 为 true 即可。
 
 ## 命令行
 
@@ -154,6 +156,19 @@ module.exports = {
   }
 }
 ```
+
+同时也可以通过环境变量来传入配置 ( 1.22.0 版本后开始支持 )
+
+- `ETS_CWD`: cwd
+- `ETS_FRAMEWORK`: framework
+- `ETS_TYPINGS`: typings
+- `ETS_CASE_STYLE`: caseStyle
+- `ETS_AUTO_REMOVE_JS`: autoRemoveJs
+- `ETS_THROTTLE`: throttle
+- `ETS_WATCH`: watch
+- `ETS_EXEC_AT_INIT`: execAtInit
+- `ETS_SILENT`: silent
+- `ETS_CONFIG_FILE`: configFile
 
 ## 生成器
 

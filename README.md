@@ -50,11 +50,13 @@ Watching files by `-w` flag.
 $ npx ets -w
 ```
 
-If you don't want to use npx, just install it in global or use `register` in `egg-bin`.
+`egg-ts-helper` has build-in in `egg-bin`, You can easily to use it by
 
 ```
-$ egg-bin dev -r egg-ts-helper/register
+$ egg-bin dev --dts
 ```
+
+or add configuration `egg.declarations` in `package.json`
 
 ## CLI
 
@@ -155,6 +157,19 @@ In `package.json`
   }
 }
 ```
+
+Also you can pass options by env ( support since 1.22.0 )
+
+- `ETS_CWD`: cwd
+- `ETS_FRAMEWORK`: framework
+- `ETS_TYPINGS`: typings
+- `ETS_CASE_STYLE`: caseStyle
+- `ETS_AUTO_REMOVE_JS`: autoRemoveJs
+- `ETS_THROTTLE`: throttle
+- `ETS_WATCH`: watch
+- `ETS_EXEC_AT_INIT`: execAtInit
+- `ETS_SILENT`: silent
+- `ETS_CONFIG_FILE`: configFile
 
 ## Generators
 
