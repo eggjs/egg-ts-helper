@@ -11,8 +11,8 @@ const dtsComment =
   '// Do not modify this file!!!!!!!!!\n';
 
 declare global {
-  interface PlainObject {
-    [key: string]: any;
+  interface PlainObject<T = any> {
+    [key: string]: T;
   }
 }
 

@@ -17,46 +17,51 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
     return { dist };
   }
 
-  let importList: string[] = [];
+  const { pluginList, pluginInfos } = utils.getFrameworkPlugins(baseConfig.cwd);
+  let importList: string[] = pluginList;
   fileList.forEach(f => {
     const abUrl = path.resolve(config.dir, f);
 
     // read from cache
     if (!cache[abUrl] || config.file === abUrl) {
-      const exportResult = utils.findExportNode(
-        fs.readFileSync(abUrl, 'utf-8'),
-      );
+      const exportResult = utils.findExportNode(fs.readFileSync(abUrl, 'utf-8'));
       if (!exportResult) {
         return;
       }
 
       // collect package name
-      const collectPackageName = (property: ts.ObjectLiteralExpression) => {
+      const collectPackageName = (name: string, property: ts.Node) => {
         let packageIsEnable: boolean | undefined = true;
-        let packageName: string | undefined;
+        let packageName: string | undefined = (pluginInfos[name] || {}).package;
 
-        property.properties.forEach(prop => {
-          if (ts.isPropertyAssignment(prop) && ts.isIdentifier(prop.name)) {
-            if (prop.name.escapedText === 'package') {
-              // { package: 'xxx' }
-              packageName = ts.isStringLiteral(prop.initializer)
-                ? prop.initializer.text
-                : undefined;
-            } else if (
-              prop.name.escapedText === 'enable' &&
-              prop.initializer.kind === ts.SyntaxKind.FalseKeyword
-            ) {
-              // { enable: false }
-              packageIsEnable = false;
+        if (ts.isObjectLiteralExpression(property)) {
+          // export const xxx = { enable: true };
+          property.properties.forEach(prop => {
+            if (ts.isPropertyAssignment(prop) && ts.isIdentifier(prop.name)) {
+              if (prop.name.escapedText === 'package') {
+                // { package: 'xxx' }
+                packageName = ts.isStringLiteral(prop.initializer)
+                  ? prop.initializer.text
+                  : undefined;
+              } else if (
+                prop.name.escapedText === 'enable' &&
+                prop.initializer.kind === ts.SyntaxKind.FalseKeyword
+              ) {
+                // { enable: false }
+                packageIsEnable = false;
+              }
             }
-          }
-        });
+          });
 
-        if (
-          packageName &&
-          packageIsEnable &&
-          utils.moduleExist(packageName, baseConfig.cwd)
-        ) {
+          if (
+            packageName &&
+            packageIsEnable &&
+            utils.moduleExist(packageName, baseConfig.cwd)
+          ) {
+            importList.push(packageName);
+          }
+        } else if (packageName && ts.isIdentifier(property) && property.getText() === 'true') {
+          // export const plugin = true;
           importList.push(packageName);
         }
       };
@@ -66,28 +71,18 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
         // export default {  }
         if (ts.isObjectLiteralExpression(exportResult.exportDefaultNode)) {
           for (const property of exportResult.exportDefaultNode.properties) {
-            if (
-              ts.isPropertyAssignment(property) &&
-              ts.isObjectLiteralExpression(property.initializer)
-            ) {
-              collectPackageName(property.initializer);
+            if (ts.isPropertyAssignment(property)) {
+              collectPackageName(utils.getText(property.name), property.initializer);
             }
           }
         }
       } else if (exportResult.exportNodeList.length) {
         // export const xxx = {};
         for (const property of exportResult.exportNodeList) {
-          if (
-            ts.isBinaryExpression(property) &&
-            ts.isObjectLiteralExpression(property.right)
-          ) {
-            collectPackageName(property.right);
-          } else if (
-            ts.isVariableDeclaration(property) &&
-            property.initializer &&
-            ts.isObjectLiteralExpression(property.initializer)
-          ) {
-            collectPackageName(property.initializer);
+          if (ts.isBinaryExpression(property)) {
+            collectPackageName(utils.getText(property.left), property.right);
+          } else if (ts.isVariableDeclaration(property) && property.initializer) {
+            collectPackageName(utils.getText(property.name), property.initializer);
           }
         }
       }
