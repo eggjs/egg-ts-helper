@@ -4,7 +4,7 @@ import glob from 'globby';
 import path from 'path';
 import ts from 'typescript';
 import yn from 'yn';
-import * as eggUtils from 'egg-utils';
+import { execSync } from 'child_process';
 
 export const JS_CONFIG = {
   include: [ '**/*' ],
@@ -55,7 +55,7 @@ export function convertString<T>(val: string | undefined, defaultVal: T): T {
 // get framework plugin list
 interface FindPluginResult {
   pluginList: string[];
-  pluginInfos: PlainObject<{ package: string; path: string; enable: string; }>;
+  pluginInfos: PlainObject<{ package: string; path: string; enable: boolean; }>;
 }
 
 const pluginCache: PlainObject<FindPluginResult> = {};
@@ -64,16 +64,17 @@ export function getFrameworkPlugins(cwd: string): FindPluginResult {
     return pluginCache[cwd];
   }
 
-  const framework = eggUtils.getFrameworkOrEggPath(cwd);
-  let pluginInfos;
+  let pluginInfos = {};
   try {
-    pluginInfos = eggUtils.getPlugins({
-      baseDir: cwd,
-      framework,
-      env: 'local',
+    // executing scripts to get eggInfo
+    const info = execSync(`node ./scripts/eggInfo ${cwd}`, {
+      cwd: __dirname,
+      maxBuffer: 1024 * 1024,
     });
+
+    pluginInfos = JSON.parse(info.toString());
   } catch (e) {
-    return { pluginList: [], pluginInfos: {} };
+    return { pluginList: [], pluginInfos };
   }
 
   const pluginList: string[] = [];
@@ -88,6 +89,10 @@ export function getFrameworkPlugins(cwd: string): FindPluginResult {
     pluginList,
     pluginInfos,
   };
+}
+
+export function isIdentifierName(s: string) {
+  return /^[$A-Z_][0-9A-Z_$]*$/i.test(s);
 }
 
 // load ts/js files

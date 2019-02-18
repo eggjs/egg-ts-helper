@@ -6,19 +6,17 @@ import * as utils from '../utils';
 
 const cache: { [key: string]: string[] } = {};
 
+// only load plugin.ts|plugin.local.ts|plugin.default.ts
 export const defaultConfig = {
-  pattern: 'plugin*.(ts|js)',
+  pattern: 'plugin(.local|.default|).(ts|js)',
 };
 
 export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
   const fileList = config.fileList;
   const dist = path.resolve(config.dtsDir, 'plugin.d.ts');
-  if (!fileList.length) {
-    return { dist };
-  }
-
   const { pluginList, pluginInfos } = utils.getFrameworkPlugins(baseConfig.cwd);
-  let importList: string[] = pluginList;
+  const appPluginNameList: string[] = Object.keys(pluginInfos);
+  let importPlugins: string[] = pluginList.slice(0);
   fileList.forEach(f => {
     const abUrl = path.resolve(config.dir, f);
 
@@ -31,8 +29,19 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
 
       // collect package name
       const collectPackageName = (name: string, property: ts.Node) => {
-        let packageIsEnable: boolean | undefined = true;
-        let packageName: string | undefined = (pluginInfos[name] || {}).package;
+        if (!name) return;
+        const existPackage = pluginInfos[name];
+        let packageIsEnable: boolean | undefined = existPackage ? existPackage.enable : true;
+        let packageName: string | undefined = existPackage ? existPackage.package : undefined;
+        const addPackage = (isEnable: boolean = true) => {
+          appPluginNameList.push(name);
+          if (isEnable) {
+            importPlugins.push(packageName!);
+          } else {
+            const index = importPlugins.indexOf(packageName!);
+            importPlugins.splice(index, 1);
+          }
+        };
 
         if (ts.isObjectLiteralExpression(property)) {
           // export const xxx = { enable: true };
@@ -43,26 +52,22 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
                 packageName = ts.isStringLiteral(prop.initializer)
                   ? prop.initializer.text
                   : undefined;
-              } else if (
-                prop.name.escapedText === 'enable' &&
-                prop.initializer.kind === ts.SyntaxKind.FalseKeyword
-              ) {
-                // { enable: false }
-                packageIsEnable = false;
+              } else if (prop.name.escapedText === 'enable') {
+                // { enable: xxx }
+                packageIsEnable = prop.initializer.kind !== ts.SyntaxKind.FalseKeyword;
               }
             }
           });
 
-          if (
-            packageName &&
-            packageIsEnable &&
-            utils.moduleExist(packageName, baseConfig.cwd)
-          ) {
-            importList.push(packageName);
+          if (packageName && utils.moduleExist(packageName, baseConfig.cwd)) {
+            addPackage(packageIsEnable);
           }
-        } else if (packageName && ts.isIdentifier(property) && property.getText() === 'true') {
+        } else if (packageName && ts.isIdentifier(property)) {
           // export const plugin = true;
-          importList.push(packageName);
+          const value = property.getText();
+          if (/^true|false$/.exec(value)) {
+            addPackage(value === 'true');
+          }
         }
       };
 
@@ -87,20 +92,31 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
         }
       }
     } else {
-      importList = importList.concat(cache[abUrl]);
+      importPlugins = importPlugins.concat(cache[abUrl]);
     }
   });
 
-  if (!importList.length) {
+  if (!importPlugins.length) {
     return { dist };
   }
+
+  const framework = config.framework || baseConfig.framework;
+  const importContent = Array.from(new Set(importPlugins)).map(p => `import '${p}';`).join('\n');
+  const composeInterface = (list: string[]) => {
+    return `    ${list
+      .map(name => `${utils.isIdentifierName(name) ? name : `'${name}'` }?: EggPluginItem;`)
+      .join('\n    ')}`;
+  };
 
   return {
     dist,
 
-    // remove duplicate before map
-    content: Array.from(new Set(importList))
-      .map(p => `import '${p}';`)
-      .join('\n'),
+    content: `${importContent}\n` +
+      `import { EggPluginItem } from '${framework}';\n` +
+      `declare module '${framework}' {\n` +
+      '  interface EggPlugin {\n' +
+      `${composeInterface(Array.from(new Set(appPluginNameList)))}\n` +
+      '  }\n' +
+      '}',
   };
 }

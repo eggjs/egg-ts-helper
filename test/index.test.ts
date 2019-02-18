@@ -333,6 +333,10 @@ describe('index.test.ts', () => {
     fs.symlinkSync(path.resolve(__dirname, '../node_modules'), path.resolve(baseDir, './node_modules'), 'dir');
     const proc = spawn(eggBin, [ 'test', '--ts', '-r', path.resolve(__dirname, '../register') ], {
       cwd: baseDir,
+      env: {
+        ...process.env,
+        ETS_SILENT: 'false',
+      },
     });
     const { stdout, stderr } = await getStd(proc, true);
     assert(stdout.includes('passing'));
@@ -346,6 +350,10 @@ describe('index.test.ts', () => {
     fs.symlinkSync(path.resolve(__dirname, '../node_modules'), path.resolve(baseDir, './node_modules'), 'dir');
     const proc = spawn(eggBin, [ 'cov', '--ts', '-r', path.resolve(__dirname, '../register') ], {
       cwd: baseDir,
+      env: {
+        ...process.env,
+        ETS_SILENT: 'false',
+      },
     });
     const { stdout, stderr } = await getStd(proc, true);
     assert(stdout.includes('passing'));
