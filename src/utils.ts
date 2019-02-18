@@ -67,11 +67,10 @@ export function getFrameworkPlugins(cwd: string): FindPluginResult {
   let pluginInfos = {};
   try {
     // executing scripts to get eggInfo
-    const info = execSync(`node ./scripts/eggInfo ${cwd}`, {
+    const info = execSync(`node ./scripts/plugin ${cwd}`, {
       cwd: __dirname,
       maxBuffer: 1024 * 1024,
     });
-
     pluginInfos = JSON.parse(info.toString());
   } catch (e) {
     return { pluginList: [], pluginInfos };
