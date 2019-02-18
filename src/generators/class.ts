@@ -46,7 +46,7 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
   });
 
   // interface name
-  const interfaceName = config.interface || `T_${config.name}`;
+  const interfaceName = config.interface || `T_${config.name.replace(/\.-/g, '')}`;
 
   // add mount interface
   let declareInterface;
