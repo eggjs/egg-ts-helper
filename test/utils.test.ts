@@ -131,40 +131,58 @@ describe('utils.test.ts', () => {
 
   it('should findExportNode without error', () => {
     let exportResult = utils.findExportNode('export default {};')!;
-    assert(ts.isObjectLiteralExpression(exportResult.exportDefaultNode!));
+    assert(ts.isObjectLiteralExpression(exportResult.exportDefault!.node));
 
     exportResult = utils.findExportNode('export default class ABC {}')!;
-    assert(ts.isClassDeclaration(exportResult.exportDefaultNode!));
+    assert(ts.isClassDeclaration(exportResult.exportDefault!.node));
 
     exportResult = utils.findExportNode('export default function() {};')!;
-    assert(ts.isFunctionLike(exportResult.exportDefaultNode!));
+    assert(ts.isFunctionLike(exportResult.exportDefault!.node));
 
     exportResult = utils.findExportNode('const abc = {};export default abc;')!;
-    assert(ts.isObjectLiteralExpression(exportResult.exportDefaultNode!));
+    assert(ts.isObjectLiteralExpression(exportResult.exportDefault!.node));
 
     exportResult = utils.findExportNode('function abc() {};export default abc;')!;
-    assert(ts.isFunctionLike(exportResult.exportDefaultNode!));
+    assert(ts.isFunctionLike(exportResult.exportDefault!.node));
 
     exportResult = utils.findExportNode('const abc = {};const ccc = abc;export default ccc;')!;
-    assert(ts.isObjectLiteralExpression(exportResult.exportDefaultNode!));
+    assert(ts.isObjectLiteralExpression(exportResult.exportDefault!.node));
 
     exportResult = utils.findExportNode('const abc = {};export = abc;')!;
-    assert(ts.isObjectLiteralExpression(exportResult.exportDefaultNode!));
+    assert(ts.isObjectLiteralExpression(exportResult.exportDefault!.node));
 
     exportResult = utils.findExportNode('export const abc = 666;export function ccc() {}')!;
-    assert(exportResult.exportNodeList.length === 2);
-    assert(ts.isVariableDeclaration(exportResult.exportNodeList[0]));
-    assert(ts.isFunctionLike(exportResult.exportNodeList[1]));
+    assert(exportResult.exportList.size === 2);
+    assert(ts.isNumericLiteral(exportResult.exportList.get('abc')!.node));
+    assert(ts.isFunctionLike(exportResult.exportList.get('ccc')!.node));
 
     exportResult = utils.findExportNode('module.exports = {};')!;
-    assert(ts.isObjectLiteralExpression(exportResult.exportDefaultNode!));
+    assert(ts.isObjectLiteralExpression(exportResult.exportDefault!.node));
 
     exportResult = utils.findExportNode('exports.abc = {}; exports.ccc = function() {}')!;
-    assert(exportResult.exportNodeList.length === 2);
-    assert(ts.isObjectLiteralExpression((exportResult.exportNodeList[0] as ts.BinaryExpression).right));
-    assert(ts.isFunctionLike((exportResult.exportNodeList[1] as ts.BinaryExpression).right));
+    assert(exportResult.exportList.size === 2);
+    assert(ts.isObjectLiteralExpression(exportResult.exportList.get('abc')!.node));
+    assert(ts.isFunctionLike(exportResult.exportList.get('ccc')!.node));
 
     exportResult = utils.findExportNode('const abc = {}; let bbb; bbb = abc; export default bbb;')!;
-    assert(ts.isObjectLiteralExpression(exportResult.exportDefaultNode!));
+    assert(ts.isObjectLiteralExpression(exportResult.exportDefault!.node));
+  });
+
+  it('should findKVList without error', () => {
+    const code = `
+      let abc = 123;
+      abc = { aa: true };
+      const bbc = abc;
+      bbc.xxbb = true;
+      abc.aa = 123;
+    `;
+    const sourceFile = ts.createSourceFile('file.ts', code, ts.ScriptTarget.ES2017, true);
+    const kv = utils.findKVList(sourceFile.statements);
+    const bbc = kv.get('bbc') as ts.ObjectLiteralExpression;
+    const aa = bbc.properties[0] as ts.PropertyAssignment;
+    const xxbb = bbc.properties[1] as ts.PropertyAssignment;
+    // console.info(aa);
+    assert(xxbb.initializer.kind === ts.SyntaxKind.TrueKeyword);
+    assert(ts.isNumericLiteral(aa.initializer));
   });
 });

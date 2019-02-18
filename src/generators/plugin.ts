@@ -62,34 +62,26 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
           if (packageName && utils.moduleExist(packageName, baseConfig.cwd)) {
             addPackage(packageIsEnable);
           }
-        } else if (packageName && ts.isIdentifier(property)) {
+        } else if (packageName) {
           // export const plugin = true;
           const value = property.getText();
-          if (/^true|false$/.exec(value)) {
-            addPackage(value === 'true');
-          }
+          if (/^true|false$/.exec(value)) addPackage(value === 'true');
         }
       };
 
       // check return node
-      if (exportResult.exportDefaultNode) {
+      if (exportResult.exportDefault) {
         // export default {  }
-        if (ts.isObjectLiteralExpression(exportResult.exportDefaultNode)) {
-          for (const property of exportResult.exportDefaultNode.properties) {
+        if (ts.isObjectLiteralExpression(exportResult.exportDefault.node)) {
+          for (const property of exportResult.exportDefault.node.properties) {
             if (ts.isPropertyAssignment(property)) {
               collectPackageName(utils.getText(property.name), property.initializer);
             }
           }
         }
-      } else if (exportResult.exportNodeList.length) {
+      } else if (exportResult.exportList.size) {
         // export const xxx = {};
-        for (const property of exportResult.exportNodeList) {
-          if (ts.isBinaryExpression(property)) {
-            collectPackageName(utils.getText(property.left), property.right);
-          } else if (ts.isVariableDeclaration(property) && property.initializer) {
-            collectPackageName(utils.getText(property.name), property.initializer);
-          }
-        }
+        exportResult.exportList.forEach(({ node }, name) => collectPackageName(name, node));
       }
     } else {
       importPlugins = importPlugins.concat(cache[abUrl]);

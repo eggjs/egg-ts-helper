@@ -19,6 +19,17 @@ describe('generators/plugin.test.ts', () => {
     assert(!result.content!.includes('import \'egg-lalala\''));
   });
 
+  it('should works with enable=false without error', () => {
+    const result = triggerGenerator<GeneratorResult>('plugin', path.resolve(__dirname, '../fixtures/real-unittest'));
+    assert(result.dist);
+    assert(result.content!.includes('import \'egg-view\''));
+    assert(result.content!.includes('import \'egg-schedule\''));
+    assert(!result.content!.includes('import \'egg-static\''));
+    assert(result.content!.includes('static?: EggPluginItem;'));
+    assert(result.content!.includes('schedule?: EggPluginItem;'));
+    assert(result.content!.includes('view?: EggPluginItem;'));
+  });
+
   it('should works with empty plugin file', () => {
     const result = triggerGenerator<GeneratorResult>('plugin', path.resolve(__dirname, '../fixtures/app2'));
     assert(result.dist);

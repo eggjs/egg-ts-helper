@@ -318,74 +318,19 @@ export function camelProp(
 // find export node from sourcefile.
 export function findExportNode(code: string) {
   const sourceFile = ts.createSourceFile('file.ts', code, ts.ScriptTarget.ES2017, true);
-  const cache: Map<ts.__String, ts.Node> = new Map();
-  const exportNodeList: ts.Node[] = [];
-  let exportDefaultNode: ts.Node | undefined;
+  const result = findExports(sourceFile);
+  let exportDefault: ExportObj | undefined;
 
-  sourceFile.statements.forEach(node => {
-    // each node in root scope
-    if (modifierHas(node, ts.SyntaxKind.ExportKeyword)) {
-      if (modifierHas(node, ts.SyntaxKind.DefaultKeyword)) {
-        // export default
-        exportDefaultNode = node;
-      } else {
-        // export variable
-        if (ts.isVariableStatement(node)) {
-          node.declarationList.declarations.forEach(declare =>
-            exportNodeList.push(declare),
-          );
-        } else {
-          exportNodeList.push(node);
-        }
-      }
-    } else if (ts.isVariableStatement(node)) {
-      // cache variable statement
-      for (const declaration of node.declarationList.declarations) {
-        if (ts.isIdentifier(declaration.name) && declaration.initializer) {
-          cache.set(declaration.name.escapedText, declaration.initializer);
-        }
-      }
-    } else if ((ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node)) && node.name) {
-      // cache function declaration and class declaration
-      cache.set(node.name.escapedText, node);
-    } else if (ts.isExportAssignment(node)) {
-      // export default {}
-      exportDefaultNode = node.expression;
-    } else if (ts.isExpressionStatement(node) && ts.isBinaryExpression(node.expression)) {
-      if (ts.isPropertyAccessExpression(node.expression.left)) {
-        const obj = node.expression.left.expression;
-        const prop = node.expression.left.name;
-        if (ts.isIdentifier(obj)) {
-          if (obj.escapedText === 'exports') {
-            // exports.xxx = {}
-            exportNodeList.push(node.expression);
-          } else if (
-            obj.escapedText === 'module' &&
-            ts.isIdentifier(prop) &&
-            prop.escapedText === 'exports'
-          ) {
-            // module.exports = {}
-            exportDefaultNode = node.expression.right;
-          }
-        }
-      } else if (ts.isIdentifier(node.expression.left)) {
-        // let exportData;
-        // exportData = {};
-        // export exportData
-        cache.set(node.expression.left.escapedText, node.expression.right);
-      }
-    }
-  });
-
-  while (exportDefaultNode && ts.isIdentifier(exportDefaultNode) && cache.size) {
-    const mid = cache.get(exportDefaultNode.escapedText);
-    cache.delete(exportDefaultNode.escapedText);
-    exportDefaultNode = mid;
+  if (result.exportEqual) {
+    exportDefault = result.exportEqual;
+  } else if (result.exportList.has('default')) {
+    exportDefault = result.exportList.get('default')!;
+    result.exportList.delete('default');
   }
 
   return {
-    exportDefaultNode,
-    exportNodeList,
+    exportDefault,
+    exportList: result.exportList,
   };
 }
 
@@ -409,4 +354,330 @@ export function getText(node?: ts.Node) {
     }
   }
   return '';
+}
+
+// find assign result type
+export interface AssignElement {
+  init?: boolean;
+  obj?: ts.Expression;
+  key: ts.Identifier;
+  value?: ts.Expression;
+  node: ts.Node;
+}
+
+export interface ExportObj {
+  node: ts.Node;
+  originalNode: ts.Node;
+}
+
+// find exports from sourcefile
+export function findExports(source: ts.SourceFile) {
+  let exportEqual: ExportObj | undefined;
+  const exportList: Map<string, ExportObj> = new Map();
+  const checker = getAssignChecker([
+    'exports',
+    'module',
+    'module.exports',
+  ]);
+  const kvList = findKVList(source.statements);
+  const getRealValue = (node: ts.Node) => {
+    if (ts.isIdentifier(node)) {
+      return kvList.get(getText(node)) || node;
+    } else if (ts.isPropertyAccessExpression(node)) {
+      return getNodeFromPropertyAccess(node, kvList) || node;
+    } else {
+      return node;
+    }
+  };
+
+  const addExportNode = (name: string, value: ts.Node, node: ts.Node) => {
+    exportList.set(name, {
+      node: getRealValue(value)!,
+      originalNode: node,
+    });
+  };
+
+  source.statements.forEach(statement => {
+    const isExport = modifierHas(statement, ts.SyntaxKind.ExportKeyword);
+    if (ts.isExportAssignment(statement)) {
+      if (statement.isExportEquals) {
+        // export = {}
+        exportEqual = {
+          node: getRealValue(statement.expression),
+          originalNode: statement,
+        };
+      } else {
+        // export default {}
+        addExportNode('default', statement.expression, statement);
+      }
+
+      return;
+    } else if (isExport && (ts.isFunctionDeclaration(statement) || ts.isClassDeclaration(statement))) {
+      if (modifierHas(statement, ts.SyntaxKind.DefaultKeyword)) {
+        // export default function() {} | export default class xx {}
+        addExportNode('default', statement, statement);
+      } else {
+        // export function xxx() {} | export class xx {}
+        addExportNode(getText(statement.name), statement, statement);
+      }
+
+      return;
+    } else if (ts.isExportDeclaration(statement) && statement.exportClause) {
+      // export { xxxx };
+      statement.exportClause.elements.forEach(spec => {
+        addExportNode(getText(spec.name), spec.propertyName || spec.name, statement);
+      });
+
+      return;
+    }
+
+    getAssignResultFromStatement(statement).forEach(result => {
+      const newResult = checker.check(result);
+      if (isExport) {
+        // export const xxx = {};
+        addExportNode(getText(result.key), result.value!, result.node);
+      }
+
+      if (!newResult) return;
+      if (newResult.name === 'exports' || newResult.name === 'module.exports') {
+        // exports.xxx = {} | module.exports.xxx = {}
+        addExportNode(getText(newResult.key), newResult.value, newResult.node);
+      } else if (newResult.name === 'module' && getText(newResult.key) === 'exports') {
+        // module.exports = {}
+        exportEqual = {
+          node: getRealValue(newResult.value!),
+          originalNode: newResult.node,
+        };
+      }
+    });
+  });
+
+  return {
+    exportEqual,
+    exportList,
+  };
+}
+
+export function findAssign(statements: ts.NodeArray<ts.Statement>, cb: (result: AssignElement) => void) {
+  statements.forEach(statement => {
+    getAssignResultFromStatement(statement).forEach(cb);
+  });
+}
+
+export function findAssignByName(statements, name: FindAssignNameType | FindAssignNameType[], cb: (result: AssignNameElement) => void) {
+  const checker = getAssignChecker(name);
+  return findAssign(statements, result => {
+    const newResult = checker.check(result);
+    if (newResult) cb(newResult);
+  });
+}
+
+type FindAssignNameType = string | RegExp;
+interface AssignNameElement extends AssignElement {
+  obj: ts.Expression;
+  name: string;
+  value: ts.Expression;
+}
+
+export function getAssignChecker(name: FindAssignNameType | FindAssignNameType[]) {
+  // cache the variable of name
+  const variableList = Array.isArray(name) ? name : [ name ];
+  const nameAlias = {};
+  const getRealName = name => {
+    const realName = nameAlias[name] || name;
+    const hitTarget = !!variableList.find(variable => {
+      return (typeof variable === 'string')
+        ? variable === realName
+        : variable.test(realName);
+    });
+    return hitTarget ? realName : undefined;
+  };
+
+  return {
+    check(el: AssignElement): AssignNameElement | undefined {
+      const { obj, key, value, node } = el;
+      if (!obj || !value) {
+        // const xx = name
+        if (value) {
+          const realName = getRealName(value.getText().trim());
+          if (realName) {
+            nameAlias[getText(key)] = realName;
+          }
+        }
+
+        return;
+      }
+
+      const realName = getRealName(obj.getText().trim());
+      if (realName) {
+        return { name: realName, obj, key, value, node };
+      }
+    },
+  };
+}
+
+function splitProperty(node: ts.Node): string[] {
+  if (ts.isIdentifier(node)) {
+    return [ node.getText() ];
+  } else if (ts.isPropertyAccessExpression(node)) {
+    return splitProperty(node.expression).concat([ node.name.getText() ]);
+  } else {
+    return [];
+  }
+}
+
+function getNodeFromPropertyAccess(obj: ts.Node, kv: Map<string, ts.Node | undefined>) {
+  if (ts.isIdentifier(obj)) {
+    return kv.get(obj.getText());
+  } else if (ts.isPropertyAccessExpression(obj)) {
+    const keyList = splitProperty(obj);
+    const first = keyList.shift();
+    if (!first || !kv.has(first)) {
+      return;
+    }
+
+    let curr = kv.get(first)!;
+    if (!curr || !ts.isObjectLiteralExpression(curr)) {
+      return;
+    }
+
+    while (keyList.length) {
+      const k = keyList.shift();
+      const prop = (curr as ts.ObjectLiteralExpression).properties.find(prop => getText(prop.name) === k);
+      if (!prop) {
+        return;
+      }
+
+      if (keyList.length) {
+        if (ts.isPropertyAccessExpression(prop)) {
+          curr = prop;
+        } else {
+          return;
+        }
+      }
+    }
+
+    return curr;
+  } else {
+    return obj;
+  }
+}
+
+export function findKVList(statements: ts.NodeArray<ts.Statement>) {
+  const kv: Map<string, ts.Node | undefined> = new Map();
+  statements.forEach(statement => {
+    if ((ts.isFunctionDeclaration(statement) || ts.isClassDeclaration(statement)) && statement.name) {
+      // cache function declaration and class declaration
+      return kv.set(getText(statement.name), statement);
+    }
+
+    getAssignResultFromStatement(statement).forEach(({ obj, key, value }) => {
+      if (!obj) {
+        return kv.set(getText(key), value ? getNodeFromPropertyAccess(value, kv) : undefined);
+      }
+
+      if (!value) return;
+
+      const o = getNodeFromPropertyAccess(obj, kv);
+      if (o && ts.isObjectLiteralExpression(o)) {
+        const propertyAssignment = ts.createPropertyAssignment(key, value);
+        const index = o.properties.findIndex(p => getText(p.name) === getText(key));
+        if (index >= 0) {
+          o.properties = ts.createNodeArray(o.properties
+            .slice(0, index)
+            .concat([ propertyAssignment ])
+            .concat(o.properties.slice(index + 1)));
+        } else {
+          o.properties = ts.createNodeArray(o.properties.concat([ propertyAssignment ]));
+        }
+        propertyAssignment.parent = o;
+      }
+    });
+  });
+  return kv;
+}
+
+export function getAssignResultFromStatement(statement: ts.Statement, assignList: AssignElement[] = []) {
+  const checkValue = (node?: ts.Expression) => {
+    if (node && ts.isBinaryExpression(node)) {
+      checkBinary(node);
+      return checkValue(node.right);
+    } else {
+      return node;
+    }
+  };
+
+  // check binary expression
+  const checkBinary = (node: ts.BinaryExpression) => {
+    if (
+      ts.isPropertyAccessExpression(node.left) &&
+      ts.isIdentifier(node.left.name)
+    ) {
+      // xxx.xxx = xx
+      assignList.push({
+        obj: node.left.expression,
+        key: node.left.name,
+        value: checkValue(node.right),
+        node: statement,
+      });
+    } else if (ts.isIdentifier(node.left)) {
+      // xxx = xx
+      assignList.push({
+        key: node.left,
+        value: checkValue(node.right),
+        node: statement,
+      });
+    } else if (
+      ts.isElementAccessExpression(node.left) &&
+      ts.isStringLiteral(node.left.argumentExpression)
+    ) {
+      // xxx['sss'] = xxx
+      assignList.push({
+        obj: node.left.expression,
+        key: ts.createIdentifier(node.left.argumentExpression.text),
+        value: checkValue(node.right),
+        node: statement,
+      });
+    }
+  };
+
+  const eachStatement = (statements: ts.NodeArray<ts.Statement>) => {
+    statements.forEach(statement => getAssignResultFromStatement(statement, assignList));
+  };
+
+  const checkIfStatement = (el: ts.IfStatement) => {
+    if (ts.isBlock(el.thenStatement)) {
+      eachStatement(el.thenStatement.statements);
+    }
+
+    if (el.elseStatement) {
+      if (ts.isIfStatement(el.elseStatement)) {
+        checkIfStatement(el.elseStatement);
+      } else if (ts.isBlock(el.elseStatement)) {
+        eachStatement(el.elseStatement.statements);
+      }
+    }
+  };
+
+  if (ts.isExpressionStatement(statement) && ts.isBinaryExpression(statement.expression)) {
+    // xxx = xxx
+    checkBinary(statement.expression);
+  } else if (ts.isVariableStatement(statement)) {
+    // const xxx = xx
+    statement.declarationList.declarations.forEach(declare => {
+      if (ts.isIdentifier(declare.name)) {
+        assignList.push({
+          init: true,
+          key: declare.name,
+          value: checkValue(declare.initializer),
+          node: declare,
+        });
+      }
+    });
+  } else if (ts.isIfStatement(statement)) {
+    // if () { xxx = xxx }
+    checkIfStatement(statement);
+  }
+
+  return assignList;
 }
