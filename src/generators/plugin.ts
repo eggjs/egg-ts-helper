@@ -1,10 +1,9 @@
-import fs from 'fs';
 import path from 'path';
-import ts from 'typescript';
 import { TsGenConfig, TsHelperConfig } from '..';
 import * as utils from '../utils';
-
-const cache: { [key: string]: string[] } = {};
+import fs from 'fs';
+import extend from 'extend2';
+import { execSync } from 'child_process';
 
 // only load plugin.ts|plugin.local.ts|plugin.default.ts
 export const defaultConfig = {
@@ -12,96 +11,16 @@ export const defaultConfig = {
 };
 
 export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
-  const fileList = config.fileList;
   const dist = path.resolve(config.dtsDir, 'plugin.d.ts');
-  const { pluginList, pluginInfos } = utils.getFrameworkPlugins(baseConfig.cwd);
-  const appPluginNameList: string[] = Object.keys(pluginInfos);
-  let importPlugins: string[] = pluginList.slice(0);
-  fileList.forEach(f => {
-    const abUrl = path.resolve(config.dir, f);
+  const { pluginList, pluginInfos } = getPluginInfo(baseConfig.cwd, config.file);
+  const appPluginNameList: string[] = Object.keys(pluginInfos).filter(p => pluginInfos[p].package);
 
-    // read from cache
-    if (!cache[abUrl] || config.file === abUrl) {
-      const exportResult = utils.findExportNode(fs.readFileSync(abUrl, 'utf-8'));
-      if (!exportResult) {
-        return;
-      }
-
-      // collect package name
-      const collectPackageName = (name: string, property: ts.Node) => {
-        if (!name) return;
-        const existPackage = pluginInfos[name];
-        let packageIsEnable: boolean | undefined = existPackage ? existPackage.enable : true;
-        let packageName: string | undefined = existPackage ? existPackage.package : undefined;
-        const addPackage = (isEnable: boolean = true) => {
-          appPluginNameList.push(name);
-          if (isEnable) {
-            importPlugins.push(packageName!);
-          } else {
-            const index = importPlugins.indexOf(packageName!);
-            importPlugins.splice(index, 1);
-          }
-        };
-
-        if (ts.isObjectLiteralExpression(property)) {
-          // export const xxx = { enable: true };
-          property.properties.forEach(prop => {
-            if (ts.isPropertyAssignment(prop) && ts.isIdentifier(prop.name)) {
-              if (prop.name.escapedText === 'package') {
-                // { package: 'xxx' }
-                packageName = ts.isStringLiteral(prop.initializer)
-                  ? prop.initializer.text
-                  : undefined;
-              } else if (prop.name.escapedText === 'enable') {
-                // { enable: xxx }
-                packageIsEnable = prop.initializer.kind !== ts.SyntaxKind.FalseKeyword;
-              }
-            }
-          });
-
-          if (packageName && utils.moduleExist(packageName, baseConfig.cwd)) {
-            addPackage(packageIsEnable);
-          }
-        } else if (packageName && ts.isIdentifier(property)) {
-          // export const plugin = true;
-          const value = property.getText();
-          if (/^true|false$/.exec(value)) {
-            addPackage(value === 'true');
-          }
-        }
-      };
-
-      // check return node
-      if (exportResult.exportDefaultNode) {
-        // export default {  }
-        if (ts.isObjectLiteralExpression(exportResult.exportDefaultNode)) {
-          for (const property of exportResult.exportDefaultNode.properties) {
-            if (ts.isPropertyAssignment(property)) {
-              collectPackageName(utils.getText(property.name), property.initializer);
-            }
-          }
-        }
-      } else if (exportResult.exportNodeList.length) {
-        // export const xxx = {};
-        for (const property of exportResult.exportNodeList) {
-          if (ts.isBinaryExpression(property)) {
-            collectPackageName(utils.getText(property.left), property.right);
-          } else if (ts.isVariableDeclaration(property) && property.initializer) {
-            collectPackageName(utils.getText(property.name), property.initializer);
-          }
-        }
-      }
-    } else {
-      importPlugins = importPlugins.concat(cache[abUrl]);
-    }
-  });
-
-  if (!importPlugins.length) {
+  if (!pluginList.length) {
     return { dist };
   }
 
   const framework = config.framework || baseConfig.framework;
-  const importContent = Array.from(new Set(importPlugins)).map(p => `import '${p}';`).join('\n');
+  const importContent = Array.from(new Set(pluginList)).map(p => `import '${p}';`).join('\n');
   const composeInterface = (list: string[]) => {
     return `    ${list
       .map(name => `${utils.isIdentifierName(name) ? name : `'${name}'` }?: EggPluginItem;`)
@@ -118,5 +37,70 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
       `${composeInterface(Array.from(new Set(appPluginNameList)))}\n` +
       '  }\n' +
       '}',
+  };
+}
+
+type Plugins = PlainObject<{ package: string; from: string; enable: boolean; }>;
+
+// get framework plugin list
+interface FindPluginResult {
+  pluginList: string[];
+  pluginInfos: Plugins;
+}
+
+function getPluginByScripts(url: string): Plugins {
+  try {
+    // executing scripts to get eggInfo
+    const info = execSync(`ts-node ./scripts/plugin ${url}`, {
+      cwd: path.resolve(__dirname, '../'),
+      maxBuffer: 1024 * 1024,
+      env: {
+        ...process.env,
+        EGG_TYPESCRIPT: 'true',
+      },
+    });
+
+    const jsonStr = info.toString();
+    if (jsonStr) {
+      return JSON.parse(jsonStr);
+    } else {
+      return {};
+    }
+  } catch (e) {
+    return {};
+  }
+}
+
+const pluginCache: PlainObject<Plugins> = {};
+function getAllPluginInfo(cwd: string) {
+  if (pluginCache[cwd]) {
+    return pluginCache[cwd];
+  } else {
+    const allPlugin = getPluginByScripts(cwd);
+    pluginCache[cwd] = allPlugin;
+    return allPlugin;
+  }
+}
+
+export function getPluginInfo(cwd: string, file?: string): FindPluginResult {
+  const allPlugin = getAllPluginInfo(cwd);
+  let pluginInfos = allPlugin;
+  if (file) {
+    const fileExist = fs.existsSync(file);
+    const filePluginInfo = fileExist ? getPluginByScripts(file) : {};
+    pluginInfos = extend({}, allPlugin, filePluginInfo);
+  }
+
+  const pluginList: string[] = [];
+  Object.keys(pluginInfos).forEach(name => {
+    const pluginInfo = pluginInfos[name];
+    if (pluginInfo.enable && pluginInfo.package) {
+      pluginList.push(pluginInfo.package);
+    }
+  });
+
+  return {
+    pluginList,
+    pluginInfos,
   };
 }

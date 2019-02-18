@@ -1,27 +1,38 @@
 import path from 'path';
 import assert = require('assert');
+import fs from 'fs';
 import { GeneratorResult } from '../../dist/';
+import { getPluginInfo } from '../../dist/generators/plugin';
 import { triggerGenerator } from './utils';
 
 describe('generators/plugin.test.ts', () => {
-  const appDir = path.resolve(__dirname, '../fixtures/app');
+  const appDir = path.resolve(__dirname, '../fixtures/real-unittest');
 
   it('should works without error', () => {
-    const result = triggerGenerator<GeneratorResult>('plugin', appDir);
+    const result = triggerGenerator<GeneratorResult>('plugin', path.resolve(__dirname, appDir));
     assert(result.dist);
-    assert(result.content!.match(/egg-cors/g)!.length === 1);
-    assert(result.content!.includes('import \'egg-yoyo\''));
-    assert(result.content!.includes('import \'egg-super\''));
-    assert(result.content!.includes('import \'egg-cors\''));
-    assert(!result.content!.includes('import \'egg-unknown\''));
-    assert(!result.content!.includes('import \'egg-view-vue-ssr\''));
-    assert(!result.content!.includes('import \'egg-cool\''));
-    assert(!result.content!.includes('import \'egg-lalala\''));
+    assert(result.content!.includes('import \'egg-view\''));
+    assert(!result.content!.includes('import \'egg-static\''));
+    assert(result.content!.includes('static?: EggPluginItem'));
+    assert(result.content!.includes('view?: EggPluginItem'));
   });
 
   it('should works with empty plugin file', () => {
     const result = triggerGenerator<GeneratorResult>('plugin', path.resolve(__dirname, '../fixtures/app2'));
     assert(result.dist);
     assert(!result.content);
+  });
+
+  it('should get plugin info without error', () => {
+    let plugins = getPluginInfo(path.resolve(__dirname, '../fixtures/real-unittest'));
+    assert(plugins.pluginList.length);
+    assert(!plugins.pluginList.includes('egg-static'));
+    assert(plugins.pluginList.includes('egg-view'));
+
+    const otherPlugin = path.resolve(__dirname, '../fixtures/real-unittest/config/plugin.other.ts');
+    fs.writeFileSync(otherPlugin, 'export const view = false;');
+    plugins = getPluginInfo(otherPlugin);
+    assert(!plugins.pluginList.includes('egg-static'));
+    assert(!plugins.pluginList.includes('egg-view'));
   });
 });

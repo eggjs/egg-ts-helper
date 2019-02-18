@@ -4,7 +4,6 @@ import glob from 'globby';
 import path from 'path';
 import ts from 'typescript';
 import yn from 'yn';
-import { execSync } from 'child_process';
 
 export const JS_CONFIG = {
   include: [ '**/*' ],
@@ -50,45 +49,6 @@ export function convertString<T>(val: string | undefined, defaultVal: T): T {
     default:
       return defaultVal;
   }
-}
-
-// get framework plugin list
-interface FindPluginResult {
-  pluginList: string[];
-  pluginInfos: PlainObject<{ package: string; path: string; enable: boolean; }>;
-}
-
-const pluginCache: PlainObject<FindPluginResult> = {};
-export function getFrameworkPlugins(cwd: string): FindPluginResult {
-  if (pluginCache[cwd]) {
-    return pluginCache[cwd];
-  }
-
-  let pluginInfos = {};
-  try {
-    // executing scripts to get eggInfo
-    const info = execSync(`node ./scripts/eggInfo ${cwd}`, {
-      cwd: __dirname,
-      maxBuffer: 1024 * 1024,
-    });
-
-    pluginInfos = JSON.parse(info.toString());
-  } catch (e) {
-    return { pluginList: [], pluginInfos };
-  }
-
-  const pluginList: string[] = [];
-  Object.keys(pluginInfos).forEach(name => {
-    const pluginInfo = pluginInfos[name];
-    if (pluginInfo.enable) {
-      pluginList.push(pluginInfo.package);
-    }
-  });
-
-  return pluginCache[cwd] = {
-    pluginList,
-    pluginInfos,
-  };
 }
 
 export function isIdentifierName(s: string) {

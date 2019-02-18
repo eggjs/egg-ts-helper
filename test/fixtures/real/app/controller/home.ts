@@ -8,7 +8,6 @@ export default class HomeController extends Controller {
     ctx.request.customLog();
     ctx.response.customLog();
     ctx.helper.customLog();
-    app.customPluginLog();
     console.info(app.config.otherBizConfig.type);
     console.info(await ctx.service.db.fetch());
     console.info(await app.model.User.get());

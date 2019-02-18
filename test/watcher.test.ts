@@ -1,18 +1,22 @@
-import { createTsHelperInstance, getDefaultWatchDirs } from '../dist';
+import { default as TsHelper, createTsHelperInstance, getDefaultWatchDirs } from '../dist';
 import Watcher, { WatchItem } from '../dist/watcher';
 import path from 'path';
 import assert = require('assert');
 
 describe('watcher.test.ts', () => {
   let watcher: Watcher;
-  const tsHelper = createTsHelperInstance({
-    cwd: path.resolve(__dirname, './fixtures/app'),
-    watch: false,
-    execAtInit: true,
-    autoRemoveJs: false,
-  });
+  let tsHelper: TsHelper;
 
   const defaultWatchDir = getDefaultWatchDirs();
+
+  before(() => {
+    tsHelper = createTsHelperInstance({
+      cwd: path.resolve(__dirname, './fixtures/app'),
+      watch: false,
+      execAtInit: true,
+      autoRemoveJs: false,
+    });
+  });
 
   afterEach(() => {
     watcher.destroy();
