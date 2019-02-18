@@ -7,10 +7,10 @@ import ExportTest from '../../../app/custom/test';
 
 declare module 'egg' {
   interface Application {
-    custom: TC100;
+    custom: T_custom;
   }
 
-  interface TC100 {
+  interface T_custom {
     test: AutoInstanceType<typeof ExportTest>;
   }
 }
