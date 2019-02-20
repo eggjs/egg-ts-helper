@@ -70,6 +70,10 @@ export function getFrameworkPlugins(cwd: string): FindPluginResult {
     const info = execSync(`node ./scripts/plugin ${cwd}`, {
       cwd: __dirname,
       maxBuffer: 1024 * 1024,
+      env: {
+        ...process.env,
+        EGG_TYPESCRIPT: 'false',
+      },
     });
     pluginInfos = JSON.parse(info.toString());
   } catch (e) {
