@@ -169,20 +169,43 @@ describe('utils.test.ts', () => {
   });
 
   it('should findKVList without error', () => {
-    const code = `
+    let code = `
       let abc = 123;
       abc = { aa: true };
       const bbc = abc;
       bbc.xxbb = true;
       abc.aa = 123;
     `;
-    const sourceFile = ts.createSourceFile('file.ts', code, ts.ScriptTarget.ES2017, true);
-    const kv = utils.findKVList(sourceFile.statements);
-    const bbc = kv.get('bbc') as ts.ObjectLiteralExpression;
-    const aa = bbc.properties[0] as ts.PropertyAssignment;
-    const xxbb = bbc.properties[1] as ts.PropertyAssignment;
-    // console.info(aa);
-    assert(xxbb.initializer.kind === ts.SyntaxKind.TrueKeyword);
-    assert(ts.isNumericLiteral(aa.initializer));
+    let sourceFile = ts.createSourceFile('file.ts', code, ts.ScriptTarget.ES2017, true);
+    let kv = utils.findKVList(sourceFile.statements);
+    const bbc = kv.get('bbc') as any;
+    assert(bbc.properties[1].initializer.kind === ts.SyntaxKind.TrueKeyword);
+    assert(ts.isNumericLiteral(bbc.properties[0].initializer));
+
+    code = `
+      let abc = 123;
+      abc = { aa: true };
+      const ccc = { ccc: {} };
+      ccc.xxbb = true;
+      abc.aa = ccc.ccc;
+      ccc.ccc.aaa = 123;
+    `;
+    sourceFile = ts.createSourceFile('file.ts', code, ts.ScriptTarget.ES2017, true);
+    kv = utils.findKVList(sourceFile.statements);
+    const ccc = kv.get('ccc') as any;
+    console.info(ccc.properties);
+    assert(ccc.properties.length === 2);
+    assert(ccc.properties[0].name.getText() === 'ccc');
+    assert(ts.isNumericLiteral(ccc.properties[0].initializer));
+    assert(ccc.properties[1].name.getText() === 'xxbb');
+    assert(ccc.properties[1].initializer!.kind === ts.SyntaxKind.TrueKeyword);
+
+    const abc = kv.get('abc') as any;
+    assert(abc.properties.length === 1);
+    assert(abc.properties[0].name.getText() === 'aa');
+    assert(abc.properties[0].initializer.kind === ts.SyntaxKind.ObjectLiteralExpression);
+    assert(abc.properties[0].initializer.properties.length === 1);
+    assert(abc.properties[0].initializer.properties[0].name.getText() === 'aaa');
+    assert(abc.properties[0].initializer.properties[0].initializer.kind === ts.SyntaxKind.NumericLiteral);
   });
 });
