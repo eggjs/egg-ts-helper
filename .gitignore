@@ -13,3 +13,4 @@ run/
 dist/
 .cache
 test/fixtures/app*/typings
+.history
