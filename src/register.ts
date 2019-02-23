@@ -43,11 +43,11 @@ function register(watch: boolean) {
     util.cleanJs(cwd);
   }
 
-  // exec building
-  createTsHelperInstance({ watch }).build();
-
-  // cache pid
+  // must cache pid before executing building
   if (watch) {
     fs.writeFileSync(cacheFile, process.pid);
   }
+
+  // exec building
+  createTsHelperInstance({ watch }).build();
 }

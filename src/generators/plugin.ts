@@ -51,11 +51,12 @@ interface FindPluginResult {
 function getPluginByScripts(url: string): Plugins {
   try {
     // executing scripts to get eggInfo
-    const info = execSync(`ts-node --transpile-only ./scripts/plugin ${url}`, {
+    const info = execSync(`node -r ts-node/register ./scripts/plugin ${url}`, {
       cwd: path.resolve(__dirname, '../'),
       maxBuffer: 1024 * 1024,
       env: {
         ...process.env,
+        TS_NODE_TRANSPILE_ONLY: 'true',
         EGG_TYPESCRIPT: 'true',
       },
     });
