@@ -49,15 +49,5 @@ function register(watch: boolean) {
   // cache pid
   if (watch) {
     fs.writeFileSync(cacheFile, process.pid);
-
-    const clean = () => fs.existsSync(cacheFile) && fs.unlinkSync(cacheFile);
-
-    // delete cache file on exit.
-    process.once('beforeExit', clean);
-    process.once('uncaughtException', clean);
-    process.once('SIGINT', () => {
-      clean();
-      process.exit(0);
-    });
   }
 }
