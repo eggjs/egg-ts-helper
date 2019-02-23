@@ -34,6 +34,7 @@ export interface TsHelperOption {
 export type WatchItem = WatchItem;
 export type TsHelperConfig = typeof defaultConfig;
 export type TsGenConfig = {
+  name: string;
   dir: string;
   dtsDir: string;
   fileList: string[],

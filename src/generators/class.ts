@@ -2,7 +2,6 @@ import d from 'debug';
 import path from 'path';
 import { TsGenConfig, TsHelperConfig } from '..';
 import * as utils from '../utils';
-let uniqId = 100;
 const debug = d('egg-ts-helper#generators_class');
 
 export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
@@ -47,7 +46,7 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
   });
 
   // interface name
-  const interfaceName = config.interface || `TC${uniqId++}`;
+  const interfaceName = config.interface || `T_${config.name.replace(/\.-/g, '')}`;
 
   // add mount interface
   let declareInterface;

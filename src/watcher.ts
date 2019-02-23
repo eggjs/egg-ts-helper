@@ -87,7 +87,10 @@ export default class Watcher extends EventEmitter {
       .join(this.dir, this.options.pattern)
       .replace(/\/|\\/g, '/');
 
-    const watcher = chokidar.watch(watchGlob, this.config.watchOptions);
+    const watcher = chokidar.watch(watchGlob, {
+      ignoreInitial: true,
+      ...(this.config.watchOptions || {}),
+    });
 
     // listen watcher event
     this.options.trigger.forEach(evt => {
