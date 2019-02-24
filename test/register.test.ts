@@ -15,13 +15,23 @@ const options = {
   cwd: path.resolve(__dirname, './fixtures/app8'),
 };
 
-const runRegister = (opt?: Partial<typeof options>) => {
+const runRegister = (opt?: PlainObject) => {
   return fork(path.resolve(__dirname, '../register.js'), [], extend(true, {}, options, opt));
 };
 
 describe('register.test.ts', () => {
   beforeEach(() => {
     del.sync(path.resolve(__dirname, './fixtures/app8/typings'), { force: true });
+  });
+
+  it('should not start register if env.ETS_REGISTER_PID is exist', async () => {
+    const { stdout, stderr } = await getStd(
+      runRegister({ env: { ETS_REGISTER_PID: '123', DEBUG: 'egg-ts-helper#register' } }),
+      true,
+    );
+
+    assert(!stdout.includes('create'));
+    assert(stderr.includes('egg-ts-helper watcher has ran in 123'));
   });
 
   it('should works with --require without error', async () => {
