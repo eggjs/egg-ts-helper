@@ -2,6 +2,7 @@
  * Getting plugin info in child_process to prevent effecting egg application( splitting scopes ).
  */
 
+import 'ts-node/register';
 import fs from 'fs';
 import path from 'path';
 import { requireFile, getPkgInfo, resolveModule } from '../utils';

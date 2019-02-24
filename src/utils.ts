@@ -39,7 +39,7 @@ export const TS_CONFIG = {
 export function getEggInfo(cwd: string) {
   try {
     // executing scripts to get eggInfo
-    const info = execSync(`node -r ts-node/register ./scripts/eggInfo ${cwd}`, {
+    const info = execSync(`node ./scripts/eggInfo ${cwd}`, {
       cwd: __dirname,
       maxBuffer: 1024 * 1024,
       env: {

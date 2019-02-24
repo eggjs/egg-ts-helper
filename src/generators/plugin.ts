@@ -14,16 +14,9 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
     return { dist };
   }
 
-  // collect plugin which is enable
-  const pluginList: string[] = [];
-  Object.keys(eggInfo.plugins).forEach(name => {
-    const pluginInfo = eggInfo.plugins[name];
-    if (pluginInfo.enable && pluginInfo.package) {
-      pluginList.push(pluginInfo.package);
-    }
-  });
-
-  const appPluginNameList: string[] = Object.keys(eggInfo.plugins).filter(p => eggInfo.plugins[p].package);
+  const pluginKeys = Object.keys(eggInfo.plugins);
+  const pluginList = pluginKeys.filter(name => !!eggInfo.plugins[name].package);
+  const appPluginNameList: string[] = pluginKeys.filter(p => eggInfo.plugins[p].package);
   const framework = config.framework || baseConfig.framework;
   const importContent = Array.from(new Set(pluginList)).map(p => `import '${p}';`).join('\n');
   const composeInterface = (list: string[]) => {

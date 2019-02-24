@@ -167,17 +167,4 @@ describe('utils.test.ts', () => {
     exportResult = utils.findExportNode('const abc = {}; let bbb; bbb = abc; export default bbb;')!;
     assert(ts.isObjectLiteralExpression(exportResult.exportDefaultNode!));
   });
-
-  it('should get egg info without error', () => {
-    let plugins = utils.getEggInfo(path.resolve(__dirname, './fixtures/real-unittest'));
-    assert(plugins.pluginList.length);
-    assert(!plugins.pluginList.includes('egg-static'));
-    assert(plugins.pluginList.includes('egg-view'));
-
-    const otherPlugin = path.resolve(__dirname, './fixtures/real-unittest/config/plugin.other.ts');
-    fs.writeFileSync(otherPlugin, 'export const view = false;');
-    plugins = utils.getEggInfo(otherPlugin);
-    assert(!plugins.pluginList.includes('egg-static'));
-    assert(!plugins.pluginList.includes('egg-view'));
-  });
 });
