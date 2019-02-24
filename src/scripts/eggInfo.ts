@@ -6,10 +6,9 @@ import fs from 'fs';
 import path from 'path';
 import { requireFile, getPkgInfo, resolveModule } from '../utils';
 const url = process.argv[2];
-const stat = fs.statSync(url);
 const eggInfo: { plugins?: PlainObject; config?: PlainObject; } = {};
 
-if (stat.isDirectory()) {
+if (fs.existsSync(url) && fs.statSync(url).isDirectory()) {
   const framework = (getPkgInfo(url).egg || {}).framework || 'egg';
   const loader = getLoader(url, framework);
   if (loader) {
@@ -20,7 +19,7 @@ if (stat.isDirectory()) {
       // do nothing
     }
 
-    eggInfo.plugins = loader.allPlugins;
+    eggInfo.plugins = loader.plugins;
     eggInfo.config = loader.config;
   }
 }
