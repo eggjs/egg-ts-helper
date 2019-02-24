@@ -4,6 +4,7 @@ import glob from 'globby';
 import path from 'path';
 import ts from 'typescript';
 import yn from 'yn';
+import { execSync } from 'child_process';
 
 export const JS_CONFIG = {
   include: [ '**/*' ],
@@ -34,6 +35,29 @@ export const TS_CONFIG = {
     inlineSourceMap: true,
   },
 };
+
+export function getEggInfo(cwd: string) {
+  try {
+    // executing scripts to get eggInfo
+    const info = execSync(`node -r ts-node/register ./scripts/eggInfo ${cwd}`, {
+      cwd: __dirname,
+      maxBuffer: 1024 * 1024,
+      env: {
+        ...process.env,
+        TS_NODE_TRANSPILE_ONLY: 'true',
+        EGG_TYPESCRIPT: 'true',
+      },
+    });
+    const jsonStr = info.toString();
+    if (jsonStr) {
+      return JSON.parse(jsonStr);
+    } else {
+      return {};
+    }
+  } catch (e) {
+    return {};
+  }
+}
 
 // convert string to same type with default value
 export function convertString<T>(val: string | undefined, defaultVal: T): T {

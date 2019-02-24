@@ -1,32 +1,18 @@
 import cluster from 'cluster';
 import d from 'debug';
-import fs from 'fs';
-import path from 'path';
-import processExists from 'process-exists';
 import { createTsHelperInstance } from './';
 import * as util from './utils';
 const debug = d('egg-ts-helper#register');
-const cacheFile = path.resolve(__dirname, '../.cache');
 const shouldWatch = util.convertString(process.env.ETS_WATCH, process.env.NODE_ENV !== 'test');
 
 /* istanbul ignore else */
 if (cluster.isMaster) {
   // make sure ets only run once
-  let existPid: number | undefined;
-  if (fs.existsSync(cacheFile)) {
-    existPid = +fs.readFileSync(cacheFile).toString();
-  }
-
-  if (!existPid || !shouldWatch) {
-    register(shouldWatch);
+  const pid = process.env.ETS_REGISTER_PID;
+  if (pid && shouldWatch) {
+    debug('egg-ts-helper watcher has ran in %s', pid);
   } else {
-    processExists(existPid).then(exists => {
-      if (!exists) {
-        register(true);
-      } else {
-        debug('process %s was exits, ignore register', existPid);
-      }
-    });
+    register(shouldWatch);
   }
 }
 
@@ -43,9 +29,9 @@ function register(watch: boolean) {
     util.cleanJs(cwd);
   }
 
-  // must cache pid before executing building
   if (watch) {
-    fs.writeFileSync(cacheFile, process.pid);
+    // cache pid to env, prevent child process executing ets again
+    process.env.ETS_REGISTER_PID = `${process.pid}`;
   }
 
   // exec building
