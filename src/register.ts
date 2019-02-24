@@ -3,16 +3,15 @@ import d from 'debug';
 import { createTsHelperInstance } from './';
 import * as util from './utils';
 const debug = d('egg-ts-helper#register');
-const shouldWatch = util.convertString(process.env.ETS_WATCH, process.env.NODE_ENV !== 'test');
 
 /* istanbul ignore else */
 if (cluster.isMaster) {
   // make sure ets only run once
   const pid = process.env.ETS_REGISTER_PID;
-  if (pid && shouldWatch) {
+  if (pid) {
     debug('egg-ts-helper watcher has ran in %s', pid);
   } else {
-    register(shouldWatch);
+    register(util.convertString(process.env.ETS_WATCH, process.env.NODE_ENV !== 'test'));
   }
 }
 
