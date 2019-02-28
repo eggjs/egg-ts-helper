@@ -5,7 +5,7 @@
 import 'ts-node/register';
 import fs from 'fs';
 import path from 'path';
-import { requireFile, getPkgInfo, resolveModule } from '../utils';
+import { requireFile, getPkgInfo } from '../utils';
 const url = process.argv[2];
 const eggInfo: { plugins?: PlainObject; config?: PlainObject; } = {};
 
@@ -20,22 +20,25 @@ if (fs.existsSync(url) && fs.statSync(url).isDirectory()) {
       // do nothing
     }
 
-    eggInfo.plugins = loader.plugins;
+    eggInfo.plugins = loader.allPlugins;
     eggInfo.config = loader.config;
   }
 }
 
 process.stdout.write(JSON.stringify(eggInfo));
 
+/* istanbul ignore next */
 function noop() {}
 
 function getLoader(baseDir: string, framework: string) {
   const frameworkPath = path.join(baseDir, 'node_modules', framework);
   const eggCore = findEggCore(baseDir, frameworkPath);
+  /* istanbul ignore if */
   if (!eggCore) return;
   const EggLoader = eggCore.EggLoader;
-  const egg = requireFile(frameworkPath);
-  if (!egg) return;
+  const egg = requireFile(frameworkPath) || requireFile(framework);
+  /* istanbul ignore if */
+  if (!egg || !EggLoader) return;
   process.env.EGG_SERVER_ENV = 'local';
   return new EggLoader({
     baseDir,
@@ -58,7 +61,7 @@ function findEggCore(baseDir: string, frameworkPath: string) {
   const eggCore = requireFile(eggCorePath);
   if (!eggCore) {
     // try to resolve egg-core
-    return resolveModule('egg-core');
+    return requireFile('egg-core');
   }
   return eggCore;
 }

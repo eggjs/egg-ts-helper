@@ -14,10 +14,4 @@ describe('generators/plugin.test.ts', () => {
     assert(result.content!.includes('static?: EggPluginItem'));
     assert(result.content!.includes('view?: EggPluginItem'));
   });
-
-  it('should works with empty plugin file', () => {
-    const result = triggerGenerator<GeneratorResult>('plugin', path.resolve(__dirname, '../fixtures/app2'));
-    assert(result.dist);
-    assert(!result.content);
-  });
 });

@@ -15,10 +15,16 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
   }
 
   const pluginKeys = Object.keys(eggInfo.plugins);
-  const pluginList = pluginKeys.filter(name => !!eggInfo.plugins[name].package);
   const appPluginNameList: string[] = pluginKeys.filter(p => eggInfo.plugins[p].package);
   const framework = config.framework || baseConfig.framework;
-  const importContent = Array.from(new Set(pluginList)).map(p => `import '${p}';`).join('\n');
+  const importContent: string[] = [];
+  pluginKeys.forEach(name => {
+    const pluginInfo = eggInfo.plugins[name];
+    if (pluginInfo.enable && pluginInfo.package) {
+      importContent.push(`import '${pluginInfo.package}';`);
+    }
+  });
+
   const composeInterface = (list: string[]) => {
     return `    ${list
       .map(name => `${utils.isIdentifierName(name) ? name : `'${name}'` }?: EggPluginItem;`)
@@ -28,7 +34,7 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
   return {
     dist,
 
-    content: `${importContent}\n` +
+    content: `${importContent.join('\n')}\n` +
       `import { EggPluginItem } from '${framework}';\n` +
       `declare module '${framework}' {\n` +
       '  interface EggPlugin {\n' +
