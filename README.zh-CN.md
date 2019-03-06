@@ -78,7 +78,7 @@ $ ets -h
 
   Commands:
 
-    clean                   清除所有包含同名 ts 文件的 js 文件
+    clean                   清除所有包含同名 ts/tsx 文件的 js 文件
     init <type>             在你的项目中初始化 egg-ts-helper
 ```
 
