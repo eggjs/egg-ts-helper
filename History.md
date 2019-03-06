@@ -1,4 +1,10 @@
 
+1.23.0 / 2019-03-06
+===================
+
+  * feat: clean js file while it has the same name tsx file too (#40)
+  * fix: spawn eagain (#38)
+
 1.22.3 / 2019-02-24
 ===================
 
