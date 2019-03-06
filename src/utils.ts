@@ -159,7 +159,7 @@ export function writeFileSync(fileUrl, content) {
 export function cleanJs(cwd: string) {
   const fileList: string[] = [];
   glob
-    .sync([ '**/*.ts', '!**/*.d.ts', '!**/node_modules' ], { cwd })
+    .sync([ '**/*.ts', '**/*.tsx', '!**/*.d.ts', '!**/node_modules' ], { cwd })
     .forEach(f => {
       const jf = removeSameNameJs(path.resolve(cwd, f));
       if (jf) {
@@ -188,11 +188,11 @@ export function getModuleObjByPath(f: string) {
 
 // remove same name js
 export function removeSameNameJs(f: string) {
-  if (!f.endsWith('.ts') || f.endsWith('.d.ts')) {
+  if (!f.match(/\.tsx?$/) || f.endsWith('.d.ts')) {
     return;
   }
 
-  const jf = f.substring(0, f.length - 2) + 'js';
+  const jf = f.replace(/tsx?$/, 'js');
   if (fs.existsSync(jf)) {
     fs.unlinkSync(jf);
     return jf;

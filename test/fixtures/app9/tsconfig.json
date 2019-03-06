@@ -5,7 +5,8 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "skipLibCheck": true,
-    "watch": false
+    "watch": false,
+    "jsx": "react",
   },
   "include": [
     "./**/*"

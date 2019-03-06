@@ -79,7 +79,7 @@ $ ets -h
     -h, --help              output usage information
 
   Commands:
-    clean                   Clean js file while it has the same name ts file
+    clean                   Clean js file while it has the same name ts/tsx file
     init <type>             Init egg-ts-helper in your existing project
 ```
 
