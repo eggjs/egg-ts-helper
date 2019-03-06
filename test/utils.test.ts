@@ -22,11 +22,20 @@ describe('utils.test.ts', () => {
     assert(fs.existsSync(path.resolve(appPath, './test.js')));
     assert(fs.existsSync(path.resolve(appPath, './app/test.js')));
     assert(fs.existsSync(path.resolve(appPath, './app/app/test.js')));
+
+    assert(fs.existsSync(path.resolve(appPath, './testtsx.js')));
+    assert(fs.existsSync(path.resolve(appPath, './app/testtsx.js')));
+    assert(fs.existsSync(path.resolve(appPath, './app/app/testtsx.js')));
+
     utils.cleanJs(appPath);
     assert(fs.existsSync(path.resolve(appPath, './test2.js')));
     assert(!fs.existsSync(path.resolve(appPath, './test.js')));
     assert(!fs.existsSync(path.resolve(appPath, './app/test.js')));
     assert(!fs.existsSync(path.resolve(appPath, './app/app/test.js')));
+
+    assert(!fs.existsSync(path.resolve(appPath, './testtsx.js')));
+    assert(!fs.existsSync(path.resolve(appPath, './app/testtsx.js')));
+    assert(!fs.existsSync(path.resolve(appPath, './app/app/testtsx.js')));
   });
 
   it('should convertString without error', () => {
