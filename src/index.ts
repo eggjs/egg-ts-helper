@@ -46,11 +46,14 @@ export interface GeneratorResult {
   content?: string;
 }
 
-export type TsGenerator<T = GeneratorResult | GeneratorResult[] | void> = ((
+type GeneratorAllResult = GeneratorResult | GeneratorResult[];
+type GeneratorCbResult<T> = T | Promise<T>;
+
+export type TsGenerator<T = GeneratorAllResult | void> = ((
   config: TsGenConfig,
   baseConfig: TsHelperConfig,
   tsHelper: TsHelper,
-) => T) & { defaultConfig?: WatchItem; };
+) => GeneratorCbResult<T>) & { defaultConfig?: WatchItem; };
 
 export const defaultConfig = {
   cwd: utils.convertString(process.env.ETS_CWD, process.cwd()),
@@ -261,44 +264,45 @@ export default class TsHelper extends EventEmitter {
     this.config = config as TsHelperConfig;
   }
 
-  private generateTs(result: GeneratorResult | GeneratorResult[], file?: string) {
+  private updateTs(result: GeneratorAllResult, file?: string) {
     const config = this.config;
     const resultList = Array.isArray(result) ? result : [ result ];
-    resultList.forEach(item => {
+
+    for (const item of resultList) {
       // check cache
       if (this.isCached(item.dist, item.content)) {
         return;
       }
 
-      let isRemove = false;
       if (item.content) {
         // create file
-        const dtsContent = [
-          dtsComment,
-          `import '${config.framework}';`,
-          item.content,
-        ].join('\n');
-
-        debug('created d.ts : %s', item.dist);
+        const dtsContent = `${dtsComment}\nimport '${config.framework}';\n${item.content}`;
         utils.writeFileSync(item.dist, dtsContent);
         this.emit('update', item.dist, file);
         this.log(`create ${item.dist}`);
+        this.updateDistFiles(item.dist);
       } else {
         if (!fs.existsSync(item.dist)) {
           return;
         }
 
         // remove file
-        isRemove = true;
-        debug('remove d.ts : %s', item.dist);
         fs.unlinkSync(item.dist);
         this.emit('remove', item.dist, file);
         this.log(`delete ${item.dist}`);
+        this.updateDistFiles(item.dist, true);
       }
+    }
+  }
 
-      // update distFiles
-      this.updateDistFiles(item.dist, isRemove);
-    });
+  private generateTs(result: GeneratorCbResult<GeneratorAllResult>, file?: string) {
+    if (typeof (result as any).then === 'function') {
+      return (result as Promise<GeneratorAllResult>)
+        .then(r => this.updateTs(r, file))
+        .catch(e => { this.log(e.message); });
+    } else {
+      this.updateTs(result as GeneratorAllResult, file);
+    }
   }
 
   private updateDistFiles(fileUrl: string, isRemove?: boolean) {

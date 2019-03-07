@@ -8,8 +8,17 @@ export const defaultConfig = {
 };
 
 export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
+  if (!config.file) {
+    return getContent(utils.getEggInfo(baseConfig.cwd), config, baseConfig);
+  } else {
+    // async
+    return (utils.getEggInfo(baseConfig.cwd, { async: true }) as Promise<PlainObject>)
+      .then(eggInfo => getContent(eggInfo, config, baseConfig));
+  }
+}
+
+function getContent(eggInfo, config: TsGenConfig, baseConfig: TsHelperConfig) {
   const dist = path.resolve(config.dtsDir, 'plugin.d.ts');
-  const eggInfo = utils.getEggInfo(baseConfig.cwd);
   if (!eggInfo.plugins) {
     return { dist };
   }

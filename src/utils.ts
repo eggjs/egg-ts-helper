@@ -4,7 +4,7 @@ import glob from 'globby';
 import path from 'path';
 import ts from 'typescript';
 import yn from 'yn';
-import { execSync } from 'child_process';
+import { execSync, exec } from 'child_process';
 
 export const JS_CONFIG = {
   include: [ '**/*' ],
@@ -36,25 +36,48 @@ export const TS_CONFIG = {
   },
 };
 
-export function getEggInfo(cwd: string) {
-  try {
-    // executing scripts to get eggInfo
-    const info = execSync(`node ./scripts/eggInfo ${cwd}`, {
-      cwd: __dirname,
-      maxBuffer: 1024 * 1024,
-      env: {
-        ...process.env,
-        TS_NODE_TRANSPILE_ONLY: 'true',
-        EGG_TYPESCRIPT: 'true',
-      },
+interface GetEggInfoOpt {
+  async?: boolean;
+  env?: PlainObject<string>;
+}
+
+export function getEggInfo(cwd: string, option: GetEggInfoOpt = {}): Promise<PlainObject> | PlainObject {
+  const cmd = `node ./scripts/eggInfo ${cwd}`;
+  const opt = {
+    cwd: __dirname,
+    maxBuffer: 1024 * 1024,
+    env: {
+      ...process.env,
+      TS_NODE_TRANSPILE_ONLY: 'true',
+      EGG_TYPESCRIPT: 'true',
+    },
+  };
+
+  if (option.async) {
+    return new Promise((resolve, reject) => {
+      exec(cmd, opt, (err, stdout) => {
+        if (err) reject(err);
+        resolve(getJson(stdout || ''));
+      });
     });
-    const jsonStr = info.toString();
-    if (jsonStr) {
-      return JSON.parse(jsonStr);
-    } else {
+  } else {
+    try {
+      const info = execSync(cmd, opt);
+      return getJson(info.toString());
+    } catch (e) {
       return {};
     }
-  } catch (e) {
+  }
+}
+
+export function getJson(jsonStr: string) {
+  if (jsonStr) {
+    try {
+      return JSON.parse(jsonStr);
+    } catch (e) {
+      return {};
+    }
+  } else {
     return {};
   }
 }
