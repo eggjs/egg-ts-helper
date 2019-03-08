@@ -176,4 +176,20 @@ describe('utils.test.ts', () => {
     exportResult = utils.findExportNode('const abc = {}; let bbb; bbb = abc; export default bbb;')!;
     assert(ts.isObjectLiteralExpression(exportResult.exportDefaultNode!));
   });
+
+  it('should get eggInfo without error', async () => {
+    const eggInfo = utils.getEggInfo(path.resolve(__dirname, './fixtures/real-unittest'));
+    assert(eggInfo.plugins);
+    const asyncEggInfo = await utils.getEggInfo<'async'>(path.resolve(__dirname, './fixtures/real-unittest'));
+    assert(asyncEggInfo.plugins);
+  });
+
+  it('should get json without error', async () => {
+    let json = utils.getJson('');
+    assert(json);
+    json = utils.getJson('{ "abc": 123 }');
+    assert(json.abc);
+    json = utils.getJson('{ "abc: 123 }');
+    assert(json);
+  });
 });

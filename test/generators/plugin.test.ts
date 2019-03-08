@@ -4,24 +4,14 @@ import { GeneratorResult } from '../../dist/';
 import { triggerGenerator } from './utils';
 
 describe('generators/plugin.test.ts', () => {
-  const appDir = path.resolve(__dirname, '../fixtures/app');
+  const appDir = path.resolve(__dirname, '../fixtures/real-unittest');
 
   it('should works without error', () => {
-    const result = triggerGenerator<GeneratorResult>('plugin', appDir);
+    const result = triggerGenerator<GeneratorResult>('plugin', path.resolve(__dirname, appDir));
     assert(result.dist);
-    assert(result.content!.match(/egg-cors/g)!.length === 1);
-    assert(result.content!.includes('import \'egg-yoyo\''));
-    assert(result.content!.includes('import \'egg-super\''));
-    assert(result.content!.includes('import \'egg-cors\''));
-    assert(!result.content!.includes('import \'egg-unknown\''));
-    assert(!result.content!.includes('import \'egg-view-vue-ssr\''));
-    assert(!result.content!.includes('import \'egg-cool\''));
-    assert(!result.content!.includes('import \'egg-lalala\''));
-  });
-
-  it('should works with empty plugin file', () => {
-    const result = triggerGenerator<GeneratorResult>('plugin', path.resolve(__dirname, '../fixtures/app2'));
-    assert(result.dist);
-    assert(!result.content);
+    assert(result.content!.includes('import \'egg-view\''));
+    assert(!result.content!.includes('import \'egg-static\''));
+    assert(result.content!.includes('static?: EggPluginItem'));
+    assert(result.content!.includes('view?: EggPluginItem'));
   });
 });

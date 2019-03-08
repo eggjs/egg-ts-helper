@@ -4,6 +4,7 @@ import glob from 'globby';
 import path from 'path';
 import ts from 'typescript';
 import yn from 'yn';
+import { execSync, exec } from 'child_process';
 
 export const JS_CONFIG = {
   include: [ '**/*' ],
@@ -35,6 +36,59 @@ export const TS_CONFIG = {
   },
 };
 
+interface GetEggInfoOpt {
+  async?: boolean;
+  env?: PlainObject<string>;
+}
+
+interface EggInfoResult {
+  plugins?: Array<{ path: string; enable: boolean; package?: string; }>;
+  config?: PlainObject;
+}
+
+export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(cwd: string, option: GetEggInfoOpt = {}): T extends 'async' ? Promise<EggInfoResult> : EggInfoResult {
+  const cmd = `node ./scripts/eggInfo ${cwd}`;
+  const opt = {
+    cwd: __dirname,
+    maxBuffer: 1024 * 1024,
+    env: {
+      ...process.env,
+      TS_NODE_TYPE_CHECK: 'false',
+      TS_NODE_TRANSPILE_ONLY: 'true',
+      TS_NODE_FILES: 'false',
+      EGG_TYPESCRIPT: 'true',
+    },
+  };
+
+  if (option.async) {
+    return new Promise((resolve, reject) => {
+      exec(cmd, opt, (err, stdout) => {
+        if (err) reject(err);
+        resolve(getJson(stdout || ''));
+      });
+    }) as any;
+  } else {
+    try {
+      const info = execSync(cmd, opt);
+      return getJson(info.toString());
+    } catch (e) {
+      return {} as any;
+    }
+  }
+}
+
+export function getJson(jsonStr: string) {
+  if (jsonStr) {
+    try {
+      return JSON.parse(jsonStr);
+    } catch (e) {
+      return {};
+    }
+  } else {
+    return {};
+  }
+}
+
 // convert string to same type with default value
 export function convertString<T>(val: string | undefined, defaultVal: T): T {
   if (val === undefined) return defaultVal;
@@ -49,6 +103,10 @@ export function convertString<T>(val: string | undefined, defaultVal: T): T {
     default:
       return defaultVal;
   }
+}
+
+export function isIdentifierName(s: string) {
+  return /^[$A-Z_][0-9A-Z_$]*$/i.test(s);
 }
 
 // load ts/js files
@@ -199,6 +257,79 @@ export function removeSameNameJs(f: string) {
   }
 }
 
+// resolve module
+export function resolveModule(url) {
+  try {
+    return require.resolve(url);
+  } catch (e) {
+    return undefined;
+  }
+}
+
+// check whether module is exist
+export function moduleExist(mod: string, cwd?: string) {
+  const nodeModulePath = path.resolve(cwd || process.cwd(), 'node_modules', mod);
+  return fs.existsSync(nodeModulePath) || resolveModule(mod);
+}
+
+// require modules
+export function requireFile(url) {
+  url = url && resolveModule(url);
+  if (!url) {
+    return undefined;
+  }
+
+  let exp = require(url);
+  if (exp.__esModule && 'default' in exp) {
+    exp = exp.default;
+  }
+
+  return exp;
+}
+
+// require package.json
+export function getPkgInfo(cwd: string) {
+  return requireFile(path.resolve(cwd, './package.json')) || {};
+}
+
+// format property
+export function formatProp(prop: string) {
+  return prop.replace(/[._-][a-z]/gi, s => s.substring(1).toUpperCase());
+}
+
+// like egg-core/file-loader
+export function camelProp(
+  property: string,
+  caseStyle: string | ((...args: any[]) => string),
+): string {
+  if (typeof caseStyle === 'function') {
+    return caseStyle(property);
+  }
+
+  // camel transfer
+  property = formatProp(property);
+  let first = property[ 0 ];
+  // istanbul ignore next
+  switch (caseStyle) {
+    case 'lower':
+      first = first.toLowerCase();
+      break;
+    case 'upper':
+      first = first.toUpperCase();
+      break;
+    case 'camel':
+      break;
+    default:
+      break;
+  }
+
+  return first + property.substring(1);
+}
+
+/**
+ * ts ast utils
+ */
+
 // find export node from sourcefile.
 export function findExportNode(code: string) {
   const sourceFile = ts.createSourceFile('file.ts', code, ts.ScriptTarget.ES2017, true);
@@ -206,11 +337,7 @@ export function findExportNode(code: string) {
   const exportNodeList: ts.Node[] = [];
   let exportDefaultNode: ts.Node | undefined;
 
-  eachSourceFile(sourceFile, node => {
-    if (node.parent !== sourceFile) {
-      return;
-    }
-
+  sourceFile.statements.forEach(node => {
     // each node in root scope
     if (modifierHas(node, ts.SyntaxKind.ExportKeyword)) {
       if (modifierHas(node, ts.SyntaxKind.DefaultKeyword)) {
@@ -282,85 +409,19 @@ export function modifierHas(node: ts.Node, kind) {
   return node.modifiers && node.modifiers.find(mod => kind === mod.kind);
 }
 
-// each ast node
-export function eachSourceFile(node: ts.Node, cb: (n: ts.Node) => any) {
-  if (!ts.isSourceFile(node)) {
-    const result = cb(node);
-    if (result === false) {
-      return;
+export function formatIdentifierName(name: string) {
+  return name.replace(/^("|')|("|')$/g, '');
+}
+
+export function getText(node?: ts.Node) {
+  if (node) {
+    if (ts.isIdentifier(node)) {
+      return formatIdentifierName(node.text);
+    } else if (ts.isStringLiteral(node)) {
+      return node.text;
+    } else if (ts.isQualifiedName(node)) {
+      return getText(node.right);
     }
   }
-
-  node.forEachChild((sub: ts.Node) => {
-    eachSourceFile(sub, cb);
-  });
-}
-
-// resolve module
-export function resolveModule(url) {
-  try {
-    return require.resolve(url);
-  } catch (e) {
-    return undefined;
-  }
-}
-
-// check whether module is exist
-export function moduleExist(mod: string, cwd?: string) {
-  const nodeModulePath = path.resolve(cwd || process.cwd(), 'node_modules', mod);
-  return fs.existsSync(nodeModulePath) || resolveModule(mod);
-}
-
-// require modules
-export function requireFile(url) {
-  url = url && resolveModule(url);
-  if (!url) {
-    return undefined;
-  }
-
-  let exp = require(url);
-  if (exp.__esModule && 'default' in exp) {
-    exp = exp.default;
-  }
-
-  return exp;
-}
-
-// require package.json
-export function getPkgInfo(cwd: string) {
-  return requireFile(path.resolve(cwd, './package.json')) || {};
-}
-
-// format property
-export function formatProp(prop: string) {
-  return prop.replace(/[._-][a-z]/gi, s => s.substring(1).toUpperCase());
-}
-
-// like egg-core/file-loader
-export function camelProp(
-  property: string,
-  caseStyle: string | ((...args: any[]) => string),
-): string {
-  if (typeof caseStyle === 'function') {
-    return caseStyle(property);
-  }
-
-  // camel transfer
-  property = formatProp(property);
-  let first = property[ 0 ];
-  // istanbul ignore next
-  switch (caseStyle) {
-    case 'lower':
-      first = first.toLowerCase();
-      break;
-    case 'upper':
-      first = first.toUpperCase();
-      break;
-    case 'camel':
-      break;
-    default:
-      break;
-  }
-
-  return first + property.substring(1);
+  return '';
 }

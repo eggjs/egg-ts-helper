@@ -1,111 +1,56 @@
-import fs from 'fs';
 import path from 'path';
-import ts from 'typescript';
 import { TsGenConfig, TsHelperConfig } from '..';
 import * as utils from '../utils';
 
-const cache: { [key: string]: string[] } = {};
-
+// only load plugin.ts|plugin.local.ts|plugin.default.ts
 export const defaultConfig = {
-  pattern: 'plugin*.(ts|js)',
+  pattern: 'plugin(.local|.default|).(ts|js)',
 };
 
 export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
-  const fileList = config.fileList;
+  if (!config.file) {
+    return getContent(utils.getEggInfo(baseConfig.cwd), config, baseConfig);
+  } else {
+    // async
+    return utils.getEggInfo<'async'>(baseConfig.cwd, { async: true })
+      .then(eggInfo => getContent(eggInfo, config, baseConfig));
+  }
+}
+
+function getContent(eggInfo, config: TsGenConfig, baseConfig: TsHelperConfig) {
   const dist = path.resolve(config.dtsDir, 'plugin.d.ts');
-  if (!fileList.length) {
+  if (!eggInfo.plugins) {
     return { dist };
   }
 
-  let importList: string[] = [];
-  fileList.forEach(f => {
-    const abUrl = path.resolve(config.dir, f);
-
-    // read from cache
-    if (!cache[abUrl] || config.file === abUrl) {
-      const exportResult = utils.findExportNode(
-        fs.readFileSync(abUrl, 'utf-8'),
-      );
-      if (!exportResult) {
-        return;
+  const appPluginNameList: string[] = [];
+  const importContent: string[] = [];
+  const framework = config.framework || baseConfig.framework;
+  Object.keys(eggInfo.plugins).forEach(name => {
+    const pluginInfo = eggInfo.plugins[name];
+    if (pluginInfo.package && pluginInfo.path) {
+      appPluginNameList.push(name);
+      if (pluginInfo.enable) {
+        importContent.push(`import '${pluginInfo.package}';`);
       }
-
-      // collect package name
-      const collectPackageName = (property: ts.ObjectLiteralExpression) => {
-        let packageIsEnable: boolean | undefined = true;
-        let packageName: string | undefined;
-
-        property.properties.forEach(prop => {
-          if (ts.isPropertyAssignment(prop) && ts.isIdentifier(prop.name)) {
-            if (prop.name.escapedText === 'package') {
-              // { package: 'xxx' }
-              packageName = ts.isStringLiteral(prop.initializer)
-                ? prop.initializer.text
-                : undefined;
-            } else if (
-              prop.name.escapedText === 'enable' &&
-              prop.initializer.kind === ts.SyntaxKind.FalseKeyword
-            ) {
-              // { enable: false }
-              packageIsEnable = false;
-            }
-          }
-        });
-
-        if (
-          packageName &&
-          packageIsEnable &&
-          utils.moduleExist(packageName, baseConfig.cwd)
-        ) {
-          importList.push(packageName);
-        }
-      };
-
-      // check return node
-      if (exportResult.exportDefaultNode) {
-        // export default {  }
-        if (ts.isObjectLiteralExpression(exportResult.exportDefaultNode)) {
-          for (const property of exportResult.exportDefaultNode.properties) {
-            if (
-              ts.isPropertyAssignment(property) &&
-              ts.isObjectLiteralExpression(property.initializer)
-            ) {
-              collectPackageName(property.initializer);
-            }
-          }
-        }
-      } else if (exportResult.exportNodeList.length) {
-        // export const xxx = {};
-        for (const property of exportResult.exportNodeList) {
-          if (
-            ts.isBinaryExpression(property) &&
-            ts.isObjectLiteralExpression(property.right)
-          ) {
-            collectPackageName(property.right);
-          } else if (
-            ts.isVariableDeclaration(property) &&
-            property.initializer &&
-            ts.isObjectLiteralExpression(property.initializer)
-          ) {
-            collectPackageName(property.initializer);
-          }
-        }
-      }
-    } else {
-      importList = importList.concat(cache[abUrl]);
     }
   });
 
-  if (!importList.length) {
-    return { dist };
-  }
+  const composeInterface = (list: string[]) => {
+    return `    ${list
+      .map(name => `${utils.isIdentifierName(name) ? name : `'${name}'` }?: EggPluginItem;`)
+      .join('\n    ')}`;
+  };
 
   return {
     dist,
 
-    // remove duplicate before map
-    content: Array.from(new Set(importList))
-      .map(p => `import '${p}';`)
-      .join('\n'),
+    content: `${importContent.join('\n')}\n` +
+      `import { EggPluginItem } from '${framework}';\n` +
+      `declare module '${framework}' {\n` +
+      '  interface EggPlugin {\n' +
+      `${composeInterface(Array.from(new Set(appPluginNameList)))}\n` +
+      '  }\n' +
+      '}',
   };
 }

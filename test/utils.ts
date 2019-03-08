@@ -25,6 +25,19 @@ export function triggerBin(...args: string[]) {
   return ps;
 }
 
+export function triggerBinSync(...args: string[]) {
+  return child_process.spawnSync(
+    'node',
+    [ path.resolve(__dirname, '../dist/bin.js') ].concat(args),
+    {
+      env: {
+        ...process.env,
+        ETS_SILENT: 'false',
+      },
+    },
+  );
+}
+
 export function tsc(cwd: string) {
   const p = spawn(tscBin, [ '-p', path.resolve(cwd, './tsconfig.json') ], { cwd });
   return new Promise(resolve => p.on('close', resolve));
@@ -52,12 +65,13 @@ export function addProc(proc: child_process.ChildProcess) {
   if (!psList.includes(proc)) psList.push(proc);
 }
 
-export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, waitTime = 5000) {
+export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, waitTime = 5000, waitInfo?: { stdout?: string | RegExp; stderr?: string | RegExp }) {
   addProc(proc);
   return new Promise<{ stdout: string; stderr: string}>(resolve => {
     let stdout = '';
     let stderr = '';
     let tick;
+    const killProc = () => proc.emit('SIGINT');
     const end = () => resolve({ stdout, stderr });
     const wait = () => {
       if (!waitTime) {
@@ -69,9 +83,20 @@ export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, wai
         end();
         proc.removeListener('close', end);
         if (autoKill) {
-          proc.emit('SIGINT');
+          if (process.env.DEBUG) {
+            console.info('auto kill');
+          }
+
+          killProc();
         }
       }, waitTime);
+    };
+    const checkStd = (c: string | RegExp, std: string) => {
+      if (typeof c === 'string') {
+        return std === c;
+      } else {
+        return c.exec(std);
+      }
     };
 
     proc.stdout.on('data', data => {
@@ -79,7 +104,13 @@ export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, wai
         process.stdout.write(data);
       }
       stdout += data.toString();
-      wait();
+      if (waitInfo && waitInfo.stdout) {
+        if (checkStd(waitInfo.stdout, stdout)) {
+          killProc();
+        }
+      } else {
+        wait();
+      }
     });
 
     proc.stderr.on('data', data => {
@@ -87,7 +118,13 @@ export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, wai
         process.stderr.write(data);
       }
       stderr += data.toString();
-      wait();
+      if (waitInfo && waitInfo.stderr) {
+        if (checkStd(waitInfo.stderr, stderr)) {
+          killProc();
+        }
+      } else {
+        wait();
+      }
     });
 
     proc.once('close', end);
