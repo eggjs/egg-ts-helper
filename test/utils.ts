@@ -71,6 +71,7 @@ export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, wai
     let stdout = '';
     let stderr = '';
     let tick;
+    const killProc = () => proc.emit('SIGINT');
     const end = () => resolve({ stdout, stderr });
     const wait = () => {
       if (!waitTime) {
@@ -86,9 +87,16 @@ export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, wai
             console.info('auto kill');
           }
 
-          proc.emit('SIGINT');
+          killProc();
         }
       }, waitTime);
+    };
+    const checkStd = (c: string | RegExp, std: string) => {
+      if (typeof c === 'string') {
+        return std === c;
+      } else {
+        return c.exec(std);
+      }
     };
 
     proc.stdout.on('data', data => {
@@ -96,7 +104,13 @@ export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, wai
         process.stdout.write(data);
       }
       stdout += data.toString();
-      wait();
+      if (waitInfo && waitInfo.stdout) {
+        if (checkStd(waitInfo.stdout, stdout)) {
+          killProc();
+        }
+      } else {
+        wait();
+      }
     });
 
     proc.stderr.on('data', data => {
@@ -104,7 +118,13 @@ export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, wai
         process.stderr.write(data);
       }
       stderr += data.toString();
-      wait();
+      if (waitInfo && waitInfo.stderr) {
+        if (checkStd(waitInfo.stderr, stderr)) {
+          killProc();
+        }
+      } else {
+        wait();
+      }
     });
 
     proc.once('close', end);

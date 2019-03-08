@@ -205,6 +205,47 @@ describe('index.test.ts', () => {
     await sleep(100);
   });
 
+  it('should works without error while plugin file changed', async () => {
+    const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
+    mkdirp.sync(dir);
+
+    tsHelper = createTsHelperInstance({
+      cwd: path.resolve(__dirname, './fixtures/app'),
+      watch: true,
+      execAtInit: true,
+      autoRemoveJs: false,
+    });
+
+    await sleep(2000);
+
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/plugin.d.ts')));
+
+    const defaultPluginPath = path.resolve(__dirname, './fixtures/app/config/plugin.default.ts');
+    const basePlugin = fs.readFileSync(defaultPluginPath);
+    const pluginPath = path.resolve(__dirname, './fixtures/app/config/plugin.ts');
+    const pluginText = fs.readFileSync(pluginPath);
+    const end = () => {
+      fs.writeFileSync(defaultPluginPath, basePlugin);
+    };
+
+    fs.writeFile(defaultPluginPath, pluginText, noop);
+
+    await Promise.race([
+      new Promise(resolve => {
+        function cb(_, p) {
+          if (p === defaultPluginPath) {
+            end();
+            tsHelper.removeListener('update', cb);
+            resolve();
+          }
+        }
+
+        tsHelper.on('update', cb);
+      }),
+      timeout(10000, end),
+    ]);
+  });
+
   it('should support rewrite by options.watchDirs', () => {
     const watchDirs = getDefaultWatchDirs();
     Object.keys(watchDirs).forEach(key => {
