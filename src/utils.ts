@@ -41,7 +41,12 @@ interface GetEggInfoOpt {
   env?: PlainObject<string>;
 }
 
-export function getEggInfo(cwd: string, option: GetEggInfoOpt = {}): Promise<PlainObject> | PlainObject {
+interface EggInfoResult {
+  plugins?: Array<{ path: string; enable: boolean; package?: string; }>;
+  config?: PlainObject;
+}
+
+export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(cwd: string, option: GetEggInfoOpt = {}): T extends 'async' ? Promise<EggInfoResult> : EggInfoResult {
   const cmd = `node ./scripts/eggInfo ${cwd}`;
   const opt = {
     cwd: __dirname,
@@ -59,13 +64,13 @@ export function getEggInfo(cwd: string, option: GetEggInfoOpt = {}): Promise<Pla
         if (err) reject(err);
         resolve(getJson(stdout || ''));
       });
-    });
+    }) as any;
   } else {
     try {
       const info = execSync(cmd, opt);
       return getJson(info.toString());
     } catch (e) {
-      return {};
+      return {} as any;
     }
   }
 }

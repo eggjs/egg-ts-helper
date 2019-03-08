@@ -12,7 +12,7 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
     return getContent(utils.getEggInfo(baseConfig.cwd), config, baseConfig);
   } else {
     // async
-    return (utils.getEggInfo(baseConfig.cwd, { async: true }) as Promise<PlainObject>)
+    return utils.getEggInfo<'async'>(baseConfig.cwd, { async: true })
       .then(eggInfo => getContent(eggInfo, config, baseConfig));
   }
 }

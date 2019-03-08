@@ -65,7 +65,7 @@ export function addProc(proc: child_process.ChildProcess) {
   if (!psList.includes(proc)) psList.push(proc);
 }
 
-export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, waitTime = 5000) {
+export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, waitTime = 5000, waitInfo?: { stdout?: string | RegExp; stderr?: string | RegExp }) {
   addProc(proc);
   return new Promise<{ stdout: string; stderr: string}>(resolve => {
     let stdout = '';
