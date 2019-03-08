@@ -25,6 +25,19 @@ export function triggerBin(...args: string[]) {
   return ps;
 }
 
+export function triggerBinSync(...args: string[]) {
+  return child_process.spawnSync(
+    'node',
+    [ path.resolve(__dirname, '../dist/bin.js') ].concat(args),
+    {
+      env: {
+        ...process.env,
+        ETS_SILENT: 'false',
+      },
+    },
+  );
+}
+
 export function tsc(cwd: string) {
   const p = spawn(tscBin, [ '-p', path.resolve(cwd, './tsconfig.json') ], { cwd });
   return new Promise(resolve => p.on('close', resolve));

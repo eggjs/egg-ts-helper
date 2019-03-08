@@ -3,7 +3,7 @@ import fs from 'fs';
 import mkdirp from 'mkdirp';
 import path from 'path';
 import assert = require('assert');
-import { triggerBin, getOutput, sleep, spawn, getStd } from './utils';
+import { triggerBinSync, triggerBin, getOutput, sleep, spawn, getStd } from './utils';
 
 describe('bin.test.ts', () => {
   before(() => {
@@ -42,8 +42,7 @@ describe('bin.test.ts', () => {
   });
 
   it('should works with -e correctly', async () => {
-    triggerBin('-c', path.resolve(__dirname, './fixtures/app6'), '-e', 'proxy');
-    await sleep(2000);
+    triggerBinSync('-c', path.resolve(__dirname, './fixtures/app6'), '-e', 'proxy');
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app6/typings/app/controller/index.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app6/typings/app/proxy/index.d.ts')));
     del.sync(path.resolve(__dirname, './fixtures/app6/typings'), {
@@ -52,8 +51,7 @@ describe('bin.test.ts', () => {
   });
 
   it('should works with -i correctly', async () => {
-    triggerBin('-c', path.resolve(__dirname, './fixtures/app5'), '-i', 'controller,service');
-    await sleep(2000);
+    triggerBinSync('-c', path.resolve(__dirname, './fixtures/app5'), '-i', 'controller,service');
     assert(!fs.existsSync(path.resolve(__dirname, './fixtures/app5/typings/app/controller/index.d.ts')));
     assert(!fs.existsSync(path.resolve(__dirname, './fixtures/app5/typings/app/service/index.d.ts')));
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app5/typings/app/extend/context.d.ts')));
@@ -62,8 +60,7 @@ describe('bin.test.ts', () => {
   });
 
   it('should created d.ts correctly', async () => {
-    triggerBin('-c', path.resolve(__dirname, './fixtures/app8'), '-E', '{}');
-    await sleep(3000);
+    triggerBinSync('-c', path.resolve(__dirname, './fixtures/app8'), '-E', '{}');
     const content = fs
       .readFileSync(path.resolve(__dirname, './fixtures/app8/typings/app/controller/index.d.ts'))
       .toString();
@@ -74,16 +71,14 @@ describe('bin.test.ts', () => {
 
   it('should support oneForAll in cli', async () => {
     // default dist
-    triggerBin('-c', path.resolve(__dirname, './fixtures/app6'), '-o');
-    await sleep(2000);
+    triggerBinSync('-c', path.resolve(__dirname, './fixtures/app6'), '-o');
     let content = fs
       .readFileSync(path.resolve(__dirname, './fixtures/app6/typings/ets.d.ts'))
       .toString();
     assert(content.includes("import './app/controller/index';"));
 
     // custom dist
-    triggerBin('-c', path.resolve(__dirname, './fixtures/app6'), '-o', path.resolve(__dirname, './fixtures/app6/typings/special.d.ts'));
-    await sleep(2000);
+    triggerBinSync('-c', path.resolve(__dirname, './fixtures/app6'), '-o', path.resolve(__dirname, './fixtures/app6/typings/special.d.ts'));
     content = fs
       .readFileSync(path.resolve(__dirname, './fixtures/app6/typings/special.d.ts'))
       .toString();
@@ -92,8 +87,7 @@ describe('bin.test.ts', () => {
 
   it('should works with -w and -e correctly', async () => {
     triggerBin('-c', path.resolve(__dirname, './fixtures/app4'), '-w', '-e', 'service');
-
-    await sleep(2000);
+    await sleep(5000);
     const dir = path.resolve(__dirname, './fixtures/app4/app/service/test');
     mkdirp.sync(dir);
 
