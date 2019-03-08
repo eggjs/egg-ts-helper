@@ -23,14 +23,16 @@ function getContent(eggInfo, config: TsGenConfig, baseConfig: TsHelperConfig) {
     return { dist };
   }
 
-  const pluginKeys = Object.keys(eggInfo.plugins);
-  const appPluginNameList: string[] = pluginKeys.filter(p => eggInfo.plugins[p].package);
-  const framework = config.framework || baseConfig.framework;
+  const appPluginNameList: string[] = [];
   const importContent: string[] = [];
-  pluginKeys.forEach(name => {
+  const framework = config.framework || baseConfig.framework;
+  Object.keys(eggInfo.plugins).forEach(name => {
     const pluginInfo = eggInfo.plugins[name];
-    if (pluginInfo.enable && pluginInfo.package) {
-      importContent.push(`import '${pluginInfo.package}';`);
+    if (pluginInfo.package && pluginInfo.path) {
+      appPluginNameList.push(name);
+      if (pluginInfo.enable) {
+        importContent.push(`import '${pluginInfo.package}';`);
+      }
     }
   });
 
