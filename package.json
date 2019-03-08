@@ -29,6 +29,9 @@
     "dist",
     "register.js"
   ],
+  "nyc": {
+    "sourceMap": false
+  },
   "author": "wanghx",
   "license": "MIT",
   "dependencies": {

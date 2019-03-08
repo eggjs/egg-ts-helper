@@ -14,9 +14,9 @@ export function triggerGenerator<T extends GeneratorResult[] | GeneratorResult =
     execAtInit: false,
   });
 
-  const watcher = tsHelper.watcherList.find(watcher => watcher.name === name)!;
+  const watcher = tsHelper.watcherList.get(name)!;
   assert(watcher, 'watcher is not exist');
-  const dir = path.resolve(appDir, watcher.options.path);
+  const dir = path.resolve(appDir, watcher.options.directory);
   watcher.init({
     ...watcher.options,
     ...extra,

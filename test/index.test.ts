@@ -220,7 +220,7 @@ describe('index.test.ts', () => {
 
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/plugin.d.ts')));
 
-    const defaultPluginPath = path.resolve(__dirname, './fixtures/app/config/plugin.default.ts');
+    const defaultPluginPath = path.resolve(__dirname, './fixtures/app/config/plugin.local.ts');
     const basePlugin = fs.readFileSync(defaultPluginPath);
     const pluginPath = path.resolve(__dirname, './fixtures/app/config/plugin.ts');
     const pluginText = fs.readFileSync(pluginPath);
@@ -267,8 +267,8 @@ describe('index.test.ts', () => {
       watchDirs,
     });
 
-    assert(tsHelper.watcherList.length === 1);
-    assert(!!tsHelper.watcherList.find(watcher => watcher.name === 'proxy'));
+    assert(tsHelper.watcherList.size === 1);
+    assert(!!tsHelper.watcherList.has('proxy'));
   });
 
   it('should support read framework by package.json', () => {
@@ -298,8 +298,8 @@ describe('index.test.ts', () => {
       const item = (watchDirs[k] as any);
       return !item.hasOwnProperty('enabled') || item.enabled;
     }).length;
-    assert(tsHelper.watcherList.length === len - 2);
-    assert(!!tsHelper.watcherList.find(watcher => watcher.name === 'controller'));
+    assert(tsHelper.watcherList.size === len - 2);
+    assert(!!tsHelper.watcherList.has('controller'));
   });
 
   it('should works without error in real app', async () => {

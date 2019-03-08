@@ -4,9 +4,13 @@ import { TsGenConfig, TsHelperConfig } from '..';
 import * as utils from '../utils';
 const debug = d('egg-ts-helper#generators_class');
 
+export const defaultConfig = {
+  distName: 'index.d.ts',
+};
+
 export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
   const fileList = config.fileList;
-  const dist = path.resolve(config.dtsDir, 'index.d.ts');
+  const dist = path.resolve(config.dtsDir, config.distName);
 
   debug('file list : %o', fileList);
   if (!fileList.length) {

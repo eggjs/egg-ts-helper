@@ -1,10 +1,14 @@
 import path from 'path';
+import { declMapping } from '../config';
 import { TsGenConfig, TsHelperConfig } from '..';
 import * as utils from '../utils';
+
+export const isPrivate = true;
 
 // only load plugin.ts|plugin.local.ts|plugin.default.ts
 export const defaultConfig = {
   pattern: 'plugin(.local|.default|).(ts|js)',
+  interface: declMapping.plugin,
 };
 
 export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
@@ -28,13 +32,17 @@ function getContent(eggInfo, config: TsGenConfig, baseConfig: TsHelperConfig) {
   const framework = config.framework || baseConfig.framework;
   Object.keys(eggInfo.plugins).forEach(name => {
     const pluginInfo = eggInfo.plugins[name];
-    if (pluginInfo.package && pluginInfo.path) {
+    if (pluginInfo.package && pluginInfo.from) {
       appPluginNameList.push(name);
       if (pluginInfo.enable) {
         importContent.push(`import '${pluginInfo.package}';`);
       }
     }
   });
+
+  if (!appPluginNameList.length) {
+    return { dist };
+  }
 
   const composeInterface = (list: string[]) => {
     return `    ${list
@@ -48,7 +56,7 @@ function getContent(eggInfo, config: TsGenConfig, baseConfig: TsHelperConfig) {
     content: `${importContent.join('\n')}\n` +
       `import { EggPluginItem } from '${framework}';\n` +
       `declare module '${framework}' {\n` +
-      '  interface EggPlugin {\n' +
+      `  interface ${config.interface} {\n` +
       `${composeInterface(Array.from(new Set(appPluginNameList)))}\n` +
       '  }\n' +
       '}',

@@ -6,15 +6,21 @@ import { TsGenerator, TsGenConfig, TsHelperConfig, default as TsHelper } from '.
 import * as utils from './utils';
 import d from 'debug';
 const debug = d('egg-ts-helper#watcher');
-let generators;
+const generators = utils.loadModules(
+  path.resolve(__dirname, './generators'),
+  false,
+  formatGenerator,
+);
 
 export interface BaseWatchItem {
-  path: string;
+  directory: string;
   generator: string;
-  enabled: boolean;
-  trigger: Array<'add' | 'unlink' | 'change'>;
-  pattern: string;
-  watch: boolean;
+  enabled?: boolean;
+  ignore?: string | string[];
+  trigger?: Array<'add' | 'unlink' | 'change'>;
+  pattern?: string | string[];
+  watch?: boolean;
+  execAtInit?: boolean;
 }
 
 export interface WatchItem extends PlainObject, BaseWatchItem { }
@@ -23,10 +29,21 @@ interface WatcherOptions extends WatchItem {
   name: string;
 }
 
+function formatGenerator(generator) {
+  // check esm default
+  if (generator && typeof generator.default === 'function') {
+    generator.default.defaultConfig = generator.defaultConfig;
+    generator.default.isPrivate = generator.isPrivate;
+    generator = generator.default;
+  }
+  return generator;
+}
+
 export default class Watcher extends EventEmitter {
   name: string;
   dir: string;
   options: WatcherOptions;
+  pattern: string[];
   dtsDir: string;
   config: TsHelperConfig;
   generator: TsGenerator;
@@ -34,9 +51,9 @@ export default class Watcher extends EventEmitter {
   throttleTick: any = null;
   throttleStack: string[] = [];
 
-  constructor(options: WatcherOptions, public helper: TsHelper) {
+  constructor(public helper: TsHelper) {
     super();
-    this.init(options);
+    this.helper = helper;
   }
 
   public init(options: WatcherOptions) {
@@ -44,7 +61,7 @@ export default class Watcher extends EventEmitter {
     this.config = this.helper.config;
     this.name = options.name;
     this.generator = this.getGenerator(generatorName);
-    this.options = {
+    options = this.options = {
       trigger: [ 'add', 'unlink' ],
       generator: generatorName,
       pattern: '**/*.(ts|js)',
@@ -53,12 +70,31 @@ export default class Watcher extends EventEmitter {
       ...options,
     };
 
-    const baseDir = options.path.replace(/\/|\\/, path.sep);
+    this.pattern = utils.toArray(this.options.pattern)
+      .map(utils.formatPath)
+      .concat(utils.toArray(this.options.ignore).map(p => `!${utils.formatPath(p)}`));
+
+    assert(options.directory, `options.directory must set in ${generatorName}`);
+    const baseDir = options.directory.replace(/\/|\\/, path.sep);
     this.dir = utils.getAbsoluteUrlByCwd(baseDir, this.config.cwd);
     this.dtsDir = path.resolve(
       this.config.typings,
       path.relative(this.config.cwd, this.dir),
     );
+
+    // watch file change
+    if (this.options.watch) {
+      this.watch();
+    }
+
+    // exec at init
+    if (this.options.execAtInit) {
+      this.execute();
+    }
+  }
+
+  static isPrivateGenerator(name: string) {
+    return !!(generators[name] && generators[name].isPrivate);
   }
 
   public destroy() {
@@ -74,26 +110,18 @@ export default class Watcher extends EventEmitter {
 
   // watch file change
   public watch() {
-    if (!this.options.watch) {
-      return;
-    }
-
     if (this.fsWatcher) {
       this.fsWatcher.close();
     }
 
-    // glob only works with / in windows
-    const watchGlob = path
-      .join(this.dir, this.options.pattern)
-      .replace(/\/|\\/g, '/');
-
-    const watcher = chokidar.watch(watchGlob, {
+    const watcher = chokidar.watch(this.pattern, {
+      cwd: this.dir,
       ignoreInitial: true,
       ...(this.config.watchOptions || {}),
     });
 
     // listen watcher event
-    this.options.trigger.forEach(evt => {
+    this.options.trigger!.forEach(evt => {
       watcher.on(evt, this.onChange.bind(this));
     });
 
@@ -108,17 +136,17 @@ export default class Watcher extends EventEmitter {
   // execute generator
   public execute(file?: string): any {
     debug('execution %s', file);
-    const options = this.options;
     let _fileList: string[] | undefined;
-    const newConfig: TsGenConfig = {
-      ...this.options,
+
+    // use utils.extend to extend getter
+    const newConfig = utils.extend<TsGenConfig>({}, this.options, {
       file,
       dir: this.dir,
       dtsDir: this.dtsDir,
       get fileList() {
-        return _fileList || (_fileList = utils.loadFiles(this.dir, options.pattern));
+        return _fileList || (_fileList = utils.loadFiles(this.dir, this.pattern));
       },
-    };
+    });
 
     const startTime = Date.now();
     const result = this.generator(newConfig, this.config, this.helper);
@@ -131,6 +159,7 @@ export default class Watcher extends EventEmitter {
 
   // on file change
   private onChange(filePath: string) {
+    filePath = utils.getAbsoluteUrlByCwd(filePath, this.dir);
     debug('file changed %s %o', filePath, this.throttleStack);
     if (!this.throttleStack.includes(filePath)) {
       this.throttleStack.push(filePath);
@@ -153,28 +182,21 @@ export default class Watcher extends EventEmitter {
   private getGenerator(name: string): TsGenerator {
     const type = typeof name;
     const typeIsString = type === 'string';
-    generators = generators || utils.loadModules(path.resolve(__dirname, './generators'));
     let generator = typeIsString ? generators[name] : name;
 
     if (!generator && typeIsString) {
-      try {
-        // try to load generator as module path
-        const generatorPath = name.startsWith('.')
-          ? path.join(this.config.cwd, name)
-          : name;
+      // try to load generator as module path
+      const generatorPath = utils.resolveModule(name.startsWith('.')
+        ? path.join(this.config.cwd, name)
+        : name,
+      );
 
+      if (generatorPath) {
         generator = require(generatorPath);
-      } catch (e) {
-        // do nothing
       }
     }
 
-    // check esm default
-    if (typeof generator.default === 'function') {
-      generator.default.defaultConfig = generator.defaultConfig;
-      generator = generator.default;
-    }
-
+    generator = formatGenerator(generator);
     assert(typeof generator === 'function', `generator: ${name} not exist!!`);
 
     return generator;

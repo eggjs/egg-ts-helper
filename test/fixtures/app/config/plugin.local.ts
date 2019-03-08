@@ -2,6 +2,6 @@ import { EggPlugin } from 'egg';
 
 const plugin: EggPlugin = {};
 
-plugin.static = true;
+plugin.view = false;
 
 export default plugin;

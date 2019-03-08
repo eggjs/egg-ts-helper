@@ -36,17 +36,25 @@ export const TS_CONFIG = {
   },
 };
 
-interface GetEggInfoOpt {
+export interface GetEggInfoOpt {
   async?: boolean;
   env?: PlainObject<string>;
 }
 
-interface EggInfoResult {
-  plugins?: Array<{ path: string; enable: boolean; package?: string; }>;
+export interface EggInfoResult {
+  plugins?: Array<{ from: string; enable: boolean; package?: string; }>;
   config?: PlainObject;
 }
 
+let cacheEggInfo;
+let runningPromise;
 export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(cwd: string, option: GetEggInfoOpt = {}): T extends 'async' ? Promise<EggInfoResult> : EggInfoResult {
+  if (cacheEggInfo && (Date.now() - cacheEggInfo.cacheTime) < 1000) {
+    return cacheEggInfo.eggInfo;
+  } else if (option.async && runningPromise) {
+    return runningPromise;
+  }
+
   const cmd = `node ./scripts/eggInfo ${cwd}`;
   const opt = {
     cwd: __dirname,
@@ -57,20 +65,28 @@ export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(cwd: string, opt
       TS_NODE_TRANSPILE_ONLY: 'true',
       TS_NODE_FILES: 'false',
       EGG_TYPESCRIPT: 'true',
+      ...option.env,
     },
+  };
+  const end = json => {
+    cacheEggInfo = { eggInfo: json, cacheTime: Date.now() };
+    return json;
   };
 
   if (option.async) {
-    return new Promise((resolve, reject) => {
+    // cache promise
+    runningPromise = new Promise((resolve, reject) => {
       exec(cmd, opt, (err, stdout) => {
+        runningPromise = null;
         if (err) reject(err);
-        resolve(getJson(stdout || ''));
+        resolve(end(getJson(stdout || '')));
       });
-    }) as any;
+    });
+    return runningPromise as any;
   } else {
     try {
       const info = execSync(cmd, opt);
-      return getJson(info.toString());
+      return end(getJson(info.toString()));
     } catch (e) {
       return {} as any;
     }
@@ -110,11 +126,10 @@ export function isIdentifierName(s: string) {
 }
 
 // load ts/js files
-export function loadFiles(cwd: string, pattern?: string) {
-  const fileList = glob.sync([ pattern || '**/*.(js|ts)', '!**/*.d.ts' ], {
-    cwd,
-  });
-
+export function loadFiles(cwd: string, pattern?: string | string[]) {
+  pattern = pattern || '**/*.(js|ts)';
+  pattern = Array.isArray(pattern) ? pattern : [ pattern ];
+  const fileList = glob.sync(pattern.concat([ '!**/*.d.ts' ]), { cwd });
   return fileList.filter(f => {
     // filter same name js/ts
     return !(
@@ -156,8 +171,9 @@ export function checkMaybeIsJsProj(cwd: string) {
 }
 
 // load modules to object
-export function loadModules<T = any>(cwd: string, loadDefault?: boolean) {
+export function loadModules<T = any>(cwd: string, loadDefault?: boolean, preHandle?: (...args) => any) {
   const modules: { [key: string]: T } = {};
+  preHandle = preHandle || (fn => fn);
   fs
     .readdirSync(cwd)
     .filter(f => f.endsWith('.js'))
@@ -165,9 +181,9 @@ export function loadModules<T = any>(cwd: string, loadDefault?: boolean) {
       const name = f.substring(0, f.lastIndexOf('.'));
       const obj = require(path.resolve(cwd, name));
       if (loadDefault && obj.default) {
-        modules[name] = obj.default;
+        modules[name] = preHandle!(obj.default);
       } else {
-        modules[name] = obj;
+        modules[name] = preHandle!(obj);
       }
     });
   return modules;
@@ -180,6 +196,13 @@ export function strToFn(fn) {
   } else {
     return fn;
   }
+}
+
+// pick fields from object
+export function pickFields<T extends string = string>(obj: PlainObject, fields: T[]) {
+  const newObj: PlainObject = {};
+  fields.forEach(f => (newObj[f] = obj[f]));
+  return newObj;
 }
 
 // log
@@ -244,6 +267,15 @@ export function getModuleObjByPath(f: string) {
   };
 }
 
+// format path sep to /
+export function formatPath(str: string) {
+  return str.replace(/\/|\\/g, '/');
+}
+
+export function toArray(pattern?: string | string[]) {
+  return pattern ? (Array.isArray(pattern) ? pattern : [ pattern ]) : [];
+}
+
 // remove same name js
 export function removeSameNameJs(f: string) {
   if (!f.match(/\.tsx?$/) || f.endsWith('.d.ts')) {
@@ -285,6 +317,21 @@ export function requireFile(url) {
   }
 
   return exp;
+}
+
+// extend
+export function extend<T = any>(obj, ...args: Array<Partial<T>>): T {
+  args.forEach(source => {
+    let descriptor, prop;
+    if (source) {
+      for (prop in source) {
+        descriptor = Object.getOwnPropertyDescriptor(source, prop);
+        Object.defineProperty(obj, prop, descriptor);
+      }
+    }
+  });
+
+  return obj;
 }
 
 // require package.json

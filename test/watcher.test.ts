@@ -23,27 +23,21 @@ describe('watcher.test.ts', () => {
   });
 
   it('should works without error', () => {
-    watcher = new Watcher(
-      {
-        ...defaultWatchDir.model as WatchItem,
-        name: 'xxx',
-      },
-      tsHelper,
-    );
-
+    watcher = new Watcher(tsHelper);
+    watcher.init({
+      ...defaultWatchDir.model as WatchItem,
+      name: 'xxx',
+    });
     assert(!!watcher.execute().dist);
     assert(!!watcher.execute().content);
   });
 
   it('should watch multiple times without error', () => {
-    watcher = new Watcher(
-      {
-        ...defaultWatchDir.model as WatchItem,
-        name: 'xxx',
-      },
-      tsHelper,
-    );
-
+    watcher = new Watcher(tsHelper);
+    watcher.init({
+      ...defaultWatchDir.model as WatchItem,
+      name: 'xxx',
+    });
     watcher.watch();
     const oldWatcher = watcher.fsWatcher!;
     watcher.watch();
@@ -51,13 +45,11 @@ describe('watcher.test.ts', () => {
   });
 
   it('should throttle without error', () => {
-    watcher = new Watcher(
-      {
-        ...defaultWatchDir.model as WatchItem,
-        name: 'xxx',
-      },
-      tsHelper,
-    );
+    watcher = new Watcher(tsHelper);
+    watcher.init({
+      ...defaultWatchDir.model as WatchItem,
+      name: 'xxx',
+    });
 
     watcher.watch();
     watcher.fsWatcher!.emit('add', 'fff');
@@ -67,15 +59,13 @@ describe('watcher.test.ts', () => {
   });
 
   it('should throw error if generator is not exist', () => {
+    watcher = new Watcher(tsHelper);
     try {
-      watcher = new Watcher(
-        {
-          ...defaultWatchDir.model as WatchItem,
-          name: 'xxx',
-          generator: '666',
-        },
-        tsHelper,
-      );
+      watcher.init({
+        ...defaultWatchDir.model as WatchItem,
+        name: 'xxx',
+        generator: '666',
+      });
     } catch (e) {
       return;
     }
