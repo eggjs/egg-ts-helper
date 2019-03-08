@@ -264,44 +264,44 @@ export default class TsHelper extends EventEmitter {
     this.config = config as TsHelperConfig;
   }
 
-  private updateTs(result: GeneratorAllResult, file?: string) {
-    const config = this.config;
-    const resultList = Array.isArray(result) ? result : [ result ];
+  private generateTs(result: GeneratorCbResult<GeneratorAllResult>, file: string | undefined, startTime: number) {
+    const updateTs = (result: GeneratorAllResult, file?: string) => {
+      const config = this.config;
+      const resultList = Array.isArray(result) ? result : [ result ];
 
-    for (const item of resultList) {
-      // check cache
-      if (this.isCached(item.dist, item.content)) {
-        return;
-      }
-
-      if (item.content) {
-        // create file
-        const dtsContent = `${dtsComment}\nimport '${config.framework}';\n${item.content}`;
-        utils.writeFileSync(item.dist, dtsContent);
-        this.emit('update', item.dist, file);
-        this.log(`create ${item.dist}`);
-        this.updateDistFiles(item.dist);
-      } else {
-        if (!fs.existsSync(item.dist)) {
+      for (const item of resultList) {
+        // check cache
+        if (this.isCached(item.dist, item.content)) {
           return;
         }
 
-        // remove file
-        fs.unlinkSync(item.dist);
-        this.emit('remove', item.dist, file);
-        this.log(`delete ${item.dist}`);
-        this.updateDistFiles(item.dist, true);
-      }
-    }
-  }
+        if (item.content) {
+          // create file
+          const dtsContent = `${dtsComment}\nimport '${config.framework}';\n${item.content}`;
+          utils.writeFileSync(item.dist, dtsContent);
+          this.emit('update', item.dist, file);
+          this.log(`create ${path.relative(this.config.cwd, item.dist)} (${Date.now() - startTime}ms)`);
+          this.updateDistFiles(item.dist);
+        } else {
+          if (!fs.existsSync(item.dist)) {
+            return;
+          }
 
-  private generateTs(result: GeneratorCbResult<GeneratorAllResult>, file?: string) {
+          // remove file
+          fs.unlinkSync(item.dist);
+          this.emit('remove', item.dist, file);
+          this.log(`delete ${path.relative(this.config.cwd, item.dist)}`);
+          this.updateDistFiles(item.dist, true);
+        }
+      }
+    };
+
     if (typeof (result as any).then === 'function') {
       return (result as Promise<GeneratorAllResult>)
-        .then(r => this.updateTs(r, file))
+        .then(r => updateTs(r, file))
         .catch(e => { this.log(e.message); });
     } else {
-      this.updateTs(result as GeneratorAllResult, file);
+      updateTs(result as GeneratorAllResult, file);
     }
   }
 

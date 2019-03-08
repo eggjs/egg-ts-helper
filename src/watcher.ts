@@ -120,9 +120,10 @@ export default class Watcher extends EventEmitter {
       },
     };
 
+    const startTime = Date.now();
     const result = this.generator(newConfig, this.config, this.helper);
     if (result) {
-      this.emit('update', result, file);
+      this.emit('update', result, file, startTime);
     }
 
     return result;

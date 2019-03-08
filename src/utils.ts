@@ -53,7 +53,9 @@ export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(cwd: string, opt
     maxBuffer: 1024 * 1024,
     env: {
       ...process.env,
+      TS_NODE_TYPE_CHECK: 'false',
       TS_NODE_TRANSPILE_ONLY: 'true',
+      TS_NODE_FILES: 'false',
       EGG_TYPESCRIPT: 'true',
     },
   };

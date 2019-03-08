@@ -15,13 +15,11 @@ if (fs.existsSync(url) && fs.statSync(url).isDirectory()) {
   if (loader) {
     try {
       loader.loadPlugin();
-      loader.loadConfig();
     } catch (e) {
       // do nothing
     }
 
     eggInfo.plugins = loader.allPlugins;
-    eggInfo.config = loader.config;
   }
 }
 
