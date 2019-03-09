@@ -463,20 +463,3 @@ export function findExportNode(code: string) {
 export function modifierHas(node: ts.Node, kind) {
   return node.modifiers && node.modifiers.find(mod => kind === mod.kind);
 }
-
-export function formatIdentifierName(name: string) {
-  return name.replace(/^("|')|("|')$/g, '');
-}
-
-export function getText(node?: ts.Node) {
-  if (node) {
-    if (ts.isIdentifier(node)) {
-      return formatIdentifierName(node.text);
-    } else if (ts.isStringLiteral(node)) {
-      return node.text;
-    } else if (ts.isQualifiedName(node)) {
-      return getText(node.right);
-    }
-  }
-  return '';
-}

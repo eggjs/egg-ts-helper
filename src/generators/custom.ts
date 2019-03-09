@@ -11,7 +11,7 @@ export const defaultConfig = {
   directory: 'config',
   execAtInit: true,
   pattern: [
-    'config(.default|).(ts|js)',
+    'config(.local|.default|).(ts|js)',
     'plugin(.local|.default|).(ts|js)',
   ],
 };
@@ -46,6 +46,7 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig, tsHelpe
           interface: declMapping[key],
           declareTo: `${DeclareMapping[loaderConfig.inject]}.${key}`,
           generator: 'auto',
+          execAtInit: true,
         });
       });
     }

@@ -145,6 +145,7 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
   // custom loader
   baseConfig.customLoader = {
     generator: 'custom',
+    trigger: [ 'add', 'unlink', 'change' ],
   };
 
   return baseConfig as PlainObject;
@@ -308,6 +309,7 @@ export default class TsHelper extends EventEmitter {
 
           // remove file
           fs.unlinkSync(item.dist);
+          delete this.cacheDist[item.dist];
           this.emit('remove', item.dist, file);
           this.log(`delete ${path.relative(this.config.cwd, item.dist)}`);
           this.updateDistFiles(item.dist, true);

@@ -3,35 +3,21 @@ import del from 'del';
 import fs from 'fs';
 import mkdirp from 'mkdirp';
 import path from 'path';
-import { sleep, spawn, getStd, eggBin } from './utils';
+import { sleep, spawn, getStd, eggBin, timeoutPromise, mockFile, createTsHelper } from './utils';
 import assert = require('assert');
-import TsHelper, { createTsHelperInstance, getDefaultWatchDirs } from '../dist/';
+import TsHelper, { getDefaultWatchDirs } from '../dist/';
 const debug = d('egg-ts-helper#index.test');
-const noop = () => {};
-const timeout = (delay, callback: () => any) => {
-  return new Promise((_, reject) => {
-    setTimeout(() => {
-      callback();
-      reject('timeout');
-    }, delay);
-  });
-};
-
 describe('index.test.ts', () => {
   let tsHelper: TsHelper;
   before(() => {
     del.sync(path.resolve(__dirname, './fixtures/*/typings'), { force: true });
   });
 
-  afterEach(() => {
-    if (tsHelper) tsHelper.destroy();
-  });
-
   it('should works without error', async () => {
     const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
     mkdirp.sync(dir);
 
-    tsHelper = createTsHelperInstance({
+    tsHelper = createTsHelper({
       cwd: path.resolve(__dirname, './fixtures/app'),
       watch: true,
       execAtInit: true,
@@ -76,7 +62,7 @@ describe('index.test.ts', () => {
   });
 
   it('should support oneForAll', async () => {
-    tsHelper = createTsHelperInstance({
+    tsHelper = createTsHelper({
       cwd: path.resolve(__dirname, './fixtures/app'),
       watch: false,
       autoRemoveJs: false,
@@ -96,7 +82,7 @@ describe('index.test.ts', () => {
 
   it('should works with custom oneForAll dist', async () => {
     const oneForAllDist = path.resolve(__dirname, './fixtures/app/typings/all/special.d.ts');
-    tsHelper = createTsHelperInstance({
+    tsHelper = createTsHelper({
       cwd: path.resolve(__dirname, './fixtures/app'),
       watch: false,
       autoRemoveJs: false,
@@ -118,7 +104,7 @@ describe('index.test.ts', () => {
     const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
     mkdirp.sync(dir);
 
-    tsHelper = createTsHelperInstance({
+    tsHelper = createTsHelper({
       cwd: path.resolve(__dirname, './fixtures/app'),
       watch: true,
       watchOptions: {
@@ -156,7 +142,7 @@ describe('index.test.ts', () => {
     const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
     mkdirp.sync(dir);
 
-    tsHelper = createTsHelperInstance({
+    tsHelper = createTsHelper({
       cwd: path.resolve(__dirname, './fixtures/app'),
       watch: true,
       execAtInit: true,
@@ -167,40 +153,27 @@ describe('index.test.ts', () => {
     });
 
     await sleep(2000);
-
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/index.d.ts')));
 
     const defaultConfigPath = path.resolve(__dirname, './fixtures/app/config/config.default.ts');
     const baseConfig = fs.readFileSync(defaultConfigPath);
     const localConfigPath = path.resolve(__dirname, './fixtures/app/config/config.local.ts');
-    const localConfig = fs.readFileSync(localConfigPath);
-    const end = () => {
-      fs.writeFileSync(defaultConfigPath, baseConfig);
-      fs.writeFileSync(localConfigPath, localConfig);
-    };
 
-    fs.writeFile(defaultConfigPath, baseConfig + '\n\n', () => {
-      fs.writeFile(defaultConfigPath, baseConfig + '\n', noop);
-      fs.writeFile(localConfigPath, baseConfig, noop);
-    });
+    mockFile(defaultConfigPath, `${baseConfig}\n\n`)
+      .then(() => {
+        mockFile(defaultConfigPath, `${baseConfig}\n`);
+        mockFile(localConfigPath, baseConfig);
+      });
 
-    await Promise.race([
-      new Promise(resolve => {
-        function cb(_, p) {
-          if (p === defaultConfigPath) {
-            end();
-            throw new Error('should not update config.default.ts');
-          } else if (p === localConfigPath) {
-            end();
-            tsHelper.removeListener('update', cb);
-            resolve();
-          }
+    await timeoutPromise((resolve, reject) => {
+      tsHelper.on('update', (_, p) => {
+        if (p === defaultConfigPath) {
+          reject(new Error('should not update config.default.ts'));
+        } else if (p === localConfigPath) {
+          resolve();
         }
-
-        tsHelper.on('update', cb);
-      }),
-      timeout(10000, end),
-    ]);
+      });
+    });
 
     await sleep(100);
   });
@@ -208,7 +181,7 @@ describe('index.test.ts', () => {
   it('should works without error while plugin file changed', async () => {
     const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
     mkdirp.sync(dir);
-    tsHelper = createTsHelperInstance({
+    tsHelper = createTsHelper({
       cwd: path.resolve(__dirname, './fixtures/app'),
       watch: true,
       execAtInit: true,
@@ -218,31 +191,51 @@ describe('index.test.ts', () => {
     await sleep(2000);
 
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/plugin.d.ts')));
-
     const defaultPluginPath = path.resolve(__dirname, './fixtures/app/config/plugin.local.ts');
-    const basePlugin = fs.readFileSync(defaultPluginPath);
     const pluginPath = path.resolve(__dirname, './fixtures/app/config/plugin.ts');
-    const pluginText = fs.readFileSync(pluginPath);
-    const end = () => {
-      fs.writeFileSync(defaultPluginPath, basePlugin);
-    };
+    mockFile(defaultPluginPath, undefined, pluginPath);
 
-    fs.writeFile(defaultPluginPath, pluginText, noop);
-
-    await Promise.race([
-      new Promise(resolve => {
-        function cb(_, p) {
-          if (p === defaultPluginPath) {
-            end();
-            tsHelper.removeListener('update', cb);
-            resolve();
-          }
+    await timeoutPromise(resolve => {
+      tsHelper.on('update', (_, p) => {
+        if (p === defaultPluginPath) {
+          resolve();
         }
+      });
+    });
+  });
 
-        tsHelper.on('update', cb);
-      }),
-      timeout(10000, end),
-    ]);
+  it('should remove file config file changed and remove customLoader', async () => {
+    const cwd = path.resolve(__dirname, './fixtures/custom');
+    tsHelper = createTsHelper({
+      cwd,
+      watch: true,
+      execAtInit: true,
+      autoRemoveJs: false,
+    });
+
+    await sleep(2000);
+    let restore;
+    const configPath = path.resolve(cwd, './config/config.local.ts');
+    mockFile(configPath, 'export default {}').then(result => { restore = result; });
+
+    await timeoutPromise((resolve, reject) => {
+      tsHelper.on('remove', file => {
+        if (file === path.resolve(cwd, './typings/app/custom3/custom-custom3.d.ts')) {
+          return setTimeout(restore, 2000);
+        } else {
+          reject('should delete custom3.d.ts');
+        }
+      });
+
+      tsHelper.on('update', file => {
+        console.info(file);
+        if (file === path.resolve(cwd, './typings/app/custom3/custom-custom3.d.ts')) {
+          return resolve();
+        } else {
+          reject('should create custom3.d.ts');
+        }
+      });
+    }, 30000);
   });
 
   it('should support rewrite by options.watchDirs', () => {
@@ -261,7 +254,7 @@ describe('index.test.ts', () => {
       }
     });
 
-    tsHelper = createTsHelperInstance({
+    tsHelper = createTsHelper({
       cwd: path.resolve(__dirname, './fixtures/app3'),
       watchDirs,
     });
@@ -272,7 +265,7 @@ describe('index.test.ts', () => {
 
   it('should auto create customLoader with config', () => {
     const customPath = path.resolve(__dirname, './fixtures/custom');
-    createTsHelperInstance({
+    createTsHelper({
       cwd: customPath,
       watch: false,
       execAtInit: true,
@@ -296,17 +289,17 @@ describe('index.test.ts', () => {
   });
 
   it('should support read framework by package.json', () => {
-    tsHelper = createTsHelperInstance({
+    tsHelper = createTsHelper({
       cwd: path.resolve(__dirname, './fixtures/app3'),
       watch: false,
     });
     assert(tsHelper.config.framework === 'egg');
-    tsHelper = createTsHelperInstance({
+    tsHelper = createTsHelper({
       cwd: path.resolve(__dirname, './fixtures/app2'),
       watch: false,
     });
     assert(tsHelper.config.framework === 'larva');
-    tsHelper = createTsHelperInstance({
+    tsHelper = createTsHelper({
       cwd: path.resolve(__dirname, './fixtures/app4'),
       watch: false,
     });
@@ -315,7 +308,7 @@ describe('index.test.ts', () => {
 
   it('should support rewrite by package.json', () => {
     const watchDirs = getDefaultWatchDirs();
-    tsHelper = createTsHelperInstance({
+    tsHelper = createTsHelper({
       cwd: path.resolve(__dirname, './fixtures/app4'),
     });
     const len = Object.keys(watchDirs).filter(k => {
@@ -328,7 +321,7 @@ describe('index.test.ts', () => {
 
   it('should works without error in real app', async () => {
     const baseDir = path.resolve(__dirname, './fixtures/real/');
-    tsHelper = createTsHelperInstance({
+    tsHelper = createTsHelper({
       cwd: baseDir,
       execAtInit: true,
       autoRemoveJs: false,
@@ -386,7 +379,7 @@ describe('index.test.ts', () => {
 
   it('should works in real-js app', async () => {
     const baseDir = path.resolve(__dirname, './fixtures/real-js/');
-    tsHelper = createTsHelperInstance({
+    tsHelper = createTsHelper({
       cwd: baseDir,
       execAtInit: true,
       autoRemoveJs: false,

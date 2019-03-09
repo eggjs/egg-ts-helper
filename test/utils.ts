@@ -1,6 +1,9 @@
 import * as child_process from 'child_process';
 import path from 'path';
+import fs from 'fs';
 import os from 'os';
+import { promisify } from 'util';
+import { createTsHelperInstance, TsHelperOption } from '../dist';
 const psList: child_process.ChildProcess[] = [];
 
 export const tscBin = getBin('tsc');
@@ -138,8 +141,51 @@ afterEach(() => {
     }
   });
   psList.length = 0;
+
+  restoreTasks.reverse().forEach(fn => fn());
+  restoreTasks.length = 0;
 });
+
+export function timeout(delay, callback?: () => any) {
+  return new Promise((_, reject) => {
+    setTimeout(() => {
+      if (callback) callback();
+      reject('timeout');
+    }, delay);
+  });
+}
+
+const restoreTasks: Array<(...args: any) => any> = [];
+export function addRestore(fn) {
+  restoreTasks.push(fn);
+  return () => {
+    fn();
+    const index = restoreTasks.indexOf(fn);
+    if (index >= 0) restoreTasks.splice(index, 1);
+  };
+}
 
 export function sleep(time) {
   return new Promise(res => setTimeout(res, time));
+}
+
+const readFile = promisify(fs.readFile);
+const writeFile = promisify(fs.writeFile);
+export async function mockFile(url, content, otherFile?: string) {
+  const existFile = (await readFile(url)).toString();
+  await writeFile(url, otherFile ? (await readFile(otherFile)) : content);
+  return addRestore(() => fs.writeFileSync(url, existFile));
+}
+
+export function createTsHelper(options: TsHelperOption) {
+  const tsHelper = createTsHelperInstance(options);
+  addRestore(() => tsHelper.destroy());
+  return tsHelper;
+}
+
+export function timeoutPromise(cb, t = 10000) {
+  return Promise.race([
+    new Promise(cb),
+    timeout(t),
+  ]);
 }
