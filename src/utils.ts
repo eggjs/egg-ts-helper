@@ -4,7 +4,7 @@ import glob from 'globby';
 import path from 'path';
 import ts from 'typescript';
 import yn from 'yn';
-import { execSync, exec } from 'child_process';
+import { execSync, exec, ExecOptions } from 'child_process';
 
 export const JS_CONFIG = {
   include: [ '**/*' ],
@@ -39,6 +39,7 @@ export const TS_CONFIG = {
 export interface GetEggInfoOpt {
   async?: boolean;
   env?: PlainObject<string>;
+  callback?: (result: EggInfoResult) => any;
 }
 
 export interface EggInfoResult {
@@ -46,17 +47,11 @@ export interface EggInfoResult {
   config?: PlainObject;
 }
 
-let cacheEggInfo;
-let runningPromise;
+const cacheEggInfo = {};
 export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(cwd: string, option: GetEggInfoOpt = {}): T extends 'async' ? Promise<EggInfoResult> : EggInfoResult {
-  if (cacheEggInfo && (Date.now() - cacheEggInfo.cacheTime) < 1000) {
-    return cacheEggInfo.eggInfo;
-  } else if (option.async && runningPromise) {
-    return runningPromise;
-  }
-
+  cacheEggInfo[cwd] = cacheEggInfo[cwd] || {};
   const cmd = `node ./scripts/eggInfo ${cwd}`;
-  const opt = {
+  const opt: ExecOptions = {
     cwd: __dirname,
     maxBuffer: 1024 * 1024,
     env: {
@@ -69,26 +64,39 @@ export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(cwd: string, opt
     },
   };
   const end = json => {
-    cacheEggInfo = { eggInfo: json, cacheTime: Date.now() };
-    return json;
+    caches.eggInfo = json;
+    caches.cacheTime = Date.now();
+    if (option.callback) {
+      return option.callback(json);
+    } else {
+      return json;
+    }
   };
+
+  // check cache
+  const caches = cacheEggInfo[cwd];
+  if (caches.cacheTime && (Date.now() - caches.cacheTime) < 1000) {
+    return end(caches.eggInfo);
+  } else if (caches.runningPromise) {
+    return caches.runningPromise;
+  }
 
   if (option.async) {
     // cache promise
-    runningPromise = new Promise((resolve, reject) => {
+    caches.runningPromise = new Promise((resolve, reject) => {
       exec(cmd, opt, (err, stdout) => {
-        runningPromise = null;
+        caches.runningPromise = null;
         if (err) reject(err);
         resolve(end(getJson(stdout || '')));
       });
     });
-    return runningPromise as any;
+    return caches.runningPromise;
   } else {
     try {
       const info = execSync(cmd, opt);
       return end(getJson(info.toString()));
     } catch (e) {
-      return {} as any;
+      return end({});
     }
   }
 }

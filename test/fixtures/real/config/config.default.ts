@@ -4,6 +4,13 @@ export default function() {
 
   config.keys = '123123';
 
+  config.customLoader = {
+    myService: {
+      directory: 'app/myService',
+      inject: 'app',
+    },
+  };
+
   // biz config
   const bizConfig = {
     biz: {

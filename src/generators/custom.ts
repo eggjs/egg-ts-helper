@@ -20,7 +20,6 @@ const customWatcherPrefix = 'custom-';
 const DeclareMapping = utils.pickFields<keyof typeof declMapping>(declMapping, [ 'ctx', 'app' ]);
 
 export default function(config: TsGenConfig, baseConfig: TsHelperConfig, tsHelper: TsHelper) {
-  const isInit = !!config.file;
   const createCustomLoader = (eggInfo: utils.EggInfoResult) => {
     const eggConfig = eggInfo.config || {};
     const newCustomWatcherList: string[] = [];
@@ -28,7 +27,12 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig, tsHelpe
     if (eggConfig.customLoader) {
       Object.keys(eggConfig.customLoader).forEach(key => {
         const loaderConfig = eggConfig.customLoader[key];
-        if (!loaderConfig || !loaderConfig.directory || !DeclareMapping[loaderConfig.inject]) return;
+        if (
+          !loaderConfig ||
+          !loaderConfig.directory ||
+          !DeclareMapping[loaderConfig.inject] ||
+          loaderConfig.tsd === false
+        ) return;
 
         // custom d.ts name
         const name = `${customWatcherPrefix}${key}`;
@@ -61,11 +65,8 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig, tsHelpe
     });
   };
 
-  if (!isInit) {
-    return createCustomLoader(utils.getEggInfo(baseConfig.cwd));
-  } else {
-    // async
-    return utils.getEggInfo<'async'>(baseConfig.cwd, { async: true })
-      .then(eggInfo => createCustomLoader(eggInfo));
-  }
+  return utils.getEggInfo(baseConfig.cwd, {
+    async: !!config.file,
+    callback: createCustomLoader,
+  });
 }

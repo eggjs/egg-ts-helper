@@ -15,6 +15,11 @@ if (fs.existsSync(url) && fs.statSync(url).isDirectory()) {
   if (loader) {
     try {
       loader.loadPlugin();
+    } catch (e) {
+      // do nothing
+    }
+
+    try {
       loader.loadConfig();
     } catch (e) {
       // do nothing

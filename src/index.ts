@@ -142,8 +142,8 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
     watch: false,
   };
 
-  // custom
-  baseConfig.custom = {
+  // custom loader
+  baseConfig.customLoader = {
     generator: 'custom',
   };
 

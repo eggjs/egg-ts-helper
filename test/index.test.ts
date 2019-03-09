@@ -208,7 +208,6 @@ describe('index.test.ts', () => {
   it('should works without error while plugin file changed', async () => {
     const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
     mkdirp.sync(dir);
-
     tsHelper = createTsHelperInstance({
       cwd: path.resolve(__dirname, './fixtures/app'),
       watch: true,
@@ -269,6 +268,31 @@ describe('index.test.ts', () => {
 
     assert(tsHelper.watcherList.size === 1);
     assert(!!tsHelper.watcherList.has('proxy'));
+  });
+
+  it('should auto create customLoader with config', () => {
+    const customPath = path.resolve(__dirname, './fixtures/custom');
+    createTsHelperInstance({
+      cwd: customPath,
+      watch: false,
+      execAtInit: true,
+    });
+    const typingFile = path.resolve(customPath, './typings/app/custom/custom-custom.d.ts');
+    assert(fs.existsSync(typingFile));
+    const types = fs.readFileSync(typingFile).toString();
+    assert(types.includes('interface Context'));
+    assert(types.includes('test: AutoInstanceType<typeof ExportTest>;'));
+    assert(types.includes('test2: AutoInstanceType<typeof ExportTest2>;'));
+
+    const typingFile2 = path.resolve(customPath, './typings/app/custom2/custom-custom2.d.ts');
+    assert(fs.existsSync(typingFile2));
+    const types2 = fs.readFileSync(typingFile2).toString();
+    assert(types2.includes('interface Application'));
+
+    assert(fs.existsSync(path.resolve(customPath, './typings/app/custom3/custom-custom3.d.ts')));
+    assert(!fs.existsSync(path.resolve(customPath, './typings/app/custom4/custom-custom4.d.ts')));
+    assert(!fs.existsSync(path.resolve(customPath, './typings/app/custom5/custom-custom5.d.ts')));
+    assert(!fs.existsSync(path.resolve(customPath, './typings/app/custom6/custom-custom6.d.ts')));
   });
 
   it('should support read framework by package.json', () => {
