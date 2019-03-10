@@ -1,6 +1,7 @@
 import path from 'path';
-import TsHelper, { GeneratorResult } from '../../dist/';
+import { GeneratorResult } from '../../dist/';
 import assert = require('assert');
+import { createTsHelper } from '../utils';
 
 export function triggerGenerator<T extends GeneratorResult[] | GeneratorResult = GeneratorResult[]>(
   name: string,
@@ -8,15 +9,15 @@ export function triggerGenerator<T extends GeneratorResult[] | GeneratorResult =
   file?: string,
   extra?: any,
 ) {
-  const tsHelper = new TsHelper({
+  const tsHelper = createTsHelper({
     cwd: appDir,
     watch: false,
     execAtInit: false,
   });
 
-  const watcher = tsHelper.watcherList.find(watcher => watcher.name === name)!;
+  const watcher = tsHelper.watcherList.get(name)!;
   assert(watcher, 'watcher is not exist');
-  const dir = path.resolve(appDir, watcher.options.path);
+  const dir = path.resolve(appDir, watcher.options.directory);
   watcher.init({
     ...watcher.options,
     ...extra,

@@ -1,6 +1,8 @@
 import { TsGenConfig, TsHelperConfig } from '..';
 import path from 'path';
 
+export const isPrivate = true;
+
 // declare global namespace Egg
 export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
   return {

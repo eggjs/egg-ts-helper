@@ -2,19 +2,20 @@ import d from 'debug';
 import fs from 'fs';
 import path from 'path';
 import * as utils from '../utils';
+import { declMapping } from '../config';
 import { GeneratorResult, TsGenConfig, TsHelperConfig } from '..';
 const debug = d('egg-ts-helper#generators_extend');
 
 // default config
 export const defaultConfig = {
-  interface: {
-    context: 'Context',
-    application: 'Application',
-    agent: 'Agent',
-    request: 'Request',
-    response: 'Response',
-    helper: 'IHelper',
-  },
+  interface: utils.pickFields<keyof typeof declMapping>(declMapping, [
+    'context',
+    'application',
+    'agent',
+    'request',
+    'response',
+    'helper',
+  ]),
 };
 
 export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {

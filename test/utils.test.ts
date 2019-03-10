@@ -180,8 +180,13 @@ describe('utils.test.ts', () => {
   it('should get eggInfo without error', async () => {
     const eggInfo = utils.getEggInfo(path.resolve(__dirname, './fixtures/real-unittest'));
     assert(eggInfo.plugins);
+    assert(eggInfo.config);
     const asyncEggInfo = await utils.getEggInfo<'async'>(path.resolve(__dirname, './fixtures/real-unittest'));
     assert(asyncEggInfo.plugins);
+    assert(asyncEggInfo.config);
+    const customEggInfo = await utils.getEggInfo<'async'>(path.resolve(__dirname, './fixtures/custom'));
+    assert(customEggInfo.plugins);
+    assert(customEggInfo.config!.customLoader);
   });
 
   it('should get json without error', async () => {

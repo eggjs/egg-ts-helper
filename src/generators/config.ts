@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import ts from 'typescript';
 import { TsGenConfig, TsHelperConfig } from '..';
+import { declMapping } from '../config';
 import * as utils from '../utils';
 
 const EXPORT_DEFAULT_FUNCTION = 1;
@@ -18,7 +19,7 @@ export interface ImportItem {
 export const defaultConfig = {
   // only need to parse config.default.ts or config.ts
   pattern: 'config(.default|).(ts|js)',
-  interface: 'EggAppConfig',
+  interface: declMapping.config,
 };
 
 export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {

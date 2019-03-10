@@ -4,7 +4,7 @@ import glob from 'globby';
 import path from 'path';
 import ts from 'typescript';
 import yn from 'yn';
-import { execSync, exec } from 'child_process';
+import { execSync, exec, ExecOptions } from 'child_process';
 
 export const JS_CONFIG = {
   include: [ '**/*' ],
@@ -36,19 +36,22 @@ export const TS_CONFIG = {
   },
 };
 
-interface GetEggInfoOpt {
+export interface GetEggInfoOpt {
   async?: boolean;
   env?: PlainObject<string>;
+  callback?: (result: EggInfoResult) => any;
 }
 
-interface EggInfoResult {
-  plugins?: Array<{ path: string; enable: boolean; package?: string; }>;
+export interface EggInfoResult {
+  plugins?: Array<{ from: string; enable: boolean; package?: string; }>;
   config?: PlainObject;
 }
 
+const cacheEggInfo = {};
 export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(cwd: string, option: GetEggInfoOpt = {}): T extends 'async' ? Promise<EggInfoResult> : EggInfoResult {
-  const cmd = `node ./scripts/eggInfo ${cwd}`;
-  const opt = {
+  cacheEggInfo[cwd] = cacheEggInfo[cwd] || {};
+  const cmd = `node ./scripts/eggInfo --url=${cwd}`;
+  const opt: ExecOptions = {
     cwd: __dirname,
     maxBuffer: 1024 * 1024,
     env: {
@@ -57,22 +60,43 @@ export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(cwd: string, opt
       TS_NODE_TRANSPILE_ONLY: 'true',
       TS_NODE_FILES: 'false',
       EGG_TYPESCRIPT: 'true',
+      ...option.env,
     },
   };
+  const end = json => {
+    caches.eggInfo = json;
+    caches.cacheTime = Date.now();
+    if (option.callback) {
+      return option.callback(json);
+    } else {
+      return json;
+    }
+  };
+
+  // check cache
+  const caches = cacheEggInfo[cwd];
+  if (caches.cacheTime && (Date.now() - caches.cacheTime) < 1000) {
+    return end(caches.eggInfo);
+  } else if (caches.runningPromise) {
+    return caches.runningPromise;
+  }
 
   if (option.async) {
-    return new Promise((resolve, reject) => {
+    // cache promise
+    caches.runningPromise = new Promise((resolve, reject) => {
       exec(cmd, opt, (err, stdout) => {
+        caches.runningPromise = null;
         if (err) reject(err);
-        resolve(getJson(stdout || ''));
+        resolve(end(getJson(stdout || '')));
       });
-    }) as any;
+    });
+    return caches.runningPromise;
   } else {
     try {
       const info = execSync(cmd, opt);
-      return getJson(info.toString());
+      return end(getJson(info.toString()));
     } catch (e) {
-      return {} as any;
+      return end({});
     }
   }
 }
@@ -110,11 +134,10 @@ export function isIdentifierName(s: string) {
 }
 
 // load ts/js files
-export function loadFiles(cwd: string, pattern?: string) {
-  const fileList = glob.sync([ pattern || '**/*.(js|ts)', '!**/*.d.ts' ], {
-    cwd,
-  });
-
+export function loadFiles(cwd: string, pattern?: string | string[]) {
+  pattern = pattern || '**/*.(js|ts)';
+  pattern = Array.isArray(pattern) ? pattern : [ pattern ];
+  const fileList = glob.sync(pattern.concat([ '!**/*.d.ts' ]), { cwd });
   return fileList.filter(f => {
     // filter same name js/ts
     return !(
@@ -156,8 +179,9 @@ export function checkMaybeIsJsProj(cwd: string) {
 }
 
 // load modules to object
-export function loadModules<T = any>(cwd: string, loadDefault?: boolean) {
+export function loadModules<T = any>(cwd: string, loadDefault?: boolean, preHandle?: (...args) => any) {
   const modules: { [key: string]: T } = {};
+  preHandle = preHandle || (fn => fn);
   fs
     .readdirSync(cwd)
     .filter(f => f.endsWith('.js'))
@@ -165,9 +189,9 @@ export function loadModules<T = any>(cwd: string, loadDefault?: boolean) {
       const name = f.substring(0, f.lastIndexOf('.'));
       const obj = require(path.resolve(cwd, name));
       if (loadDefault && obj.default) {
-        modules[name] = obj.default;
+        modules[name] = preHandle!(obj.default);
       } else {
-        modules[name] = obj;
+        modules[name] = preHandle!(obj);
       }
     });
   return modules;
@@ -180,6 +204,13 @@ export function strToFn(fn) {
   } else {
     return fn;
   }
+}
+
+// pick fields from object
+export function pickFields<T extends string = string>(obj: PlainObject, fields: T[]) {
+  const newObj: PlainObject = {};
+  fields.forEach(f => (newObj[f] = obj[f]));
+  return newObj;
 }
 
 // log
@@ -244,6 +275,15 @@ export function getModuleObjByPath(f: string) {
   };
 }
 
+// format path sep to /
+export function formatPath(str: string) {
+  return str.replace(/\/|\\/g, '/');
+}
+
+export function toArray(pattern?: string | string[]) {
+  return pattern ? (Array.isArray(pattern) ? pattern : [ pattern ]) : [];
+}
+
 // remove same name js
 export function removeSameNameJs(f: string) {
   if (!f.match(/\.tsx?$/) || f.endsWith('.d.ts')) {
@@ -285,6 +325,21 @@ export function requireFile(url) {
   }
 
   return exp;
+}
+
+// extend
+export function extend<T = any>(obj, ...args: Array<Partial<T>>): T {
+  args.forEach(source => {
+    let descriptor, prop;
+    if (source) {
+      for (prop in source) {
+        descriptor = Object.getOwnPropertyDescriptor(source, prop);
+        Object.defineProperty(obj, prop, descriptor);
+      }
+    }
+  });
+
+  return obj;
 }
 
 // require package.json
@@ -407,21 +462,4 @@ export function findExportNode(code: string) {
 // check kind in node.modifiers.
 export function modifierHas(node: ts.Node, kind) {
   return node.modifiers && node.modifiers.find(mod => kind === mod.kind);
-}
-
-export function formatIdentifierName(name: string) {
-  return name.replace(/^("|')|("|')$/g, '');
-}
-
-export function getText(node?: ts.Node) {
-  if (node) {
-    if (ts.isIdentifier(node)) {
-      return formatIdentifierName(node.text);
-    } else if (ts.isStringLiteral(node)) {
-      return node.text;
-    } else if (ts.isQualifiedName(node)) {
-      return getText(node.right);
-    }
-  }
-  return '';
 }

@@ -1,14 +1,13 @@
 import chokidar from 'chokidar';
 import d from 'debug';
+import assert from 'assert';
 import { EventEmitter } from 'events';
 import fs from 'fs';
 import path from 'path';
+import { declMapping, dtsComment } from './config';
 import Watcher, { WatchItem } from './watcher';
 import * as utils from './utils';
 const debug = d('egg-ts-helper#index');
-const dtsComment =
-  '// This file is created by egg-ts-helper\n' +
-  '// Do not modify this file!!!!!!!!!\n';
 
 declare global {
   interface PlainObject<T = any> {
@@ -76,27 +75,27 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
 
   // extend
   baseConfig.extend = {
-    path: 'app/extend',
+    directory: 'app/extend',
     generator: 'extend',
   };
 
   // controller
   baseConfig.controller = {
-    path: 'app/controller',
-    interface: 'IController',
+    directory: 'app/controller',
+    interface: declMapping.controller,
     generator: 'class',
   };
 
   // middleware
   baseConfig.middleware = {
-    path: 'app/middleware',
-    interface: 'IMiddleware',
+    directory: 'app/middleware',
+    interface: declMapping.middleware,
     generator: 'object',
   };
 
   // proxy
   baseConfig.proxy = {
-    path: 'app/proxy',
+    directory: 'app/proxy',
     interface: 'IProxy',
     generator: 'class',
     enabled: false,
@@ -104,7 +103,7 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
 
   // model
   baseConfig.model = {
-    path: 'app/model',
+    directory: 'app/model',
     generator: 'function',
     interface: 'IModel',
     caseStyle: 'upper',
@@ -117,38 +116,43 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
 
   // config
   baseConfig.config = {
-    path: 'config',
+    directory: 'config',
     generator: 'config',
     trigger: [ 'add', 'unlink', 'change' ],
   };
 
   // plugin
   baseConfig.plugin = {
-    path: 'config',
+    directory: 'config',
     generator: 'plugin',
     trigger: [ 'add', 'unlink', 'change' ],
   };
 
   // service
   baseConfig.service = {
-    path: 'app/service',
-    interface: 'IService',
+    directory: 'app/service',
+    interface: declMapping.service,
     generator: 'class',
   };
 
   // egg
   baseConfig.egg = {
-    path: 'app',
+    directory: 'app',
     generator: 'egg',
     watch: false,
   };
 
+  // custom loader
+  baseConfig.customLoader = {
+    generator: 'custom',
+    trigger: [ 'add', 'unlink', 'change' ],
+  };
+
   return baseConfig as PlainObject;
 }
-
 export default class TsHelper extends EventEmitter {
   config: TsHelperConfig;
-  watcherList: Watcher[];
+  watcherList: Map<string, Watcher> = new Map();
   private cacheDist: PlainObject = {};
   private dtsFileList: string[] = [];
 
@@ -163,15 +167,9 @@ export default class TsHelper extends EventEmitter {
 
     // init watcher
     this.initWatcher();
-
-    // generate d.ts at init
-    if (this.config.execAtInit) {
-      debug('exec at init');
-      this.build();
-    }
   }
 
-  // build all dirs
+  // build all watcher
   build() {
     this.watcherList.forEach(watcher => watcher.execute());
     return this;
@@ -181,7 +179,7 @@ export default class TsHelper extends EventEmitter {
   destroy() {
     this.removeAllListeners();
     this.watcherList.forEach(item => item.destroy());
-    this.watcherList.length = 0;
+    this.watcherList.clear();
   }
 
   // log
@@ -216,33 +214,55 @@ export default class TsHelper extends EventEmitter {
 
   // init watcher
   private initWatcher() {
-    const config = this.config;
-    // format watching dirs
-    this.watcherList = [];
-    Object.keys(config.watchDirs).forEach(key => {
-      const conf = config.watchDirs[key] as WatchItem;
-      if (conf.hasOwnProperty('enabled') && !conf.enabled) {
-        return;
-      }
-
-      const watcher = new Watcher({ ...conf, name: key }, this);
-      this.watcherList.push(watcher);
-      watcher.on('update', this.generateTs.bind(this));
-
-      if (config.watch) {
-        watcher.watch();
-      }
+    Object.keys(this.config.watchDirs).forEach(key => {
+      this.registerWatcher(key, this.config.watchDirs[key]);
     });
+  }
+
+  // destroy watcher
+  destroyWatcher(name: string) {
+    if (this.watcherList.has(name)) {
+      this.watcherList.get(name)!.destroy();
+      this.watcherList.delete(name);
+    }
+  }
+
+  // register watcher
+  registerWatcher(name: string, watchConfig: WatchItem) {
+    this.destroyWatcher(name);
+    if (watchConfig.hasOwnProperty('enabled') && !watchConfig.enabled) {
+      return;
+    }
+
+    const options = {
+      name,
+      execAtInit: this.config.execAtInit,
+      ...watchConfig,
+    };
+
+    if (!this.config.watch) {
+      options.watch = false;
+    }
+
+    const watcher = new Watcher(this);
+    watcher.on('update', this.generateTs.bind(this));
+    watcher.init(options);
+    this.watcherList.set(name, watcher);
+    return watcher;
   }
 
   // configure
   // options > configFile > package.json
   private configure(options: TsHelperOption) {
+    if (options.cwd) {
+      options.cwd = utils.getAbsoluteUrlByCwd(options.cwd, defaultConfig.cwd);
+    }
+
     // base config
     const config = { ...defaultConfig, watchDirs: getDefaultWatchDirs(options) };
-    const cwd = options.cwd || config.cwd;
+    config.cwd = options.cwd || config.cwd;
     const configFile = options.configFile || config.configFile;
-    const pkgInfo = utils.getPkgInfo(cwd);
+    const pkgInfo = utils.getPkgInfo(config.cwd);
     config.framework = options.framework || defaultConfig.framework;
 
     // read from package.json
@@ -251,7 +271,7 @@ export default class TsHelper extends EventEmitter {
     }
 
     // read from local file
-    mergeConfig(config, utils.requireFile(utils.getAbsoluteUrlByCwd(configFile, cwd)));
+    mergeConfig(config, utils.requireFile(utils.getAbsoluteUrlByCwd(configFile, config.cwd)));
     debug('%o', config);
 
     // merge local config and options to config
@@ -259,7 +279,7 @@ export default class TsHelper extends EventEmitter {
     debug('%o', options);
 
     // resolve config.typings to absolute url
-    config.typings = utils.getAbsoluteUrlByCwd(config.typings, cwd);
+    config.typings = utils.getAbsoluteUrlByCwd(config.typings, config.cwd);
 
     this.config = config as TsHelperConfig;
   }
@@ -289,6 +309,7 @@ export default class TsHelper extends EventEmitter {
 
           // remove file
           fs.unlinkSync(item.dist);
+          delete this.cacheDist[item.dist];
           this.emit('remove', item.dist, file);
           this.log(`delete ${path.relative(this.config.cwd, item.dist)}`);
           this.updateDistFiles(item.dist, true);
@@ -318,7 +339,7 @@ export default class TsHelper extends EventEmitter {
 
   private isCached(fileUrl, content) {
     const cacheItem = this.cacheDist[fileUrl];
-    if (cacheItem === content) {
+    if (content && cacheItem === content) {
       // no need to create file content is not changed.
       return true;
     }
@@ -353,6 +374,14 @@ function mergeConfig(base: TsHelperConfig, ...args: TsHelperOption[]) {
             base.watchDirs[k].enabled = item;
           }
         } else if (item) {
+          // check private generator
+          assert(!Watcher.isPrivateGenerator(item.generator), `${item.generator} is a private generator, can not configure in config file`);
+
+          // compatible for deprecated field
+          if (item.path) {
+            item.directory = item.path;
+          }
+
           if (base.watchDirs[k]) {
             Object.assign(base.watchDirs[k], item);
           } else {

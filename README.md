@@ -232,8 +232,9 @@ Creating `d.ts` for `model` by `egg-ts-helper`. Setting `watchDirs.model` in `ts
 module.exports = {
   watchDirs: {
     model: {
-      path: 'app/model', // dir path
+      directory: 'app/model', // dir path
       // pattern: '**/*.(ts|js)', // glob pattern, default is **/*.(ts|js). it doesn't need to configure normally.
+      // ignore: '', // ignore glob pattern, default to empty.
       generator: 'class', // generator name
       interface: 'IModel',  // interface name
       declareTo: 'Context.model', // declare to this interface
@@ -264,8 +265,9 @@ declare module 'egg' {
 
 the options using to configure watcher
 
-- path
+- directory
 - pattern
+- ignore
 - generator
 - caseStyle
 - interface
