@@ -12,5 +12,5 @@ run/
 .DS_Store
 dist/
 .cache
-test/fixtures/app*/typings
+test/fixtures/*/typings
 .history
