@@ -170,7 +170,8 @@ export function checkMaybeIsTsProj(cwd: string, pkgInfo?: any) {
   pkgInfo = pkgInfo || getPkgInfo(cwd);
   return (pkgInfo.egg && pkgInfo.egg.typescript) ||
     fs.existsSync(path.resolve(cwd, './tsconfig.json')) ||
-    fs.existsSync(path.resolve(cwd, './config/config.default.ts'));
+    fs.existsSync(path.resolve(cwd, './config/config.default.ts')) ||
+    fs.existsSync(path.resolve(cwd, './config/config.ts'));
 }
 
 export function checkMaybeIsJsProj(cwd: string, pkgInfo?: any) {
