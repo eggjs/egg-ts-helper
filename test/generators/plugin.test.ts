@@ -8,6 +8,8 @@ import mm from 'egg-mock';
 describe('generators/plugin.test.ts', () => {
   const appDir = path.resolve(__dirname, '../fixtures/real-unittest');
 
+  afterEach(mm.restore);
+
   it('should works without error', () => {
     const result = triggerGenerator<GeneratorResult>('plugin', path.resolve(__dirname, appDir));
     assert(result.dist);
