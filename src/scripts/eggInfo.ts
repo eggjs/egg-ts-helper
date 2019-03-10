@@ -2,16 +2,21 @@
  * Getting plugin info in child_process to prevent effecting egg application( splitting scopes ).
  */
 
-import 'ts-node/register';
+import 'cache-require-paths';
 import fs from 'fs';
 import path from 'path';
-import { requireFile, getPkgInfo } from '../utils';
-const url = findArgs('url');
-const eggInfo: { plugins?: PlainObject; config?: PlainObject; } = {};
+import { requireFile, getPkgInfo, EggInfoResult, checkMaybeIsTsProj } from '../utils';
+const cwd = findArgs('cwd');
+const eggInfo: EggInfoResult = {};
+const startTime = Date.now();
+if (checkMaybeIsTsProj(cwd)) {
+  // only require ts-node in ts project
+  require('ts-node/register');
+}
 
-if (url && fs.existsSync(url) && fs.statSync(url).isDirectory()) {
-  const framework = (getPkgInfo(url).egg || {}).framework || 'egg';
-  const loader = getLoader(url, framework);
+if (fs.existsSync(cwd) && fs.statSync(cwd).isDirectory()) {
+  const framework = (getPkgInfo(cwd).egg || {}).framework || 'egg';
+  const loader = getLoader(cwd, framework);
   if (loader) {
     try {
       loader.loadPlugin();
@@ -27,6 +32,7 @@ if (url && fs.existsSync(url) && fs.statSync(url).isDirectory()) {
 
     eggInfo.plugins = loader.allPlugins;
     eggInfo.config = loader.config;
+    eggInfo.timing = Date.now() - startTime;
   }
 }
 

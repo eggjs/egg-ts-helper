@@ -32,6 +32,7 @@
   "author": "wanghx",
   "license": "MIT",
   "dependencies": {
+    "cache-require-paths": "^0.3.0",
     "chokidar": "^2.0.1",
     "commander": "^2.15.1",
     "debug": "^3.1.0",

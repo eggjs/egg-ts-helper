@@ -311,7 +311,7 @@ export default class TsHelper extends EventEmitter {
           fs.unlinkSync(item.dist);
           delete this.cacheDist[item.dist];
           this.emit('remove', item.dist, file);
-          this.log(`delete ${path.relative(this.config.cwd, item.dist)}`);
+          this.log(`delete ${path.relative(this.config.cwd, item.dist)} (${Date.now() - startTime}ms)`);
           this.updateDistFiles(item.dist, true);
         }
       }

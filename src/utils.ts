@@ -45,12 +45,13 @@ export interface GetEggInfoOpt {
 export interface EggInfoResult {
   plugins?: Array<{ from: string; enable: boolean; package?: string; }>;
   config?: PlainObject;
+  timing?: number;
 }
 
 const cacheEggInfo = {};
 export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(cwd: string, option: GetEggInfoOpt = {}): T extends 'async' ? Promise<EggInfoResult> : EggInfoResult {
   cacheEggInfo[cwd] = cacheEggInfo[cwd] || {};
-  const cmd = `node ./scripts/eggInfo --url=${cwd}`;
+  const cmd = `node ./scripts/eggInfo --cwd=${cwd}`;
   const opt: ExecOptions = {
     cwd: __dirname,
     maxBuffer: 1024 * 1024,
@@ -165,11 +166,16 @@ export function writeTsConfig(cwd: string) {
   }
 }
 
-export function checkMaybeIsJsProj(cwd: string) {
-  const pkgInfo = getPkgInfo(cwd);
-  const isJs = !(pkgInfo.egg && pkgInfo.egg.typescript) &&
-    !fs.existsSync(path.resolve(cwd, './tsconfig.json')) &&
-    !fs.existsSync(path.resolve(cwd, './config/config.default.ts')) &&
+export function checkMaybeIsTsProj(cwd: string, pkgInfo?: any) {
+  pkgInfo = pkgInfo || getPkgInfo(cwd);
+  return (pkgInfo.egg && pkgInfo.egg.typescript) ||
+    fs.existsSync(path.resolve(cwd, './tsconfig.json')) ||
+    fs.existsSync(path.resolve(cwd, './config/config.default.ts'));
+}
+
+export function checkMaybeIsJsProj(cwd: string, pkgInfo?: any) {
+  pkgInfo = pkgInfo || getPkgInfo(cwd);
+  const isJs = !checkMaybeIsTsProj(cwd, pkgInfo) &&
     (
       fs.existsSync(path.resolve(cwd, './config/config.default.js')) ||
       fs.existsSync(path.resolve(cwd, './jsconfig.json'))
