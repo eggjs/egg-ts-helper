@@ -71,7 +71,7 @@ export const defaultConfig = {
 };
 
 // default watch dir
-export function getDefaultWatchDirs(opt?: TsHelperOption) {
+export function getDefaultWatchDirs(opt: TsHelperOption = {}) {
   const baseConfig: { [key: string]: Partial<WatchItem> } = {};
 
   // extend
@@ -103,17 +103,21 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
   };
 
   // model
+  const eggInfo = (opt && opt.cwd) ? utils.getEggInfo(opt.cwd) : undefined;
+  const hasModelInCustomLoader = !!utils.deepGet(eggInfo, 'config.customLoader.model');
+  const sequelizeInfo = utils.deepGet(eggInfo, 'plugins.sequelize') || {};
+  const isUsingSequelize = sequelizeInfo.package === 'egg-sequelize' && sequelizeInfo.enable;
   baseConfig.model = {
     directory: 'app/model',
     generator: 'function',
     interface: 'IModel',
     caseStyle: 'upper',
+    enabled: !hasModelInCustomLoader,
+    ...(isUsingSequelize ? {
+      interface: 'Sequelize',
+      framework: 'sequelize',
+    } : {}),
   };
-
-  if (opt && utils.moduleExist('egg-sequelize', opt.cwd)) {
-    baseConfig.model.interface = 'Sequelize';
-    baseConfig.model.framework = 'sequelize';
-  }
 
   // config
   baseConfig.config = {

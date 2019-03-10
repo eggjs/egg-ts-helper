@@ -3,7 +3,7 @@ import del from 'del';
 import fs from 'fs';
 import mkdirp from 'mkdirp';
 import path from 'path';
-import { sleep, spawn, getStd, eggBin, timeoutPromise, mockFile, createTsHelper } from './utils';
+import { sleep, spawn, getStd, eggBin, timeoutPromise, mockFile, createTsHelper, createNodeModuleSym } from './utils';
 import assert = require('assert');
 import TsHelper, { getDefaultWatchDirs } from '../dist/';
 const debug = d('egg-ts-helper#index.test');
@@ -357,8 +357,7 @@ describe('index.test.ts', () => {
   it('should works without error in coverage', async () => {
     const baseDir = path.join(__dirname, './fixtures/real-unittest/');
     del.sync(path.resolve(baseDir, './typings'));
-    del.sync(path.resolve(baseDir, './node_modules'));
-    fs.symlinkSync(path.resolve(__dirname, '../node_modules'), path.resolve(baseDir, './node_modules'), 'dir');
+    createNodeModuleSym(baseDir);
     const proc = spawn(eggBin, [ 'cov', '--ts', '-r', path.resolve(__dirname, '../register') ], {
       cwd: baseDir,
       env: {
