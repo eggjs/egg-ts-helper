@@ -4,9 +4,10 @@ import assert from 'assert';
 import { EventEmitter } from 'events';
 import fs from 'fs';
 import path from 'path';
-import { declMapping, dtsComment } from './config';
+import { declMapping, dtsComment, dtsCommentRE } from './config';
 import Watcher, { WatchItem } from './watcher';
 import * as utils from './utils';
+import glob from 'globby';
 const debug = d('egg-ts-helper#index');
 
 declare global {
@@ -165,6 +166,9 @@ export default class TsHelper extends EventEmitter {
     // configure ets
     this.configure(options);
 
+    // clean files
+    this.cleanFiles();
+
     // init watcher
     this.initWatcher();
   }
@@ -225,6 +229,18 @@ export default class TsHelper extends EventEmitter {
       this.watcherList.get(name)!.destroy();
       this.watcherList.delete(name);
     }
+  }
+
+  // clean old files in startup
+  cleanFiles() {
+    const cwd = this.config.typings;
+    glob.sync([ '**/*.d.ts', '!**/node_modules' ], { cwd })
+      .forEach(file => {
+        const fileUrl = path.resolve(cwd, file);
+        const content = fs.readFileSync(fileUrl, { encoding: 'utf-8' });
+        const isGeneratedByEts = content.match(dtsCommentRE);
+        if (isGeneratedByEts) fs.unlinkSync(fileUrl);
+      });
   }
 
   // register watcher
