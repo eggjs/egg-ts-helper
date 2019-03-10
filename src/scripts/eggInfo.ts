@@ -5,6 +5,7 @@
 import 'cache-require-paths';
 import fs from 'fs';
 import path from 'path';
+import { eggInfoTmp } from '../config';
 import { requireFile, getPkgInfo, EggInfoResult, checkMaybeIsTsProj } from '../utils';
 const cwd = findArgs('cwd');
 const eggInfo: EggInfoResult = {};
@@ -24,6 +25,15 @@ if (fs.existsSync(cwd) && fs.statSync(cwd).isDirectory()) {
       // do nothing
     }
 
+    // hack loadFile, ignore config file without customLoader for faster booting
+    mockFn(loader, 'loadFile', filepath => {
+      if (filepath && filepath.substring(filepath.lastIndexOf(path.sep) + 1).startsWith('config.')) {
+        const fileContent = fs.readFileSync(filepath, { encoding: 'utf-8' });
+        if (!fileContent.includes('customLoader')) return;
+      }
+      return true;
+    });
+
     try {
       loader.loadConfig();
     } catch (e) {
@@ -36,7 +46,7 @@ if (fs.existsSync(cwd) && fs.statSync(cwd).isDirectory()) {
   }
 }
 
-process.stdout.write(JSON.stringify(eggInfo));
+fs.writeFileSync(eggInfoTmp, JSON.stringify(eggInfo));
 
 /* istanbul ignore next */
 function noop() {}
@@ -44,6 +54,16 @@ function noop() {}
 function findArgs(name: string) {
   const key = `--${name}`;
   return process.argv.find(a => a.startsWith(key))!.substring(key.length + 1);
+}
+
+function mockFn(obj, name, fn) {
+  const oldFn = obj[name];
+  obj[name] = (...args) => {
+    const result = fn.apply(obj, args);
+    if (result) {
+      return oldFn.apply(obj, args);
+    }
+  };
 }
 
 function getLoader(baseDir: string, framework: string) {

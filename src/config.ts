@@ -1,3 +1,6 @@
+import path from 'path';
+
+export const eggInfoTmp = path.resolve(__dirname, './.tmp.json');
 
 export const dtsComment =
   '// This file is created by egg-ts-helper\n' +
