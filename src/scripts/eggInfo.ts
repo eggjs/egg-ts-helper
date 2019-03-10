@@ -5,8 +5,8 @@
 import 'cache-require-paths';
 import fs from 'fs';
 import path from 'path';
-import { eggInfoTmp } from '../config';
-import { requireFile, getPkgInfo, EggInfoResult, checkMaybeIsTsProj } from '../utils';
+import { eggInfoPath } from '../config';
+import { requireFile, getPkgInfo, writeFileSync, EggInfoResult, checkMaybeIsTsProj } from '../utils';
 const cwd = findArgs('cwd');
 const eggInfo: EggInfoResult = {};
 const startTime = Date.now();
@@ -46,7 +46,7 @@ if (fs.existsSync(cwd) && fs.statSync(cwd).isDirectory()) {
   }
 }
 
-fs.writeFileSync(eggInfoTmp, JSON.stringify(eggInfo));
+writeFileSync(eggInfoPath, JSON.stringify(eggInfo));
 
 /* istanbul ignore next */
 function noop() {}
@@ -60,9 +60,7 @@ function mockFn(obj, name, fn) {
   const oldFn = obj[name];
   obj[name] = (...args) => {
     const result = fn.apply(obj, args);
-    if (result) {
-      return oldFn.apply(obj, args);
-    }
+    if (result) return oldFn.apply(obj, args);
   };
 }
 

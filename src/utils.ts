@@ -4,7 +4,7 @@ import glob from 'globby';
 import path from 'path';
 import ts from 'typescript';
 import yn from 'yn';
-import { eggInfoTmp } from './config';
+import { eggInfoPath } from './config';
 import { execSync, exec, ExecOptions } from 'child_process';
 
 export const JS_CONFIG = {
@@ -88,14 +88,14 @@ export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(cwd: string, opt
       exec(cmd, opt, err => {
         caches.runningPromise = null;
         if (err) reject(err);
-        resolve(end(getJson(fs.readFileSync(eggInfoTmp).toString())));
+        resolve(end(getJson(fs.readFileSync(eggInfoPath).toString())));
       });
     });
     return caches.runningPromise;
   } else {
     try {
       execSync(cmd, opt);
-      return end(getJson(fs.readFileSync(eggInfoTmp).toString()));
+      return end(getJson(fs.readFileSync(eggInfoPath).toString()));
     } catch (e) {
       return end({});
     }
