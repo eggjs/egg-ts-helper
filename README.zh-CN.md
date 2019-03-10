@@ -518,22 +518,6 @@ module.exports = {
 }
 ```
 
-## 注册器
-
-`egg-ts-helper` 提供了 `register.js` 来更方便的搭配 [egg-bin](https://github.com/eggjs/egg-bin) 使用.
-
-```
-$ egg-bin dev -r egg-ts-helper/register
-```
-
-test/coverage/debugging
-
-```
-$ egg-bin test -r egg-ts-helper/register
-$ egg-bin cov -r egg-ts-helper/register
-$ egg-bin debug -r egg-ts-helper/register
-```
-
 ## 示例项目
 
 `egg-ts-helper` 可用于 egg 的 `ts` 和 `js` 项目.
