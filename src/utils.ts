@@ -4,7 +4,7 @@ import glob from 'globby';
 import path from 'path';
 import ts from 'typescript';
 import yn from 'yn';
-import { eggInfoPath } from './config';
+import { eggInfoPath, tmpDir } from './config';
 import { execSync, exec, ExecOptions } from 'child_process';
 
 export const JS_CONFIG = {
@@ -52,15 +52,16 @@ export interface EggInfoResult {
 const cacheEggInfo = {};
 export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(cwd: string, option: GetEggInfoOpt = {}): T extends 'async' ? Promise<EggInfoResult> : EggInfoResult {
   cacheEggInfo[cwd] = cacheEggInfo[cwd] || {};
-  const cmd = `node ./scripts/eggInfo --cwd=${cwd}`;
+  const cmd = `node ${path.resolve(__dirname, './scripts/eggInfo')}`;
   const opt: ExecOptions = {
-    cwd: __dirname,
+    cwd,
     env: {
       ...process.env,
       TS_NODE_TYPE_CHECK: 'false',
       TS_NODE_TRANSPILE_ONLY: 'true',
       TS_NODE_FILES: 'false',
       EGG_TYPESCRIPT: 'true',
+      CACHE_REQUIRE_PATHS_FILE: path.resolve(tmpDir, './requirePaths.json'),
       ...option.env,
     },
   };
