@@ -2,22 +2,37 @@
  * Getting plugin info in child_process to prevent effecting egg application( splitting scopes ).
  */
 
-import 'ts-node/register';
+import 'cache-require-paths';
 import fs from 'fs';
 import path from 'path';
-import { requireFile, getPkgInfo } from '../utils';
-const url = findArgs('url');
-const eggInfo: { plugins?: PlainObject; config?: PlainObject; } = {};
+import { eggInfoPath } from '../config';
+import { requireFile, getPkgInfo, writeFileSync, EggInfoResult, checkMaybeIsTsProj } from '../utils';
+const cwd = findArgs('cwd');
+const eggInfo: EggInfoResult = {};
+const startTime = Date.now();
+if (checkMaybeIsTsProj(cwd)) {
+  // only require ts-node in ts project
+  require('ts-node/register');
+}
 
-if (url && fs.existsSync(url) && fs.statSync(url).isDirectory()) {
-  const framework = (getPkgInfo(url).egg || {}).framework || 'egg';
-  const loader = getLoader(url, framework);
+if (fs.existsSync(cwd) && fs.statSync(cwd).isDirectory()) {
+  const framework = (getPkgInfo(cwd).egg || {}).framework || 'egg';
+  const loader = getLoader(cwd, framework);
   if (loader) {
     try {
       loader.loadPlugin();
     } catch (e) {
       // do nothing
     }
+
+    // hack loadFile, ignore config file without customLoader for faster booting
+    mockFn(loader, 'loadFile', filepath => {
+      if (filepath && filepath.substring(filepath.lastIndexOf(path.sep) + 1).startsWith('config.')) {
+        const fileContent = fs.readFileSync(filepath, { encoding: 'utf-8' });
+        if (!fileContent.includes('customLoader')) return;
+      }
+      return true;
+    });
 
     try {
       loader.loadConfig();
@@ -27,10 +42,11 @@ if (url && fs.existsSync(url) && fs.statSync(url).isDirectory()) {
 
     eggInfo.plugins = loader.allPlugins;
     eggInfo.config = loader.config;
+    eggInfo.timing = Date.now() - startTime;
   }
 }
 
-process.stdout.write(JSON.stringify(eggInfo));
+writeFileSync(eggInfoPath, JSON.stringify(eggInfo));
 
 /* istanbul ignore next */
 function noop() {}
@@ -38,6 +54,14 @@ function noop() {}
 function findArgs(name: string) {
   const key = `--${name}`;
   return process.argv.find(a => a.startsWith(key))!.substring(key.length + 1);
+}
+
+function mockFn(obj, name, fn) {
+  const oldFn = obj[name];
+  obj[name] = (...args) => {
+    const result = fn.apply(obj, args);
+    if (result) return oldFn.apply(obj, args);
+  };
 }
 
 function getLoader(baseDir: string, framework: string) {

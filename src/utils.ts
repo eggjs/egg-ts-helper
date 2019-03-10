@@ -4,6 +4,7 @@ import glob from 'globby';
 import path from 'path';
 import ts from 'typescript';
 import yn from 'yn';
+import { eggInfoPath } from './config';
 import { execSync, exec, ExecOptions } from 'child_process';
 
 export const JS_CONFIG = {
@@ -45,15 +46,15 @@ export interface GetEggInfoOpt {
 export interface EggInfoResult {
   plugins?: Array<{ from: string; enable: boolean; package?: string; }>;
   config?: PlainObject;
+  timing?: number;
 }
 
 const cacheEggInfo = {};
 export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(cwd: string, option: GetEggInfoOpt = {}): T extends 'async' ? Promise<EggInfoResult> : EggInfoResult {
   cacheEggInfo[cwd] = cacheEggInfo[cwd] || {};
-  const cmd = `node ./scripts/eggInfo --url=${cwd}`;
+  const cmd = `node ./scripts/eggInfo --cwd=${cwd}`;
   const opt: ExecOptions = {
     cwd: __dirname,
-    maxBuffer: 1024 * 1024,
     env: {
       ...process.env,
       TS_NODE_TYPE_CHECK: 'false',
@@ -84,17 +85,17 @@ export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(cwd: string, opt
   if (option.async) {
     // cache promise
     caches.runningPromise = new Promise((resolve, reject) => {
-      exec(cmd, opt, (err, stdout) => {
+      exec(cmd, opt, err => {
         caches.runningPromise = null;
         if (err) reject(err);
-        resolve(end(getJson(stdout || '')));
+        resolve(end(getJson(fs.readFileSync(eggInfoPath).toString())));
       });
     });
     return caches.runningPromise;
   } else {
     try {
-      const info = execSync(cmd, opt);
-      return end(getJson(info.toString()));
+      execSync(cmd, opt);
+      return end(getJson(fs.readFileSync(eggInfoPath).toString()));
     } catch (e) {
       return end({});
     }
@@ -165,11 +166,17 @@ export function writeTsConfig(cwd: string) {
   }
 }
 
-export function checkMaybeIsJsProj(cwd: string) {
-  const pkgInfo = getPkgInfo(cwd);
-  const isJs = !(pkgInfo.egg && pkgInfo.egg.typescript) &&
-    !fs.existsSync(path.resolve(cwd, './tsconfig.json')) &&
-    !fs.existsSync(path.resolve(cwd, './config/config.default.ts')) &&
+export function checkMaybeIsTsProj(cwd: string, pkgInfo?: any) {
+  pkgInfo = pkgInfo || getPkgInfo(cwd);
+  return (pkgInfo.egg && pkgInfo.egg.typescript) ||
+    fs.existsSync(path.resolve(cwd, './tsconfig.json')) ||
+    fs.existsSync(path.resolve(cwd, './config/config.default.ts')) ||
+    fs.existsSync(path.resolve(cwd, './config/config.ts'));
+}
+
+export function checkMaybeIsJsProj(cwd: string, pkgInfo?: any) {
+  pkgInfo = pkgInfo || getPkgInfo(cwd);
+  const isJs = !checkMaybeIsTsProj(cwd, pkgInfo) &&
     (
       fs.existsSync(path.resolve(cwd, './config/config.default.js')) ||
       fs.existsSync(path.resolve(cwd, './jsconfig.json'))
@@ -230,9 +237,9 @@ export function getImportStr(
   importStar?: boolean,
 ) {
   const extname = path.extname(to);
-  let importPath = path.relative(from, to).replace(/\/|\\/g, '/');
-  importPath = importPath.substring(0, importPath.length - extname.length);
-  const isTS = extname === '.ts';
+  const toPathWithoutExt = to.substring(0, to.length - extname.length);
+  const importPath = path.relative(from, toPathWithoutExt).replace(/\/|\\/g, '/');
+  const isTS = extname === '.ts' || fs.existsSync(`${toPathWithoutExt}.d.ts`);
   const importStartStr = isTS && importStar ? '* as ' : '';
   const fromStr = isTS ? `from '${importPath}'` : `= require('${importPath}')`;
   return `import ${importStartStr}${moduleName} ${fromStr};`;
