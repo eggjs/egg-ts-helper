@@ -50,7 +50,7 @@ export interface EggInfoResult {
 const cacheEggInfo = {};
 export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(cwd: string, option: GetEggInfoOpt = {}): T extends 'async' ? Promise<EggInfoResult> : EggInfoResult {
   cacheEggInfo[cwd] = cacheEggInfo[cwd] || {};
-  const cmd = `node ./scripts/eggInfo ${cwd}`;
+  const cmd = `node --inspect-brk=9230 ./scripts/eggInfo --url=${cwd}`;
   const opt: ExecOptions = {
     cwd: __dirname,
     maxBuffer: 1024 * 1024,

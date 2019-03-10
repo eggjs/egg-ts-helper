@@ -6,10 +6,10 @@ import 'ts-node/register';
 import fs from 'fs';
 import path from 'path';
 import { requireFile, getPkgInfo } from '../utils';
-const url = process.argv[2];
+const url = findArgs('url');
 const eggInfo: { plugins?: PlainObject; config?: PlainObject; } = {};
 
-if (fs.existsSync(url) && fs.statSync(url).isDirectory()) {
+if (url && fs.existsSync(url) && fs.statSync(url).isDirectory()) {
   const framework = (getPkgInfo(url).egg || {}).framework || 'egg';
   const loader = getLoader(url, framework);
   if (loader) {
@@ -25,6 +25,11 @@ if (fs.existsSync(url) && fs.statSync(url).isDirectory()) {
       // do nothing
     }
 
+    const config = loader.config || {};
+    loader.loadToApp = hookLoader(config, 'app');
+    loader.loadToContext = hookLoader(config, 'ctx');
+    loader.loadCustomApp();
+
     eggInfo.plugins = loader.allPlugins;
     eggInfo.config = loader.config;
   }
@@ -32,8 +37,27 @@ if (fs.existsSync(url) && fs.statSync(url).isDirectory()) {
 
 process.stdout.write(JSON.stringify(eggInfo));
 
+function hookLoader(config, inject: string) {
+  config.customLoader = config.customLoader || {};
+  return (directory, property, opt) => {
+    if (!config.customLoader.hasOwnProperty(property)) {
+      config.customLoader[property] = {
+        directory,
+        inject,
+        ...opt,
+      };
+    }
+  };
+}
+
 /* istanbul ignore next */
 function noop() {}
+
+function findArgs(name: string) {
+  const key = `--${name}`;
+  const result = process.argv.find(a => a.startsWith(key));
+  return result ? result.substring(key.length + 1) : undefined;
+}
 
 function getLoader(baseDir: string, framework: string) {
   const frameworkPath = path.join(baseDir, 'node_modules', framework);
