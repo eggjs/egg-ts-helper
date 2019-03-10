@@ -114,20 +114,24 @@ describe('utils.test.ts', () => {
   });
 
   it('should getImportStr without error', () => {
-    let importContext = utils.getImportStr('./fixtures/app/typings', './fixtures/app/controller/test.ts', 'Test');
+    const cwd = path.resolve(__dirname, './fixtures/app/');
+    let importContext = utils.getImportStr(path.resolve(cwd, 'typings'), path.resolve(cwd, 'controller/test.ts'), 'Test');
     assert(importContext === "import Test from '../controller/test';");
 
-    importContext = utils.getImportStr('./fixtures/app/typings/app', './fixtures/app/service/test.ts', 'Test');
+    importContext = utils.getImportStr(path.resolve(cwd, 'typings/app'), path.resolve(cwd, 'service/test.ts'), 'Test');
     assert(importContext === "import Test from '../../service/test';");
 
-    importContext = utils.getImportStr('./fixtures/app/typings', './fixtures/app/controller/test.ts', 'Test', true);
+    importContext = utils.getImportStr(path.resolve(cwd, 'app/typings'), path.resolve(cwd, 'app/controller/test.ts'), 'Test', true);
     assert(importContext === "import * as Test from '../controller/test';");
 
-    importContext = utils.getImportStr('./fixtures/app/typings', './fixtures/app/controller/test.js', 'Test');
+    importContext = utils.getImportStr(path.resolve(cwd, 'typings'), path.resolve(cwd, 'controller/test.js'), 'Test');
     assert(importContext === "import Test = require('../controller/test');");
 
-    importContext = utils.getImportStr('./fixtures/app/typings', './fixtures/app/controller/test.js', 'Test', true);
+    importContext = utils.getImportStr(path.resolve(cwd, 'typings'), path.resolve(cwd, 'controller/test.js'), 'Test', true);
     assert(importContext === "import Test = require('../controller/test');");
+
+    importContext = utils.getImportStr(cwd, path.resolve(__dirname, './fixtures/app7/test4.js'), 'Test', true);
+    assert(importContext === "import * as Test from '../app7/test4';");
   });
 
   it('should getModuleObjByPath without error', () => {
