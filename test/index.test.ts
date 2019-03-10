@@ -152,13 +152,11 @@ describe('index.test.ts', () => {
       } as any,
     });
 
-    await sleep(2000);
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/index.d.ts')));
-
     const defaultConfigPath = path.resolve(__dirname, './fixtures/app/config/config.default.ts');
     const baseConfig = fs.readFileSync(defaultConfigPath);
     const localConfigPath = path.resolve(__dirname, './fixtures/app/config/config.local.ts');
-
+    await sleep(2000);
     mockFile(defaultConfigPath, `${baseConfig}\n\n`)
       .then(() => {
         mockFile(defaultConfigPath, `${baseConfig}\n`);
@@ -179,20 +177,17 @@ describe('index.test.ts', () => {
   });
 
   it('should works without error while plugin file changed', async () => {
-    const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
-    mkdirp.sync(dir);
     tsHelper = createTsHelper({
-      cwd: path.resolve(__dirname, './fixtures/app'),
+      cwd: path.resolve(__dirname, './fixtures/app2'),
       watch: true,
       execAtInit: true,
       autoRemoveJs: false,
     });
 
+    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app2/typings/config/plugin.d.ts')));
+    const defaultPluginPath = path.resolve(__dirname, './fixtures/app2/config/plugin.local.ts');
+    const pluginPath = path.resolve(__dirname, './fixtures/app2/config/plugin.ts');
     await sleep(2000);
-
-    assert(fs.existsSync(path.resolve(__dirname, './fixtures/app/typings/config/plugin.d.ts')));
-    const defaultPluginPath = path.resolve(__dirname, './fixtures/app/config/plugin.local.ts');
-    const pluginPath = path.resolve(__dirname, './fixtures/app/config/plugin.ts');
     mockFile(defaultPluginPath, undefined, pluginPath);
 
     await timeoutPromise(resolve => {
