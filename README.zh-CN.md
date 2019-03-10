@@ -231,7 +231,7 @@ module.exports = {
 module.exports = {
   watchDirs: {
     model: {
-      path: 'app/model', // 监听目录
+      directory: 'app/model', // 监听目录
       // pattern: '**/*.(ts|js)', // 遍历的文件表达式，一般都不需要改这个
       generator: 'class', // 生成器名称
       interface: 'IModel',  // interface 名称，如果不填的话，将会随机生成个 interface
@@ -467,7 +467,7 @@ function myGenerator(config, baseConfig) {
 module.exports = {
   watchDirs: {
     model: {
-      path: 'app/model',
+      directory: 'app/model',
       generator: myGenerator,
       trigger: ['add', 'unlink'],
     }
@@ -510,7 +510,7 @@ module.exports = (config, baseConfig) => {
 module.exports = {
   watchDirs: {
     model: {
-      path: 'app/model',
+      directory: 'app/model',
       generator: './my-generator',
       trigger: ['add', 'unlink'],
     }

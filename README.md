@@ -469,7 +469,7 @@ function myGenerator(config, baseConfig) {
 module.exports = {
   watchDirs: {
     model: {
-      path: 'app/model',
+      directory: 'app/model',
       generator: myGenerator,
       trigger: ['add', 'unlink'],
     }
@@ -512,7 +512,7 @@ configure in `tshelper.js` or `package.json`
 module.exports = {
   watchDirs: {
     model: {
-      path: 'app/model',
+      directory: 'app/model',
       generator: './my-generator',
       trigger: ['add', 'unlink'],
     }
