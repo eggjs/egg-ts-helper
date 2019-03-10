@@ -1,4 +1,11 @@
 
+1.24.0 / 2019-03-10
+===================
+
+  * feat: speed up booting (#42)
+  * feat: add custom loader support (#41)
+  * feat: load all plugins (#32)
+
 1.23.0 / 2019-03-06
 ===================
 
