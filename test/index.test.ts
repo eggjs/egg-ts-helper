@@ -228,7 +228,6 @@ describe('index.test.ts', () => {
       });
 
       tsHelper.on('update', file => {
-        console.info(file);
         if (file === path.resolve(cwd, './typings/app/custom3/custom-custom3.d.ts')) {
           return resolve();
         } else {
