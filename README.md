@@ -520,22 +520,6 @@ module.exports = {
 }
 ```
 
-## Register
-
-`egg-ts-helper` offers a `register.js` for easier to use with [egg-bin](https://github.com/eggjs/egg-bin).
-
-```
-$ egg-bin dev -r egg-ts-helper/register
-```
-
-test/coverage/debugging
-
-```
-$ egg-bin test -r egg-ts-helper/register
-$ egg-bin cov -r egg-ts-helper/register
-$ egg-bin debug -r egg-ts-helper/register
-```
-
 ## Demo
 
 `egg-ts-helper` can works in both `ts` and `js` egg project.
