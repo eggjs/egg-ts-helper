@@ -6,10 +6,10 @@ import 'ts-node/register';
 import fs from 'fs';
 import path from 'path';
 import { requireFile, getPkgInfo } from '../utils';
-const url = process.argv[2];
+const url = findArgs('url');
 const eggInfo: { plugins?: PlainObject; config?: PlainObject; } = {};
 
-if (fs.existsSync(url) && fs.statSync(url).isDirectory()) {
+if (url && fs.existsSync(url) && fs.statSync(url).isDirectory()) {
   const framework = (getPkgInfo(url).egg || {}).framework || 'egg';
   const loader = getLoader(url, framework);
   if (loader) {
@@ -34,6 +34,11 @@ process.stdout.write(JSON.stringify(eggInfo));
 
 /* istanbul ignore next */
 function noop() {}
+
+function findArgs(name: string) {
+  const key = `--${name}`;
+  return process.argv.find(a => a.startsWith(key))!.substring(key.length + 1);
+}
 
 function getLoader(baseDir: string, framework: string) {
   const frameworkPath = path.join(baseDir, 'node_modules', framework);
