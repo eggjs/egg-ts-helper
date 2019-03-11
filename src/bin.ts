@@ -5,7 +5,7 @@ import { Command } from 'commander';
 import assert from 'assert';
 import packInfo from '../package.json';
 import { createTsHelperInstance, defaultConfig } from './';
-import { loadModules } from './utils';
+import { loadModules, writeJsConfig, checkMaybeIsJsProj } from './utils';
 const commands = loadModules<SubCommand>(path.resolve(__dirname, './cmd'), true);
 let executeCmd: string | undefined;
 
@@ -67,6 +67,11 @@ function execute() {
   // silent
   if (program.silent) {
     tsHelperConfig.silent = true;
+  }
+
+  if (checkMaybeIsJsProj(tsHelperConfig.cwd)) {
+    // write jsconfig if the project is wrote by js
+    writeJsConfig(tsHelperConfig.cwd);
   }
 
   // create instance

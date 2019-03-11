@@ -33,7 +33,7 @@ describe('cmd/init.test.ts', () => {
     assert(fs.existsSync(path.resolve(appPath, 'tsconfig.json')));
     const pkg = JSON.parse(fs.readFileSync(path.resolve(appPath, 'package.json')).toString());
     assert(pkg.egg.typescript);
-    assert(pkg.egg.require.includes('egg-ts-helper/register'));
+    assert(pkg.egg.declarations);
   });
 
   it('js & prompt', async () => {
@@ -42,7 +42,7 @@ describe('cmd/init.test.ts', () => {
     assert(fs.existsSync(path.resolve(appPath, 'jsconfig.json')));
     const pkg = JSON.parse(fs.readFileSync(path.resolve(appPath, 'package.json')).toString());
     assert(!pkg.egg.typescript);
-    assert(pkg.egg.require.includes('egg-ts-helper/register'));
+    assert(pkg.egg.declarations);
   });
 
   it('tsconfig exist & without prompt', async () => {
@@ -74,5 +74,6 @@ describe('cmd/init.test.ts', () => {
     const newPkg = JSON.parse(fs.readFileSync(path.resolve(appPath, 'package.json')).toString());
     assert(newPkg.egg.require.length === 1);
     assert(newPkg.egg.require[0] === 'egg-ts-helper/register');
+    assert(!newPkg.egg.declarations);
   });
 });
