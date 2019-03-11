@@ -236,7 +236,7 @@ declare module 'egg' {
 
 ### 示例
 
-比如需要给 `app/model` 下的文件创建 `d.ts`，则需要在 `tshelper.js` 中配置一下 `watchDirs.model`。
+比如需要给 `app/model` 下的文件创建 `d.ts`，则需要在你的配置文件中配置一下 `watchDirs.model`。
 
 ```typescript
 // ./tshelper.js
@@ -246,6 +246,7 @@ module.exports = {
     model: {
       directory: 'app/model', // 监听目录
       // pattern: '**/*.(ts|js)', // 遍历的文件表达式，一般都不需要改这个
+      // ignore: '', // 指定忽略某些文件的表达式，默认为空
       generator: 'class', // 生成器名称，取值为 class、auto、function、object
       interface: 'IModel',  // interface 名称，如果不填的话，将会随机生成个 interface
       declareTo: 'Context.model', // 指定定义到 egg 的某个类型下
@@ -302,7 +303,7 @@ interface T100 {
 
 生成器名称，watcher 监听到文件改动的时候会执行该生成器用来重新生成 d.ts，可以使用的生成器名称为 `class` `function` `object` `auto` 。下面列举一下不同生成器生成的声明有什么不同。
 
-##### class
+**generator: 'class'**
 
 生成的声明如下
 
@@ -318,7 +319,7 @@ interface IModel {
 export default class XXXController extends Controller { }
 ```
 
-##### function ( `1.16.0` 开始支持 )
+**generator: 'function'** ( `1.16.0` 开始支持 )
 
 生成的声明如下
 
@@ -336,7 +337,7 @@ export default () => {
 }
 ```
 
-##### object ( `1.16.0` 开始支持 )
+**generator: 'object'** ( `1.16.0` 开始支持 )
 
 生成的声明如下
 
@@ -352,7 +353,7 @@ interface IModel {
 export default {}
 ```
 
-##### auto ( `1.19.0` 开始支持 )
+**generator: 'auto'** ( `1.19.0` 开始支持 )
 
 生成的声明如下，自动判断 import 的类型是方法还是对象还是类，即用了这个，你就不用管 export 的是方法还是对象还是类了，对类型了解不清楚的可以直接用这个。
 
