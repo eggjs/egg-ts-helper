@@ -303,7 +303,7 @@ interface T100 {
 
 生成器名称，watcher 监听到文件改动的时候会执行该生成器用来重新生成 d.ts，可以使用的生成器名称为 `class` `function` `object` `auto` 。下面列举一下不同生成器生成的声明有什么不同。
 
-**generator: 'class'**
+**`generator: 'class'`**
 
 生成的声明如下
 
@@ -319,7 +319,7 @@ interface IModel {
 export default class XXXController extends Controller { }
 ```
 
-**generator: 'function'** ( `1.16.0` 开始支持 )
+**`generator: 'function'`** ( `1.16.0` 开始支持 )
 
 生成的声明如下
 
@@ -337,7 +337,7 @@ export default () => {
 }
 ```
 
-**generator: 'object'** ( `1.16.0` 开始支持 )
+**`generator: 'object'`** ( `1.16.0` 开始支持 )
 
 生成的声明如下
 
@@ -353,7 +353,7 @@ interface IModel {
 export default {}
 ```
 
-**generator: 'auto'** ( `1.19.0` 开始支持 )
+**`generator: 'auto'`** ( `1.19.0` 开始支持 )
 
 生成的声明如下，自动判断 import 的类型是方法还是对象还是类，即用了这个，你就不用管 export 的是方法还是对象还是类了，对类型了解不清楚的可以直接用这个。
 

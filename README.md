@@ -304,7 +304,7 @@ Attentions: Must set `declareTo` if `interface` is not set.
 
 The name of generator, available value is `class` `function` `object` `auto`.
 
-**generator: 'class'**
+**`generator: 'class'`**
 
 the types created by `class` generator as below
 
@@ -320,7 +320,7 @@ It's suitable for module wrote like this
 export default class XXXController extends Controller { }
 ```
 
-**generator: 'function'** ( Support since `1.16.0` )
+**`generator: 'function'`** ( Support since `1.16.0` )
 
 the types created by `function` generator as below
 
@@ -338,7 +338,7 @@ export default () => {
 }
 ```
 
-**generator: 'object'** ( Support since `1.16.0` )
+**`generator: 'object'`** ( Support since `1.16.0` )
 
 the types created by `object` generator as below.
 
@@ -354,7 +354,7 @@ It's suitable for module like this
 export default {}
 ```
 
-**generator: 'auto'** ( Support since `1.19.0` )
+**`generator: 'auto'`** ( Support since `1.19.0` )
 
 the types created by `auto` generator as below. It will check types automatically.
 
