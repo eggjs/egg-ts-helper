@@ -170,54 +170,7 @@ module.exports = {
 - `ETS_SILENT`: silent
 - `ETS_CONFIG_FILE`: configFile
 
-## 生成器
-
-生成器是 `egg-ts-helper` 的核心组件。（ 内置的生成器: https://github.com/whxaxes/egg-ts-helper/tree/master/src/generators.
- ）
-
-在启动的时候，`egg-ts-helper` 会执行所有配置里的 watcher 的生成器，这些生成器将会遍历目录并且收集模块，然后返回 `dist`（ d.ts 的文件路径 ） 以及 `content`（ 引入了上面收集的所有模块并且定义到了 egg 的声明中 ）给 `egg-ts-helper`。`egg-ts-helper` 将根据这两个字段生成声明文件。
-
-可以在 `watchDirs` 中配置 watcher （ 可以在 https://github.com/whxaxes/egg-ts-helper/blob/master/src/index.ts 中的 `getDefaultWatchDirs` 方法中看到默认配置 ）
-
-`egg-ts-helper` 会默认监听以下几个目录 `app/extend`,`app/controller`,`app/service`, `app/config`, `app/middleware`, `app/model`。当在这些个目录里的代码文件更改后，声明会自动重新生成 （ 前提是配置中的 watch 设置为了 true ）。
-
-可以通过 `-i` 的命令关掉指定的 watcher 
-
-```
-$ ets -i extend,controller
-```
-
-也可以在 `tshelper.js` 中配置，设置 `watchDirs.extend` 和 `watchDirs.controller` 为 `false` 即可
-
-```
-// {cwd}/tshelper.js
-
-module.exports = {
-  watchDirs: {
-    extend: false,
-    controller: false,
-  }
-}
-```
-
-再或者在 `package.json` 中配置, 跟上面的配置一样
-
-```
-// {cwd}/package.json
-
-{
-  "egg": {
-    "framework": "egg",
-    "tsHelper": {
-      "watchDirs": {
-        "extend": false
-      }
-    }
-  }
-}
-```
-
-## 使用 CustomLoader
+## Custom Loader
 
 > 在 1.24.0 之后版本支持
 
@@ -250,7 +203,7 @@ export default function(appInfo: EggAppConfig) {
 }
 ```
 
-`egg-ts-helper` 将会根据 `app/model` 目录下的文件，自动生成声明
+`egg-ts-helper` 将会根据 `app/model` 目录下的文件，自动生成声明 （ 参考 https://github.com/whxaxes/egg-boilerplate-d-ts 这个项目 ）
 
 ```typescript
 // This file is created by egg-ts-helper@1.24.1
@@ -277,13 +230,13 @@ declare module 'egg' {
 
 ![image](https://user-images.githubusercontent.com/5856440/54109111-b4848b80-4418-11e9-9da5-77b342f7f814.png)
 
-## 使用生成器的配置
+## Generator
 
-如果需要支持老的 customLoader 方式，则需要使用 `egg-ts-helper` 生成器配置。
+如果需要支持老的 customLoader 方式（ 即指在 app.ts 等中调用 `loader.loadToApp` 或者 `loader.loadToContext` 的方式实现的 customLoader ），则需要使用 `egg-ts-helper` 生成器配置。
 
 ### 示例
 
-给 `model` 创建 `d.ts`，在 `tshelper.js` 中配置一下 `watchDirs.model`。
+比如需要给 `app/model` 下的文件创建 `d.ts`，则需要在 `tshelper.js` 中配置一下 `watchDirs.model`。
 
 ```typescript
 // ./tshelper.js
@@ -293,7 +246,7 @@ module.exports = {
     model: {
       directory: 'app/model', // 监听目录
       // pattern: '**/*.(ts|js)', // 遍历的文件表达式，一般都不需要改这个
-      generator: 'class', // 生成器名称
+      generator: 'class', // 生成器名称，取值为 class、auto、function、object
       interface: 'IModel',  // interface 名称，如果不填的话，将会随机生成个 interface
       declareTo: 'Context.model', // 指定定义到 egg 的某个类型下
       // watch: true, // 是否需要监听文件改动
@@ -307,29 +260,21 @@ module.exports = {
 
 使用上面的配置，会生成下面这个 `d.ts`
 
+> 注意，上面的 generator 是 class ，生成的声明即会对 import 进来的类型直接挂载，不会做任何处理，如果不了解这个，请配置 `auto` 类型。
+
 ```typescript
-import Station from '../../../app/model/station';
+import Station from '../../../app/model/station'; // <-- 遍历 app/model 目录并且 import
 
 declare module 'egg' {
-  interface Context {
-    model: IModel;
+  interface Context { // <-- 这个 Context 是读配置中的 declareTo
+    model: IModel; // <-- 这个 IModel 是读配置中的 interface ，如果不传，会随机生成个 interface
   }
 
-  interface IModel {
-    Station: Station;
+  interface IModel { // <-- 这个 IModel 同上
+    Station: Station; // <-- 将 app/model 中的文件 import 挂载到 IModel 上，从而将类型合并到 ctx.model 中
   }
 }
 ```
-
-可以用来配置 watcher 的配置列表
-
-- path
-- pattern
-- generator
-- caseStyle
-- interface
-- interfaceHandle
-- trigger
 
 ### 不同配置的效果
 
@@ -355,15 +300,15 @@ interface T100 {
 
 #### generator `string`
 
-生成器名称，watcher 监听到文件改动的时候会执行该生成器用来重新生成 d.ts，建议只使用 `class` `function` `object` `auto` 这几个生成器，因为其他几个比较定制化，不太适用于 custom loader。
+生成器名称，watcher 监听到文件改动的时候会执行该生成器用来重新生成 d.ts，可以使用的生成器名称为 `class` `function` `object` `auto` 。下面列举一下不同生成器生成的声明有什么不同。
 
-##### | `generator` 设置为 `class`.
+##### class
 
 生成的声明如下
 
 ```typescript
 interface IModel {
-  Station: Station;
+  Station: Station; // 不做任何处理，直接挂载
 }
 ```
 
@@ -373,13 +318,13 @@ interface IModel {
 export default class XXXController extends Controller { }
 ```
 
-##### | `generator` 设置为 `function`. ( `1.16.0` 开始支持 )
+##### function ( `1.16.0` 开始支持 )
 
 生成的声明如下
 
 ```typescript
 interface IModel {
-  Station: ReturnType<typeof Station>;
+  Station: ReturnType<typeof Station>; // 使用 ReturnType 获得方法的返回类型
 }
 ```
 
@@ -391,13 +336,13 @@ export default () => {
 }
 ```
 
-##### | `generator` 设置为 `object`. ( `1.16.0` 开始支持 )
+##### object ( `1.16.0` 开始支持 )
 
 生成的声明如下
 
 ```typescript
 interface IModel {
-  Station: typeof Station;
+  Station: typeof Station; // 使用 typeof 获得对象的原始类型。
 }
 ```
 
@@ -407,9 +352,9 @@ interface IModel {
 export default {}
 ```
 
-##### | `generator` 设置为 `auto`. ( `1.19.0` 开始支持 )
+##### auto ( `1.19.0` 开始支持 )
 
-生成的声明如下，会自动判断 import 的类型是方法还是对象还是类。
+生成的声明如下，自动判断 import 的类型是方法还是对象还是类，即用了这个，你就不用管 export 的是方法还是对象还是类了，对类型了解不清楚的可以直接用这个。
 
 ```typescript
 type AutoInstanceType<T, U = T extends (...args: any[]) => any ? ReturnType<T> : T> = U extends { new (...args: any[]): any } ? InstanceType<U> : U;
@@ -423,7 +368,7 @@ interface IModel {
 
 #### interfaceHandle `function|string`
 
-如果需要自定义类型，就可以用该配置
+如果在 generator 中找不到合适的生成器类型，可以通过该配置对类型进行预处理。
 
 ```js
 module.exports = {

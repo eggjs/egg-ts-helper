@@ -171,52 +171,7 @@ Also you can pass options by env ( support since 1.22.0 )
 - `ETS_SILENT`: silent
 - `ETS_CONFIG_FILE`: configFile
 
-## Generators
-
-Generator is the core of `egg-ts-helper`. ( build-in generator: https://github.com/whxaxes/egg-ts-helper/tree/master/src/generators
- )
-
-On `egg-ts-helper` startup, it will executes all watcher's generator for traversing directories and collect modules, after executing, generator return fields `dist`( d.ts file path ) and `content`( import these modules and defined to interface of egg. ) to `egg-ts-helper`, then writes `content` to `dist`  ( remove file if `content` is undefined ).
-
-Watcher can be configured in option `watchDirs` ( see `getDefaultWatchDirs` method in https://github.com/whxaxes/egg-ts-helper/blob/master/src/index.ts to know default config of watcher ). `egg-ts-helper` watch these directories `app/extend`,`app/controller`,`app/service`, `app/config`, `app/middleware`, `app/model` by default. The `d.ts` will be recreated when files under these folders are changed ( config.watch should set to `true` ) .
-
-You can disable watcher by `-i` flag.
-
-```
-$ ets -i extend,controller
-```
-
-Or in `tshelper.js`, setting `watchDirs.extend` and `watchDirs.controller` to `false`.
-
-```
-// {cwd}/tshelper.js
-
-module.exports = {
-  watchDirs: {
-    extend: false,
-    controller: false,
-  }
-}
-```
-
-Or in `package.json` , setting is the same as above.
-
-```
-// {cwd}/package.json
-
-{
-  "egg": {
-    "framework": "egg",
-    "tsHelper": {
-      "watchDirs": {
-        "extend": false
-      }
-    }
-  }
-}
-```
-
-## Use Custom Loader
+## Custom Loader
 
 > Support since 1.24.0
 
@@ -276,15 +231,13 @@ And you can easily to use it in your code.
 
 ![image](https://user-images.githubusercontent.com/5856440/54109111-b4848b80-4418-11e9-9da5-77b342f7f814.png)
 
-## Use Generator Config
+## Generator
 
-`egg-ts-helper` using generator to implement feature like loader in egg. and it also support custom loader.
-
-See the example below to know how to configure.
+If you are using `loader.loadToApp` or `loader.loadToContext` to load the instance, you should use generator config.
 
 ### Example
 
-Creating `d.ts` for `model` by `egg-ts-helper`. Setting `watchDirs.model` in `tshelper.js`.
+Creating `d.ts` for files under `app/model`. You should add config field(`watchDirs.model`) in your config file.
 
 ```typescript
 // ./tshelper.js
@@ -292,10 +245,10 @@ Creating `d.ts` for `model` by `egg-ts-helper`. Setting `watchDirs.model` in `ts
 module.exports = {
   watchDirs: {
     model: {
-      directory: 'app/model', // dir path
+      directory: 'app/model', // files directory.
       // pattern: '**/*.(ts|js)', // glob pattern, default is **/*.(ts|js). it doesn't need to configure normally.
       // ignore: '', // ignore glob pattern, default to empty.
-      generator: 'class', // generator name
+      generator: 'class', // generator name, eg: class、auto、function、object
       interface: 'IModel',  // interface name
       declareTo: 'Context.model', // declare to this interface
       // watch: true, // whether need to watch files
@@ -307,32 +260,23 @@ module.exports = {
 }
 ```
 
-The configuration can create d.ts in below.
+The configuration can create d.ts as below.
+
+> Attention, The type will merge into egg without any pre handling if the generator field is `class`, If you dont know how it works, just using `generator: 'auto'` instead.
 
 ```typescript
-import Station from '../../../app/model/station';
+import Station from '../../../app/model/station';// <-- find all files under app/model and import then.
 
 declare module 'egg' {
-  interface Context {
-    model: IModel;
+  interface Context { // <-- Context is reading from `declareTo`
+    model: IModel; // <-- IModel is reading from `interface`, It will create a random interface if this field is empty
   }
 
-  interface IModel {
-    Station: Station;
+  interface IModel { // <-- The same as above.
+    Station: Station; // <-- Merging `Station` to IModel so we can use `ctx.model.Station` in code.
   }
 }
 ```
-
-the options using to configure watcher
-
-- directory
-- pattern
-- ignore
-- generator
-- caseStyle
-- interface
-- interfaceHandle
-- trigger
 
 ### Effect of different options
 
@@ -346,7 +290,7 @@ interface IOther {
 }
 ```
 
-It will use random interface name if `interface` is not set.
+It will use random interface if `interface` is not set.
 
 ```typescript
 interface T100 {
@@ -354,15 +298,15 @@ interface T100 {
 }
 ```
 
-Should set `declareTo` if without `interface`.
+Attentions: Must set `declareTo` if `interface` is not set.
 
 #### generator `string`
 
-The name of generator, ( the generator will be executed and recreate `d.ts` when the file is changed. ) but I recommend to use `class` `function` `object` `auto` only, because the other generator is not suitable for custom loader.
+The name of generator, The names can be used is `class` `function` `object` `auto`.
 
-##### | `generator` set to `class`
+##### class
 
-the types created by `class` generator like below
+the types created by `class` generator as below
 
 ```typescript
 interface IModel {
@@ -370,23 +314,23 @@ interface IModel {
 }
 ```
 
-suitable for module like this
+It's suitable for module wrote like this
 
 ```typescript
 export default class XXXController extends Controller { }
 ```
 
-##### | `generator` set to `function` ( Support since `1.16.0` )
+##### function ( Support since `1.16.0` )
 
-the types created by `function` generator like below
+the types created by `function` generator as below
 
 ```typescript
 interface IModel {
-  Station: ReturnType<typeof Station>;
+  Station: ReturnType<typeof Station>; // Using ReturnType to get return type of function.
 }
 ```
 
-suitable for module like this
+It's suitable for module like this
 
 ```typescript
 export default () => {
@@ -394,9 +338,9 @@ export default () => {
 }
 ```
 
-##### | `generator` set to `object` ( Support since `1.16.0` )
+##### object ( Support since `1.16.0` )
 
-the types created by `object` generator like below.
+the types created by `object` generator as below.
 
 ```typescript
 interface IModel {
@@ -404,15 +348,15 @@ interface IModel {
 }
 ```
 
-suitable for module like this
+It's suitable for module like this
 
 ```typescript
 export default {}
 ```
 
-##### | `generator` set to `auto` ( Support since `1.19.0` )
+##### auto ( Support since `1.19.0` )
 
-the types created by `auto` generator like below. It will check types automatically.
+the types created by `auto` generator as below. It will check types automatically.
 
 ```typescript
 type AutoInstanceType<T, U = T extends (...args: any[]) => any ? ReturnType<T> : T> = U extends { new (...args: any[]): any } ? InstanceType<U> : U;
@@ -422,9 +366,11 @@ interface IModel {
 }
 ```
 
-suitable for every module in above.
+It's suitable for every module in above.
 
 #### interfaceHandle `function|string`
+
+If you cannot find suitable generator in above, you can config the type by this field.
 
 ```js
 module.exports = {
