@@ -217,9 +217,69 @@ module.exports = {
 }
 ```
 
-## 拓展
+## 使用 CustomLoader
 
-`egg-ts-helper` 通过生成器实现了 egg 的 loader 功能，因此也支持配置 custom loader.
+> 在 1.24.0 之后版本支持
+
+`egg-ts-helper` 支持 egg 的 customLoader 配置，会自动去读取应用/插件/框架中的 customLoader 配置. 详情请看 https://github.com/eggjs/egg/issues/3480 
+
+在 `config.default.ts` 中配置 customLoader
+
+```typescript
+'use strict';
+
+import { EggAppConfig, PowerPartial } from 'egg';
+
+export default function(appInfo: EggAppConfig) {
+  const config = {} as PowerPartial<EggAppConfig>;
+
+  config.keys = appInfo.name + '123123';
+
+  config.customLoader = {
+    model: {
+      directory: 'app/model',
+      inject: 'app',
+      caseStyle: 'upper',
+    },
+  };
+
+  return {
+    ...config as {},
+    ...bizConfig,
+  };
+}
+```
+
+`egg-ts-helper` 将会根据 `app/model` 目录下的文件，自动生成声明
+
+```typescript
+// This file is created by egg-ts-helper@1.24.1
+// Do not modify this file!!!!!!!!!
+
+import 'egg';
+type AutoInstanceType<T, U = T extends (...args: any[]) => any ? ReturnType<T> : T> = U extends { new (...args: any[]): any } ? InstanceType<U> : U;
+import ExportCastle from '../../../app/model/Castle';
+import ExportUser from '../../../app/model/User';
+
+declare module 'egg' {
+  interface Application {
+    model: T_custom_model;
+  }
+
+  interface T_custom_model {
+    Castle: AutoInstanceType<typeof ExportCastle>;
+    User: AutoInstanceType<typeof ExportUser>;
+  }
+}
+```
+
+然后你就可以愉快的在代码中使用了。
+
+![image](https://user-images.githubusercontent.com/5856440/54109111-b4848b80-4418-11e9-9da5-77b342f7f814.png)
+
+## 使用生成器的配置
+
+如果需要支持老的 customLoader 方式，则需要使用 `egg-ts-helper` 生成器配置。
 
 ### 示例
 

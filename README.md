@@ -216,7 +216,67 @@ Or in `package.json` , setting is the same as above.
 }
 ```
 
-## Extend
+## Use Custom Loader
+
+> Support since 1.24.0
+
+`egg-ts-helper` support customLoader configuration of egg. see https://github.com/eggjs/egg/issues/3480 
+
+Configure in `config.default.ts`
+
+```typescript
+'use strict';
+
+import { EggAppConfig, PowerPartial } from 'egg';
+
+export default function(appInfo: EggAppConfig) {
+  const config = {} as PowerPartial<EggAppConfig>;
+
+  config.keys = appInfo.name + '123123';
+
+  config.customLoader = {
+    model: {
+      directory: 'app/model',
+      inject: 'app',
+      caseStyle: 'upper',
+    },
+  };
+
+  return {
+    ...config as {},
+    ...bizConfig,
+  };
+}
+```
+
+`egg-ts-helper` will auto create the d.ts for files under `app/model`
+
+```typescript
+// This file is created by egg-ts-helper@1.24.1
+// Do not modify this file!!!!!!!!!
+
+import 'egg';
+type AutoInstanceType<T, U = T extends (...args: any[]) => any ? ReturnType<T> : T> = U extends { new (...args: any[]): any } ? InstanceType<U> : U;
+import ExportCastle from '../../../app/model/Castle';
+import ExportUser from '../../../app/model/User';
+
+declare module 'egg' {
+  interface Application {
+    model: T_custom_model;
+  }
+
+  interface T_custom_model {
+    Castle: AutoInstanceType<typeof ExportCastle>;
+    User: AutoInstanceType<typeof ExportUser>;
+  }
+}
+```
+
+And you can easily to use it in your code.
+
+![image](https://user-images.githubusercontent.com/5856440/54109111-b4848b80-4418-11e9-9da5-77b342f7f814.png)
+
+## Use Generator Config
 
 `egg-ts-helper` using generator to implement feature like loader in egg. and it also support custom loader.
 
