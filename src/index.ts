@@ -279,11 +279,12 @@ export default class TsHelper extends EventEmitter {
     }
 
     // base config
-    const config = { ...defaultConfig, watchDirs: getDefaultWatchDirs(options) };
-    config.cwd = options.cwd || config.cwd;
+    const config = { ...defaultConfig };
     const configFile = options.configFile || config.configFile;
+    config.cwd = options.cwd || config.cwd;
     const pkgInfo = utils.getPkgInfo(config.cwd);
     config.framework = options.framework || defaultConfig.framework;
+    config.watchDirs = getDefaultWatchDirs(config);
 
     // read from package.json
     if (pkgInfo.egg) {
