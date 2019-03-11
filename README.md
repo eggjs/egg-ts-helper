@@ -237,7 +237,7 @@ If you are using `loader.loadToApp` or `loader.loadToContext` to load the instan
 
 ### Example
 
-Creating `d.ts` for files under `app/model`. You should add config field(`watchDirs.model`) in your config file.
+Creating `d.ts` for files under `app/model`. You should add config `watchDirs.model` in your config file.
 
 ```typescript
 // ./tshelper.js
