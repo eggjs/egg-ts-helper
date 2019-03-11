@@ -37,6 +37,16 @@ export const TS_CONFIG = {
   },
 };
 
+export function deepGet(obj, props: string) {
+  if (!obj) return;
+  const propList = props.split('.');
+  while (propList.length) {
+    obj = obj[propList.shift()!];
+    if (!obj) return;
+  }
+  return obj;
+}
+
 export interface GetEggInfoOpt {
   async?: boolean;
   env?: PlainObject<string>;
@@ -44,7 +54,7 @@ export interface GetEggInfoOpt {
 }
 
 export interface EggInfoResult {
-  plugins?: Array<{ from: string; enable: boolean; package?: string; }>;
+  plugins?: PlainObject<{ from: string; enable: boolean; package?: string; }>;
   config?: PlainObject;
   timing?: number;
 }

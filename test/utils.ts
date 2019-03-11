@@ -2,6 +2,7 @@ import * as child_process from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
+import del from 'del';
 import { promisify } from 'util';
 import { createTsHelperInstance, TsHelperOption } from '../dist';
 const psList: child_process.ChildProcess[] = [];
@@ -68,7 +69,7 @@ export function addProc(proc: child_process.ChildProcess) {
   if (!psList.includes(proc)) psList.push(proc);
 }
 
-export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, waitTime = 5000, waitInfo?: { stdout?: string | RegExp; stderr?: string | RegExp }) {
+export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, waitTime = +(process.env.UT_WAIT_TIME || 5000), waitInfo?: { stdout?: string | RegExp; stderr?: string | RegExp }) {
   addProc(proc);
   return new Promise<{ stdout: string; stderr: string}>(resolve => {
     let stdout = '';
@@ -188,4 +189,9 @@ export function timeoutPromise(cb, t = 10000) {
     new Promise(cb),
     timeout(t),
   ]);
+}
+
+export function createNodeModuleSym(dir: string) {
+  del.sync(path.resolve(dir, './node_modules'));
+  fs.symlinkSync(path.resolve(__dirname, '../node_modules'), path.resolve(dir, './node_modules'), 'dir');
 }

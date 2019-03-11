@@ -20,23 +20,22 @@ describe('generators/plugin.test.ts', () => {
   });
 
   it('should remove file if eggInfo.plugins is undefined', () => {
-    mm(utils, 'getEggInfo', (_, options) => (options.callback({})));
+    mm(utils, 'getEggInfo', (_, options) => (options ? options.callback({}) : {}));
     const result = triggerGenerator<GeneratorResult>('plugin', path.resolve(__dirname, appDir));
     assert(result.dist);
     assert(!result.content);
   });
 
   it('should remove file if eggInfo.plugins is empty object', () => {
-    mm(utils, 'getEggInfo', (_, options) => (options.callback({ plugins: {} })));
+    mm(utils, 'getEggInfo', (_, options) => (options ? options.callback({}) : {}));
     const result = triggerGenerator<GeneratorResult>('plugin', path.resolve(__dirname, appDir));
     assert(result.dist);
     assert(!result.content);
   });
 
   it('should format plugin name', () => {
-    mm(utils, 'getEggInfo', (_, options) => (options.callback({
-      plugins: { 'kiss-ass': { package: 'kiss-ass', enable: true, from: 'kiss-ass' } },
-    })));
+    const mockData = { plugins: { 'kiss-ass': { package: 'kiss-ass', enable: true, from: 'kiss-ass' } } };
+    mm(utils, 'getEggInfo', (_, options) => (options ? options.callback(mockData) : mockData));
     const result = triggerGenerator<GeneratorResult>('plugin', path.resolve(__dirname, appDir));
     assert(result.dist);
     assert(result.content!.includes('\'kiss-ass\'?: EggPluginItem'));

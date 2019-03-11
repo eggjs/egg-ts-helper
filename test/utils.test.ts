@@ -110,7 +110,7 @@ describe('utils.test.ts', () => {
 
   it('should check module exist without error', () => {
     assert(!!utils.moduleExist('chokidar'));
-    assert(!utils.moduleExist('egg-sequelize'));
+    assert(!utils.moduleExist('egg-asd'));
   });
 
   it('should getImportStr without error', () => {
@@ -200,5 +200,12 @@ describe('utils.test.ts', () => {
     assert(json.abc);
     json = utils.getJson('{ "abc: 123 }');
     assert(json);
+  });
+
+  it('should deepGet without error', async () => {
+    assert(utils.deepGet(undefined, 'abc') === undefined);
+    assert(utils.deepGet({ abc: 1 }, 'abc') === 1);
+    assert(utils.deepGet({ abc: { bbc: 1 } }, 'abc.bbc') === 1);
+    assert(utils.deepGet({ abc: undefined }, 'abc.bbc') === undefined);
   });
 });

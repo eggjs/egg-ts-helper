@@ -54,8 +54,8 @@ class InitCommand implements SubCommand {
 
     // add egg-ts-helper/register to egg.require
     pkgInfo.egg.require = pkgInfo.egg.require || [];
-    if (!pkgInfo.egg.require.includes('egg-ts-helper/register')) {
-      pkgInfo.egg.require.push('egg-ts-helper/register');
+    if (!pkgInfo.egg.require.includes('egg-ts-helper/register') && !pkgInfo.egg.declarations) {
+      pkgInfo.egg.declarations = true;
     }
 
     // write package.json

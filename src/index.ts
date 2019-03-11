@@ -4,9 +4,10 @@ import assert from 'assert';
 import { EventEmitter } from 'events';
 import fs from 'fs';
 import path from 'path';
-import { declMapping, dtsComment } from './config';
+import { declMapping, dtsComment, dtsCommentRE } from './config';
 import Watcher, { WatchItem } from './watcher';
 import * as utils from './utils';
+import glob from 'globby';
 const debug = d('egg-ts-helper#index');
 
 declare global {
@@ -70,7 +71,7 @@ export const defaultConfig = {
 };
 
 // default watch dir
-export function getDefaultWatchDirs(opt?: TsHelperOption) {
+export function getDefaultWatchDirs(opt: TsHelperOption = {}) {
   const baseConfig: { [key: string]: Partial<WatchItem> } = {};
 
   // extend
@@ -102,17 +103,21 @@ export function getDefaultWatchDirs(opt?: TsHelperOption) {
   };
 
   // model
+  const eggInfo = (opt && opt.cwd) ? utils.getEggInfo(opt.cwd) : undefined;
+  const hasModelInCustomLoader = !!utils.deepGet(eggInfo, 'config.customLoader.model');
+  const sequelizeInfo = utils.deepGet(eggInfo, 'plugins.sequelize') || {};
+  const isUsingSequelize = sequelizeInfo.package === 'egg-sequelize' && sequelizeInfo.enable;
   baseConfig.model = {
     directory: 'app/model',
     generator: 'function',
     interface: 'IModel',
     caseStyle: 'upper',
+    enabled: !hasModelInCustomLoader,
+    ...(isUsingSequelize ? {
+      interface: 'Sequelize',
+      framework: 'sequelize',
+    } : {}),
   };
-
-  if (opt && utils.moduleExist('egg-sequelize', opt.cwd)) {
-    baseConfig.model.interface = 'Sequelize';
-    baseConfig.model.framework = 'sequelize';
-  }
 
   // config
   baseConfig.config = {
@@ -164,6 +169,9 @@ export default class TsHelper extends EventEmitter {
 
     // configure ets
     this.configure(options);
+
+    // clean files
+    this.cleanFiles();
 
     // init watcher
     this.initWatcher();
@@ -227,6 +235,18 @@ export default class TsHelper extends EventEmitter {
     }
   }
 
+  // clean old files in startup
+  cleanFiles() {
+    const cwd = this.config.typings;
+    glob.sync([ '**/*.d.ts', '!**/node_modules' ], { cwd })
+      .forEach(file => {
+        const fileUrl = path.resolve(cwd, file);
+        const content = fs.readFileSync(fileUrl, { encoding: 'utf-8' });
+        const isGeneratedByEts = content.match(dtsCommentRE);
+        if (isGeneratedByEts) fs.unlinkSync(fileUrl);
+      });
+  }
+
   // register watcher
   registerWatcher(name: string, watchConfig: WatchItem) {
     this.destroyWatcher(name);
@@ -259,11 +279,12 @@ export default class TsHelper extends EventEmitter {
     }
 
     // base config
-    const config = { ...defaultConfig, watchDirs: getDefaultWatchDirs(options) };
-    config.cwd = options.cwd || config.cwd;
+    const config = { ...defaultConfig };
     const configFile = options.configFile || config.configFile;
+    config.cwd = options.cwd || config.cwd;
     const pkgInfo = utils.getPkgInfo(config.cwd);
     config.framework = options.framework || defaultConfig.framework;
+    config.watchDirs = getDefaultWatchDirs(config);
 
     // read from package.json
     if (pkgInfo.egg) {

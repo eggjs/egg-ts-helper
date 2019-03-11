@@ -2,6 +2,7 @@ import path from 'path';
 import assert = require('assert');
 import { GeneratorResult } from '../../dist/';
 import { triggerGenerator } from './utils';
+import { createNodeModuleSym } from '../utils';
 
 describe('generators/class.test.ts', () => {
   const appDir = path.resolve(__dirname, '../fixtures/app');
@@ -53,6 +54,7 @@ describe('generators/class.test.ts', () => {
 
   it('should support sequelize with model', () => {
     const newAppDir = path.resolve(__dirname, '../fixtures/app4');
+    createNodeModuleSym(newAppDir);
     const result = triggerGenerator<GeneratorResult>('model', newAppDir, undefined);
     assert(result.content!.includes('declare module \'sequelize\' {'));
     assert(result.content!.includes('interface Sequelize'));
