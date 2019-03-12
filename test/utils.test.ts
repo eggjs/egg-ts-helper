@@ -207,5 +207,37 @@ describe('utils.test.ts', () => {
     assert(utils.deepGet({ abc: 1 }, 'abc') === 1);
     assert(utils.deepGet({ abc: { bbc: 1 } }, 'abc.bbc') === 1);
     assert(utils.deepGet({ abc: undefined }, 'abc.bbc') === undefined);
+    assert(utils.deepGet({ abc: true }, 'abc.bbc') === undefined);
+    assert(utils.deepGet({ abc: [ true ] }, 'abc.0') === true);
+  });
+
+  it('should deepSet without error', async () => {
+    const obj: any = {};
+    utils.deepSet(obj, 'abc.bbc', 123);
+    assert(obj.abc.bbc === 123);
+    utils.deepSet(obj, 'abc.ccc', 123);
+    assert(obj.abc.ccc === 123);
+    assert(utils.deepSet(obj, 'abc.ccc.bbb', 123) === undefined);
+    assert(obj.abc.ccc === 123);
+    utils.deepSet(obj, 'abc', 123);
+    assert(obj.abc === 123);
+    assert(utils.deepSet(undefined, 'abc', 123) === undefined);
+  });
+
+  it('should composeValueByFields without error', async () => {
+    const fields = [ 'ets', 'tsHelper' ];
+    const obj = utils.composeValueByFields({
+      ets: {  watchDirs: { enable: false } },
+      ['ets.watchDirs.enable']: true,
+      ['ets.watch']: true,
+      ['tsHelper.watchDirs.model']: {
+        directory: 'app/model',
+      },
+      whatEver: { abb: true },
+    }, fields)!;
+    assert(obj.watchDirs.enable === true);
+    assert(obj.watch === true);
+    assert(obj.watchDirs.model.directory === 'app/model');
+    assert(!obj.abb);
   });
 });

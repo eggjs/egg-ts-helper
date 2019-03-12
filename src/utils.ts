@@ -42,9 +42,38 @@ export function deepGet(obj, props: string) {
   const propList = props.split('.');
   while (propList.length) {
     obj = obj[propList.shift()!];
-    if (!obj) return;
+    if (!obj || (typeof obj !== 'object' && propList.length)) return;
   }
   return obj;
+}
+
+export function deepSet(obj, props: string, value: any) {
+  if (!obj) return;
+  const propList = props.split('.');
+  while (propList.length > 1) {
+    const key = propList.shift()!;
+    if (obj[key] && typeof obj[key] !== 'object') {
+      return;
+    }
+    obj = obj[key] = obj[key] || {};
+  }
+  obj[propList.shift()!] = value;
+  return obj;
+}
+
+export function composeValueByFields(obj, fields: string[]) {
+  if (!obj) return;
+  let baseConfig: PlainObject = {};
+  Object.keys(obj).forEach(key => {
+    for (const field of fields) {
+      if (key === field) {
+        baseConfig = obj[key] || {};
+      } else if (key.startsWith(`${field}.`)) {
+        deepSet(baseConfig, key.substring(field.length + 1), obj[key]);
+      }
+    }
+  });
+  return baseConfig;
 }
 
 export interface GetEggInfoOpt {
@@ -54,7 +83,8 @@ export interface GetEggInfoOpt {
 }
 
 export interface EggInfoResult {
-  plugins?: PlainObject<{ from: string; enable: boolean; package?: string; }>;
+  eggPaths?: string[];
+  plugins?: PlainObject<{ from: string; enable: boolean; package?: string; path: string; }>;
   config?: PlainObject;
   timing?: number;
 }
