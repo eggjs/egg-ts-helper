@@ -170,15 +170,14 @@ export default class TsHelper extends EventEmitter {
     // configure ets
     this.configure(options);
 
-    // clean files
-    this.cleanFiles();
-
     // init watcher
     this.initWatcher();
   }
 
   // build all watcher
   build() {
+    // clean old files
+    this.cleanFiles();
     this.watcherList.forEach(watcher => watcher.execute());
     return this;
   }
@@ -286,33 +285,26 @@ export default class TsHelper extends EventEmitter {
     config.framework = options.framework || defaultConfig.framework;
     config.watchDirs = getDefaultWatchDirs(config);
 
-    // allowed config fields
-    const configFields = [ 'ets', 'tsHelper' ];
-    const mergePkgConfig = pkg => {
-      mergeConfig(config, utils.composeValueByFields(pkg, configFields));
-      mergeConfig(config, utils.composeValueByFields(pkg.egg, configFields));
-    };
-
     // read config from plugins/eggPaths
     const eggInfo = utils.getEggInfo(config.cwd);
-    if (eggInfo.plugins && eggInfo.eggPaths) {
-      const pathList: string[] = [];
+    if (eggInfo.plugins) {
+      // read from plugins
       Object.keys(eggInfo.plugins)
         .forEach(k => {
           const pluginInfo = eggInfo.plugins![k];
-          if (pluginInfo.enable && pluginInfo.path) pathList.push(pluginInfo.path);
+          if (pluginInfo.enable && pluginInfo.path) {
+            mergeConfig(config, utils.getConfigFromPkg(utils.getPkgInfo(pluginInfo.path)));
+          }
         });
 
-      pathList
-        .concat(eggInfo.eggPaths)
-        .forEach(p => {
-          const pkg = utils.getPkgInfo(p);
-          if (pkg) mergePkgConfig(pkg);
-        });
+      // read from eggPaths
+      eggInfo.eggPaths!.forEach(p => {
+        mergeConfig(config, utils.getConfigFromPkg(utils.getPkgInfo(p)));
+      });
     }
 
     // read from package.json
-    mergePkgConfig(pkgInfo);
+    mergeConfig(config, utils.getConfigFromPkg(pkgInfo));
 
     // read from local file
     mergeConfig(config, utils.requireFile(utils.getAbsoluteUrlByCwd(configFile, config.cwd)));

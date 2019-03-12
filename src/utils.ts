@@ -4,7 +4,7 @@ import glob from 'globby';
 import path from 'path';
 import ts from 'typescript';
 import yn from 'yn';
-import { eggInfoPath, tmpDir } from './config';
+import { eggInfoPath, tmpDir, configFields } from './config';
 import { execSync, exec, ExecOptions } from 'child_process';
 
 export const JS_CONFIG = {
@@ -61,6 +61,10 @@ export function deepSet(obj, props: string, value: any) {
   return obj;
 }
 
+export function getConfigFromPkg(pkg) {
+  return composeValueByFields(pkg, configFields) || composeValueByFields(pkg.egg, configFields);
+}
+
 export function composeValueByFields(obj, fields: string[]) {
   if (!obj) return;
   let baseConfig: PlainObject = {};
@@ -82,9 +86,17 @@ export interface GetEggInfoOpt {
   callback?: (result: EggInfoResult) => any;
 }
 
+export interface EggPluginInfo {
+  from: string;
+  enable: boolean;
+  package?: string;
+  path: string;
+  etsConfig?: PlainObject;
+}
+
 export interface EggInfoResult {
   eggPaths?: string[];
-  plugins?: PlainObject<{ from: string; enable: boolean; package?: string; path: string; }>;
+  plugins?: PlainObject<EggPluginInfo>;
   config?: PlainObject;
   timing?: number;
 }
@@ -390,9 +402,15 @@ export function extend<T = any>(obj, ...args: Array<Partial<T>>): T {
   return obj;
 }
 
-// require package.json
+// load package.json
 export function getPkgInfo(cwd: string) {
-  return requireFile(path.resolve(cwd, './package.json')) || {};
+  const pkgPath = path.resolve(cwd, './package.json');
+  if (!fs.existsSync(pkgPath)) return {};
+  try {
+    return JSON.parse(fs.readFileSync(pkgPath, { encoding: 'utf-8' }));
+  } catch (e) {
+    return {};
+  }
 }
 
 // format property

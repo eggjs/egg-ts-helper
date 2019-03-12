@@ -6,16 +6,16 @@ import 'cache-require-paths';
 import fs from 'fs';
 import path from 'path';
 import { eggInfoPath } from '../config';
-import { requireFile, getPkgInfo, writeFileSync, EggInfoResult, checkMaybeIsTsProj } from '../utils';
+import * as utils from '../utils';
 const cwd = process.cwd();
-const eggInfo: EggInfoResult = {};
+const eggInfo: utils.EggInfoResult = {};
 const startTime = Date.now();
-if (checkMaybeIsTsProj(cwd)) {
+if (utils.checkMaybeIsTsProj(cwd)) {
   // only require ts-node in ts project
   require('ts-node/register');
 }
 
-const framework = (getPkgInfo(cwd).egg || {}).framework || 'egg';
+const framework = (utils.getPkgInfo(cwd).egg || {}).framework || 'egg';
 const loader = getLoader(cwd, framework);
 if (loader) {
   try {
@@ -41,11 +41,11 @@ if (loader) {
 
   eggInfo.plugins = loader.allPlugins;
   eggInfo.config = loader.config;
-  eggInfo.eggPaths = loader.eggPaths;
+  eggInfo.eggPaths = loader.eggPaths || [];
   eggInfo.timing = Date.now() - startTime;
 }
 
-writeFileSync(eggInfoPath, JSON.stringify(eggInfo));
+utils.writeFileSync(eggInfoPath, JSON.stringify(eggInfo));
 
 /* istanbul ignore next */
 function noop() {}
@@ -64,7 +64,7 @@ function getLoader(baseDir: string, framework: string) {
   /* istanbul ignore if */
   if (!eggCore) return;
   const EggLoader = eggCore.EggLoader;
-  const egg = requireFile(frameworkPath) || requireFile(framework);
+  const egg = utils.requireFile(frameworkPath) || utils.requireFile(framework);
   /* istanbul ignore if */
   if (!egg || !EggLoader) return;
   process.env.EGG_SERVER_ENV = 'local';
@@ -86,10 +86,10 @@ function findEggCore(baseDir: string, frameworkPath: string) {
     eggCorePath = path.join(frameworkPath, 'node_modules/egg-core');
   }
   // try to load egg-core in cwd
-  const eggCore = requireFile(eggCorePath);
+  const eggCore = utils.requireFile(eggCorePath);
   if (!eggCore) {
     // try to resolve egg-core
-    return requireFile('egg-core');
+    return utils.requireFile('egg-core');
   }
   return eggCore;
 }
