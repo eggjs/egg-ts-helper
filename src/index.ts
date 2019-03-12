@@ -285,10 +285,10 @@ export default class TsHelper extends EventEmitter {
     config.framework = options.framework || defaultConfig.framework;
     config.watchDirs = getDefaultWatchDirs(config);
 
-    // read config from plugins/eggPaths
     const eggInfo = utils.getEggInfo(config.cwd);
+
+    // read from plugins
     if (eggInfo.plugins) {
-      // read from plugins
       Object.keys(eggInfo.plugins)
         .forEach(k => {
           const pluginInfo = eggInfo.plugins![k];
@@ -296,9 +296,11 @@ export default class TsHelper extends EventEmitter {
             mergeConfig(config, utils.getConfigFromPkg(utils.getPkgInfo(pluginInfo.path)));
           }
         });
+    }
 
-      // read from eggPaths
-      eggInfo.eggPaths!.forEach(p => {
+    // read from eggPaths
+    if (eggInfo.eggPaths) {
+      eggInfo.eggPaths.forEach(p => {
         mergeConfig(config, utils.getConfigFromPkg(utils.getPkgInfo(p)));
       });
     }

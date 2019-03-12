@@ -41,7 +41,7 @@ if (loader) {
 
   eggInfo.plugins = loader.allPlugins;
   eggInfo.config = loader.config;
-  eggInfo.eggPaths = loader.eggPaths || [];
+  eggInfo.eggPaths = loader.eggPaths;
   eggInfo.timing = Date.now() - startTime;
 }
 
