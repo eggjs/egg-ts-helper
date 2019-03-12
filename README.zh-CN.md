@@ -92,7 +92,6 @@ $ ets -h
 | silent | `boolean` | false | 静默执行，不输出日志 |
 | watch | `boolean` | false | 是否监听文件改动 |
 | watchOptions | `object` | undefined | chokidar 的[配置](https://github.com/paulmillr/chokidar#api) |
-| execAtInit | `boolean` | false | 是否启动的时候就执行声明生成 |
 | configFile | `string` | {cwd}/tshelper.(js|json) | 配置文件路径 |
 | watchDirs | `object` | | 生成器配置 |
 
@@ -105,7 +104,6 @@ $ ets -h
 
 module.exports = {
   watch: true,
-  execAtInit: true,
   watchDirs: {
     model: {
       enabled: true,
@@ -123,7 +121,6 @@ module.exports = {
 
 {
   "watch": true,
-  "execAtInit": true,
   "watchDirs": {
     "model": {
       "enabled": true,
@@ -144,7 +141,6 @@ module.exports = {
     "framework": "egg",
     "tsHelper": {
       "watch": true,
-      "execAtInit": true,
       "watchDirs": {
         "model": {
           "enabled": true,
@@ -166,7 +162,6 @@ module.exports = {
 - `ETS_AUTO_REMOVE_JS`: autoRemoveJs
 - `ETS_THROTTLE`: throttle
 - `ETS_WATCH`: watch
-- `ETS_EXEC_AT_INIT`: execAtInit
 - `ETS_SILENT`: silent
 - `ETS_CONFIG_FILE`: configFile
 

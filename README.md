@@ -93,7 +93,6 @@ $ ets -h
 | silent | `boolean` | false | ignore logging |
 | watch | `boolean` | false | watch file change or not |
 | watchOptions | `object` | undefined | chokidar [options](https://github.com/paulmillr/chokidar#api) |
-| execAtInit | `boolean` | false | execute d.ts generation while instance was created |
 | configFile | `string` | {cwd}/tshelper.(js|json) | configure file path |
 | watchDirs | `object` | | generator configuration |
 
@@ -106,7 +105,6 @@ In `tshelper.js`
 
 module.exports = {
   watch: true,
-  execAtInit: true,
   watchDirs: {
     model: {
       enabled: true,
@@ -124,7 +122,6 @@ In `tshelper.json`
 
 {
   "watch": true,
-  "execAtInit": true,
   "watchDirs": {
     "model": {
       "enabled": true,
@@ -145,7 +142,6 @@ In `package.json`
     "framework": "egg",
     "tsHelper": {
       "watch": true,
-      "execAtInit": true,
       "watchDirs": {
         "model": {
           "enabled": true,
@@ -167,7 +163,6 @@ Also you can pass options by env ( support since 1.22.0 )
 - `ETS_AUTO_REMOVE_JS`: autoRemoveJs
 - `ETS_THROTTLE`: throttle
 - `ETS_WATCH`: watch
-- `ETS_EXEC_AT_INIT`: execAtInit
 - `ETS_SILENT`: silent
 - `ETS_CONFIG_FILE`: configFile
 
