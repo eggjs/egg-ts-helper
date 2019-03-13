@@ -68,7 +68,7 @@ $ ets -h
     -v, --version           版本号
     -w, --watch             是否监听文件改动
     -c, --cwd [path]        Egg 的项目目录，(默认值: process.cwd)
-    -C, --config [path]     配置文件，入参应该是合法的 JSON/JS 文件 (默认值: {cwd}/tshelper.js)
+    -C, --config [path]     配置文件，入参应该是合法的 JSON/JS 文件 (默认值: {cwd}/tshelper)
     -o, --oneForAll [path]  创建一个 import 了所有生成的 d.ts 的声明 (默认值: typings/ets.d.ts)
     -s, --silent            静默执行，不输出日志
     -i, --ignore [dirs]     忽略 watchDirs 中的相关配置，可以通过逗号配置忽略多个，比如: -i controller,service
