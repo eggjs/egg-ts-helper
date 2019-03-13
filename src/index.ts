@@ -3,6 +3,7 @@ import d from 'debug';
 import assert from 'assert';
 import { EventEmitter } from 'events';
 import fs from 'fs';
+import chalk from 'chalk';
 import path from 'path';
 import { declMapping, dtsComment, dtsCommentRE } from './config';
 import Watcher, { WatchItem } from './watcher';
@@ -114,8 +115,8 @@ export function getDefaultWatchDirs(opt: TsHelperOption = {}) {
     caseStyle: 'upper',
     enabled: !hasModelInCustomLoader,
     ...(isUsingSequelize ? {
+      module: 'sequelize',
       interface: 'Sequelize',
-      framework: 'sequelize',
     } : {}),
   };
 
@@ -190,12 +191,16 @@ export default class TsHelper extends EventEmitter {
   }
 
   // log
-  log(info) {
-    if (this.config.silent) {
+  log(info: string, ignoreSilent?: boolean) {
+    if (!ignoreSilent && this.config.silent) {
       return;
     }
 
     utils.log(info);
+  }
+
+  warn(info: string) {
+    this.log(chalk.yellow(info), true);
   }
 
   // create oneForAll file
@@ -240,7 +245,7 @@ export default class TsHelper extends EventEmitter {
     glob.sync([ '**/*.d.ts', '!**/node_modules' ], { cwd })
       .forEach(file => {
         const fileUrl = path.resolve(cwd, file);
-        const content = fs.readFileSync(fileUrl, { encoding: 'utf-8' });
+        const content = fs.readFileSync(fileUrl, 'utf-8');
         const isGeneratedByEts = content.match(dtsCommentRE);
         if (isGeneratedByEts) fs.unlinkSync(fileUrl);
       });
@@ -270,6 +275,38 @@ export default class TsHelper extends EventEmitter {
     return watcher;
   }
 
+  private loadWatcherConfig(config: TsHelperConfig, options: TsHelperOption) {
+    const configFile = options.configFile || config.configFile;
+    const eggInfo = utils.getEggInfo(config.cwd);
+
+    // read from enabled plugins
+    if (eggInfo.plugins) {
+      Object.keys(eggInfo.plugins)
+        .forEach(k => {
+          const pluginInfo = eggInfo.plugins![k];
+          if (pluginInfo.enable && pluginInfo.path) {
+            this.mergeConfig(config, utils.getConfigFromPkg(utils.getPkgInfo(pluginInfo.path)));
+          }
+        });
+    }
+
+    // read from eggPaths
+    if (eggInfo.eggPaths) {
+      eggInfo.eggPaths.forEach(p => {
+        this.mergeConfig(config, utils.getConfigFromPkg(utils.getPkgInfo(p)));
+      });
+    }
+
+    // read from package.json
+    this.mergeConfig(config, utils.getConfigFromPkg(utils.getPkgInfo(config.cwd)));
+
+    // read from local file
+    this.mergeConfig(config, utils.requireFile(utils.getAbsoluteUrlByCwd(configFile, config.cwd)));
+
+    // merge local config and options to config
+    this.mergeConfig(config, options);
+  }
+
   // configure
   // options > configFile > package.json
   private configure(options: TsHelperOption) {
@@ -279,46 +316,19 @@ export default class TsHelper extends EventEmitter {
 
     // base config
     const config = { ...defaultConfig };
-    const configFile = options.configFile || config.configFile;
     config.cwd = options.cwd || config.cwd;
-    const pkgInfo = utils.getPkgInfo(config.cwd);
     config.framework = options.framework || defaultConfig.framework;
     config.watchDirs = getDefaultWatchDirs(config);
-    const eggInfo = utils.getEggInfo(config.cwd);
-
-    // read from enabled plugins
-    if (eggInfo.plugins) {
-      Object.keys(eggInfo.plugins)
-        .forEach(k => {
-          const pluginInfo = eggInfo.plugins![k];
-          if (pluginInfo.enable && pluginInfo.path) {
-            mergeConfig(config, utils.getConfigFromPkg(utils.getPkgInfo(pluginInfo.path)));
-          }
-        });
-    }
-
-    // read from eggPaths
-    if (eggInfo.eggPaths) {
-      eggInfo.eggPaths.forEach(p => {
-        mergeConfig(config, utils.getConfigFromPkg(utils.getPkgInfo(p)));
-      });
-    }
-
-    // read from package.json
-    mergeConfig(config, utils.getConfigFromPkg(pkgInfo));
-
-    // read from local file
-    mergeConfig(config, utils.requireFile(utils.getAbsoluteUrlByCwd(configFile, config.cwd)));
-    debug('%o', config);
-
-    // merge local config and options to config
-    mergeConfig(config, options);
-    debug('%o', options);
-
-    // resolve config.typings to absolute url
     config.typings = utils.getAbsoluteUrlByCwd(config.typings, config.cwd);
-
     this.config = config as TsHelperConfig;
+
+    // deprecated framework
+    if (options.framework !== defaultConfig.framework) {
+      this.warn(`options.framework are deprecated, using default value(${defaultConfig.framework}) instead`);
+    }
+
+    // load watcher config
+    this.loadWatcherConfig(this.config, options);
   }
 
   private generateTs(result: GeneratorCbResult<GeneratorAllResult>, file: string | undefined, startTime: number) {
@@ -384,45 +394,49 @@ export default class TsHelper extends EventEmitter {
     this.cacheDist[fileUrl] = content;
     return false;
   }
+
+  // merge ts helper options
+  private mergeConfig(base: TsHelperConfig, ...args: Array<TsHelperOption | undefined>) {
+    args.forEach(opt => {
+      if (!opt) return;
+      Object.keys(opt).forEach(key => {
+        if (key !== 'watchDirs') {
+          base[key] = opt[key] === undefined ? base[key] : opt[key];
+          return;
+        }
+
+        const watchDirs = opt.watchDirs || {};
+        Object.keys(watchDirs).forEach(k => {
+          const item = watchDirs[k];
+          if (typeof item === 'boolean') {
+            if (base.watchDirs[k]) {
+              base.watchDirs[k].enabled = item;
+            }
+          } else if (item) {
+            // check private generator
+            assert(!Watcher.isPrivateGenerator(item.generator), `${item.generator} is a private generator, can not configure in config file`);
+
+            // compatible for deprecated fields
+            [
+              [ 'path', 'directory' ],
+            ].forEach(([ oldValue, newValue ]) => {
+              if (item[oldValue]) {
+                item[newValue] = item[oldValue];
+              }
+            });
+
+            if (base.watchDirs[k]) {
+              Object.assign(base.watchDirs[k], item);
+            } else {
+              base.watchDirs[k] = item;
+            }
+          }
+        });
+      });
+    });
+  }
 }
 
 export function createTsHelperInstance(options: TsHelperOption) {
   return new TsHelper(options);
-}
-
-// merge ts helper options
-function mergeConfig(base: TsHelperConfig, ...args: Array<TsHelperOption | undefined>) {
-  args.forEach(opt => {
-    if (!opt) return;
-    Object.keys(opt).forEach(key => {
-      if (key !== 'watchDirs') {
-        base[key] = opt[key] === undefined ? base[key] : opt[key];
-        return;
-      }
-
-      const watchDirs = opt.watchDirs || {};
-      Object.keys(watchDirs).forEach(k => {
-        const item = watchDirs[k];
-        if (typeof item === 'boolean') {
-          if (base.watchDirs[k]) {
-            base.watchDirs[k].enabled = item;
-          }
-        } else if (item) {
-          // check private generator
-          assert(!Watcher.isPrivateGenerator(item.generator), `${item.generator} is a private generator, can not configure in config file`);
-
-          // compatible for deprecated field
-          if (item.path) {
-            item.directory = item.path;
-          }
-
-          if (base.watchDirs[k]) {
-            Object.assign(base.watchDirs[k], item);
-          } else {
-            base.watchDirs[k] = item;
-          }
-        }
-      });
-    });
-  });
 }

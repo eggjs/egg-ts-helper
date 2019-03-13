@@ -27,7 +27,7 @@ if (loader) {
   // hack loadFile, ignore config file without customLoader for faster booting
   mockFn(loader, 'loadFile', filepath => {
     if (filepath && filepath.substring(filepath.lastIndexOf(path.sep) + 1).startsWith('config.')) {
-      const fileContent = fs.readFileSync(filepath, { encoding: 'utf-8' });
+      const fileContent = fs.readFileSync(filepath, 'utf-8');
       if (!fileContent.includes('customLoader')) return;
     }
     return true;

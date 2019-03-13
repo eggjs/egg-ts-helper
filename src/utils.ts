@@ -142,14 +142,14 @@ export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(cwd: string, opt
       exec(cmd, opt, err => {
         caches.runningPromise = null;
         if (err) reject(err);
-        resolve(end(getJson(fs.readFileSync(eggInfoPath).toString())));
+        resolve(end(getJson(fs.readFileSync(eggInfoPath, 'utf-8'))));
       });
     });
     return caches.runningPromise;
   } else {
     try {
       execSync(cmd, opt);
-      return end(getJson(fs.readFileSync(eggInfoPath).toString()));
+      return end(getJson(fs.readFileSync(eggInfoPath, 'utf-8')));
     } catch (e) {
       return end({});
     }
@@ -408,7 +408,7 @@ export function getPkgInfo(cwd: string) {
   const pkgPath = path.resolve(cwd, './package.json');
   if (!fs.existsSync(pkgPath)) return {};
   try {
-    return JSON.parse(fs.readFileSync(pkgPath, { encoding: 'utf-8' }));
+    return JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
   } catch (e) {
     return {};
   }
