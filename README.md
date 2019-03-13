@@ -69,8 +69,7 @@ $ ets -h
     -v, --version           output the version number
     -w, --watch             Watching files, d.ts would recreated while file changed
     -c, --cwd [path]        Egg application base dir (default: process.cwd)
-    -C, --config [path]     Configuration file, The argument can be a file path to a valid JSON/JS configuration file.（default: {cwd}/tshelper.js
-    -f, --framework [name]  Egg framework(default: egg)
+    -C, --config [path]     Configuration file, The argument can be a file path to a valid JSON/JS configuration file.（default: {cwd}/tshelper
     -o, --oneForAll [path]  Create a d.ts import all types (default: typings/ets.d.ts)
     -s, --silent            Running without output
     -i, --ignore [dirs]     Ignore watchDirs, your can ignore multiple dirs with comma like: -i controller,service
