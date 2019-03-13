@@ -284,10 +284,9 @@ export default class TsHelper extends EventEmitter {
     const pkgInfo = utils.getPkgInfo(config.cwd);
     config.framework = options.framework || defaultConfig.framework;
     config.watchDirs = getDefaultWatchDirs(config);
-
     const eggInfo = utils.getEggInfo(config.cwd);
 
-    // read from plugins
+    // read from enabled plugins
     if (eggInfo.plugins) {
       Object.keys(eggInfo.plugins)
         .forEach(k => {

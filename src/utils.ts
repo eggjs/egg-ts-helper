@@ -67,12 +67,13 @@ export function getConfigFromPkg(pkg) {
 
 export function composeValueByFields(obj, fields: string[]) {
   if (!obj) return;
-  let baseConfig: PlainObject = {};
+  let baseConfig: PlainObject | undefined;
   Object.keys(obj).forEach(key => {
     for (const field of fields) {
       if (key === field) {
         baseConfig = obj[key] || {};
       } else if (key.startsWith(`${field}.`)) {
+        baseConfig = baseConfig || {};
         deepSet(baseConfig, key.substring(field.length + 1), obj[key]);
       }
     }

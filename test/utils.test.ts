@@ -239,5 +239,6 @@ describe('utils.test.ts', () => {
     assert(obj.watch === true);
     assert(obj.watchDirs.model.directory === 'app/model');
     assert(!obj.abb);
+    assert(utils.composeValueByFields({ whatEver: { abb: true } }, fields) === undefined);
   });
 });
