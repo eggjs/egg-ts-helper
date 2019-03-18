@@ -103,7 +103,6 @@ In `tshelper.js`
 // {cwd}/tshelper.js
 
 module.exports = {
-  watch: true,
   watchDirs: {
     model: {
       enabled: true,
@@ -120,7 +119,6 @@ In `tshelper.json`
 // {cwd}/tshelper.json
 
 {
-  "watch": true,
   "watchDirs": {
     "model": {
       "enabled": true,
@@ -140,7 +138,6 @@ In `package.json`
   "egg": {
     "framework": "egg",
     "tsHelper": {
-      "watch": true,
       "watchDirs": {
         "model": {
           "enabled": true,
