@@ -90,7 +90,7 @@ $ ets -h
 | typings | `string` | {cwd}/typings | typings dir |
 | caseStyle | `string` `Function` | lower | egg case style(lower,upper,camel) or `(filename) => {return 'YOUR_CASE'}`|
 | silent | `boolean` | false | ignore logging |
-| watch | `boolean` | false | watch file change or not |
+| watch | `boolean` | false | watch file change or not, default to `true` in `register`  |
 | watchOptions | `object` | undefined | chokidar [options](https://github.com/paulmillr/chokidar#api) |
 | configFile | `string` | {cwd}/tshelper.(js|json) | configure file path |
 | watchDirs | `object` | | generator configuration |
