@@ -1,5 +1,4 @@
 import chokidar from 'chokidar';
-import d from 'debug';
 import assert from 'assert';
 import { EventEmitter } from 'events';
 import fs from 'fs';
@@ -9,7 +8,7 @@ import { declMapping, dtsComment, dtsCommentRE } from './config';
 import Watcher, { WatchItem } from './watcher';
 import * as utils from './utils';
 import glob from 'globby';
-const debug = d('egg-ts-helper#index');
+const isInUnitTest = process.env.NODE_ENV === 'test';
 
 declare global {
   interface PlainObject<T = any> {
@@ -66,7 +65,7 @@ export const defaultConfig = {
   watch: utils.convertString(process.env.ETS_WATCH, false),
   watchOptions: undefined,
   execAtInit: utils.convertString(process.env.ETS_EXEC_AT_INIT, false),
-  silent: utils.convertString(process.env.ETS_SILENT, process.env.NODE_ENV === 'test'),
+  silent: utils.convertString(process.env.ETS_SILENT, isInUnitTest),
   watchDirs: {},
   configFile: utils.convertString(process.env.ETS_CONFIG_FILE, './tshelper'),
 };
@@ -115,7 +114,7 @@ export function getDefaultWatchDirs(opt: TsHelperOption = {}) {
     caseStyle: 'upper',
     enabled: !hasModelInCustomLoader,
     ...(isUsingSequelize ? {
-      module: 'sequelize',
+      framework: 'sequelize',
       interface: 'Sequelize',
     } : {}),
   };
@@ -158,7 +157,7 @@ export function getDefaultWatchDirs(opt: TsHelperOption = {}) {
 }
 export default class TsHelper extends EventEmitter {
   config: TsHelperConfig;
-  watcherList: Map<string, Watcher> = new Map();
+  watcherList: Watcher[] = [];
   private cacheDist: PlainObject = {};
   private dtsFileList: string[] = [];
 
@@ -187,7 +186,7 @@ export default class TsHelper extends EventEmitter {
   destroy() {
     this.removeAllListeners();
     this.watcherList.forEach(item => item.destroy());
-    this.watcherList.clear();
+    this.watcherList.length = 0;
   }
 
   // log
@@ -200,7 +199,7 @@ export default class TsHelper extends EventEmitter {
   }
 
   warn(info: string) {
-    this.log(chalk.yellow(info), true);
+    this.log(chalk.yellow(info), !isInUnitTest);
   }
 
   // create oneForAll file
@@ -227,16 +226,19 @@ export default class TsHelper extends EventEmitter {
   // init watcher
   private initWatcher() {
     Object.keys(this.config.watchDirs).forEach(key => {
-      this.registerWatcher(key, this.config.watchDirs[key]);
+      this.registerWatcher(key, this.config.watchDirs[key], false);
     });
   }
 
   // destroy watcher
-  destroyWatcher(name: string) {
-    if (this.watcherList.has(name)) {
-      this.watcherList.get(name)!.destroy();
-      this.watcherList.delete(name);
-    }
+  destroyWatcher(...refs: string[]) {
+    this.watcherList = this.watcherList.filter(w => {
+      if (refs.includes(w.ref)) {
+        w.destroy();
+        return false;
+      }
+      return true;
+    });
   }
 
   // clean old files in startup
@@ -252,27 +254,43 @@ export default class TsHelper extends EventEmitter {
   }
 
   // register watcher
-  registerWatcher(name: string, watchConfig: WatchItem) {
-    this.destroyWatcher(name);
+  registerWatcher(name: string, watchConfig: WatchItem & { directory: string | string[]; }, removeDuplicate: boolean = true) {
+    if (removeDuplicate) {
+      this.destroyWatcher(name);
+    }
+
     if (watchConfig.hasOwnProperty('enabled') && !watchConfig.enabled) {
       return;
     }
 
-    const options = {
-      name,
-      execAtInit: this.config.execAtInit,
-      ...watchConfig,
-    };
+    const directories = Array.isArray(watchConfig.directory)
+      ? watchConfig.directory
+      : [ watchConfig.directory ];
+    delete watchConfig.directory;
 
-    if (!this.config.watch) {
-      options.watch = false;
-    }
+    // support array directory.
+    return directories.map(dir => {
+      const options = {
+        name,
+        ref: name,
+        execAtInit: this.config.execAtInit,
+        ...watchConfig,
+      };
 
-    const watcher = new Watcher(this);
-    watcher.on('update', this.generateTs.bind(this));
-    watcher.init(options);
-    this.watcherList.set(name, watcher);
-    return watcher;
+      if (dir) {
+        options.directory = dir;
+      }
+
+      if (!this.config.watch) {
+        options.watch = false;
+      }
+
+      const watcher = new Watcher(this);
+      watcher.on('update', this.generateTs.bind(this));
+      watcher.init(options);
+      this.watcherList.push(watcher);
+      return watcher;
+    });
   }
 
   private loadWatcherConfig(config: TsHelperConfig, options: TsHelperOption) {

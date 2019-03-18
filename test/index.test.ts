@@ -253,8 +253,8 @@ describe('index.test.ts', () => {
       watchDirs,
     });
 
-    assert(tsHelper.watcherList.size === 1);
-    assert(!!tsHelper.watcherList.has('proxy'));
+    assert(tsHelper.watcherList.length === 1);
+    assert(!!tsHelper.watcherList.find(w => w.name === 'proxy'));
   });
 
   it('should auto create customLoader with config', () => {
@@ -280,6 +280,22 @@ describe('index.test.ts', () => {
     assert(!fs.existsSync(path.resolve(customPath, './typings/app/custom4/custom-custom4.d.ts')));
     assert(!fs.existsSync(path.resolve(customPath, './typings/app/custom5/custom-custom5.d.ts')));
     assert(!fs.existsSync(path.resolve(customPath, './typings/app/custom6/custom-custom6.d.ts')));
+  });
+
+  it('should support multiple directories', () => {
+    const multiPath = path.resolve(__dirname, './fixtures/app-multi');
+    createTsHelper({
+      cwd: multiPath,
+      watch: false,
+      execAtInit: true,
+    });
+
+    const dts1 = path.resolve(multiPath, './typings/app/abc/custom-abc.d.ts');
+    const dts2 = path.resolve(multiPath, './typings/app/bbc/custom-abc.d.ts');
+    assert(fs.existsSync(dts1));
+    assert(fs.existsSync(dts2));
+    assert(fs.readFileSync(dts1, 'utf-8').match(/interface T_custom_abc {\s+test: AutoInstanceType<typeof ExportTest>;/));
+    assert(fs.readFileSync(dts2, 'utf-8').match(/interface T_custom_abc {\s+test2: AutoInstanceType<typeof ExportTest2>;/));
   });
 
   it('should support read framework by package.json', () => {
@@ -309,8 +325,8 @@ describe('index.test.ts', () => {
       const item = (watchDirs[k] as any);
       return !item.hasOwnProperty('enabled') || item.enabled;
     }).length;
-    assert(tsHelper.watcherList.size === len - 2);
-    assert(!!tsHelper.watcherList.has('controller'));
+    assert(tsHelper.watcherList.length === len - 2);
+    assert(!!tsHelper.watcherList.find(w => w.name === 'controller'));
   });
 
   it('should works without error in real app', async () => {
