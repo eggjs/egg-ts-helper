@@ -103,7 +103,6 @@ $ ets -h
 // {cwd}/tshelper.js
 
 module.exports = {
-  watch: true,
   watchDirs: {
     model: {
       enabled: true,
@@ -120,7 +119,6 @@ module.exports = {
 // {cwd}/tshelper.json
 
 {
-  "watch": true,
   "watchDirs": {
     "model": {
       "enabled": true,
@@ -140,7 +138,6 @@ module.exports = {
   "egg": {
     "framework": "egg",
     "tsHelper": {
-      "watch": true,
       "watchDirs": {
         "model": {
           "enabled": true,
