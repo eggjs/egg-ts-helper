@@ -269,9 +269,7 @@ export function cleanJs(cwd: string) {
     .sync([ '**/*.ts', '**/*.tsx', '!**/*.d.ts', '!**/node_modules' ], { cwd })
     .forEach(f => {
       const jf = removeSameNameJs(path.resolve(cwd, f));
-      if (jf) {
-        fileList.push(jf);
-      }
+      if (jf) fileList.push(path.relative(cwd, jf));
     });
 
   if (fileList.length) {
