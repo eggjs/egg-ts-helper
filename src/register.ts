@@ -22,10 +22,17 @@ function register(watch: boolean) {
     // write jsconfig if the project is wrote by js
     util.writeJsConfig(cwd);
   } else {
+    const tsNodeMode = util.deepGet(util.getPkgInfo(cwd), 'egg.typescript') ||
+      process.argv.includes('--ts') ||
+      process.argv.includes('--typescript') ||
+      process.env.EGG_TYPESCRIPT === 'true';
+
     // no need to clean in js project
     // clean local js file at first.
     // because egg-loader cannot load the same property name to egg.
-    util.cleanJs(cwd);
+    if (tsNodeMode) {
+      util.cleanJs(cwd);
+    }
   }
 
   if (watch) {
