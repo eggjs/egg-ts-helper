@@ -4,6 +4,7 @@ import { EventEmitter } from 'events';
 import fs from 'fs';
 import chalk from 'chalk';
 import path from 'path';
+import { get as deepGet, set as deepSet } from 'dot-prop';
 import { declMapping, dtsComment, dtsCommentRE } from './config';
 import Watcher, { WatchItem } from './watcher';
 import * as utils from './utils';
@@ -27,7 +28,7 @@ export interface TsHelperOption {
   autoRemoveJs?: boolean;
   throttle?: number;
   execAtInit?: boolean;
-  configFile?: string;
+  configFile?: string | string[];
   silent?: boolean;
 }
 
@@ -67,7 +68,7 @@ export const defaultConfig = {
   execAtInit: utils.convertString(process.env.ETS_EXEC_AT_INIT, false),
   silent: utils.convertString(process.env.ETS_SILENT, isInUnitTest),
   watchDirs: {},
-  configFile: utils.convertString(process.env.ETS_CONFIG_FILE, './tshelper'),
+  configFile: utils.convertString(process.env.ETS_CONFIG_FILE, '') || [ './tshelper', './tsHelper' ],
 };
 
 // default watch dir
@@ -104,8 +105,8 @@ export function getDefaultWatchDirs(opt: TsHelperOption = {}) {
 
   // model
   const eggInfo = (opt && opt.cwd) ? utils.getEggInfo(opt.cwd) : undefined;
-  const hasModelInCustomLoader = !!utils.deepGet(eggInfo, 'config.customLoader.model');
-  const sequelizeInfo = utils.deepGet(eggInfo, 'plugins.sequelize') || {};
+  const hasModelInCustomLoader = !!deepGet(eggInfo, 'config.customLoader.model');
+  const sequelizeInfo = deepGet(eggInfo, 'plugins.sequelize', {});
   const isUsingSequelize = sequelizeInfo.package === 'egg-sequelize' && sequelizeInfo.enable;
   baseConfig.model = {
     directory: 'app/model',
@@ -296,6 +297,7 @@ export default class TsHelper extends EventEmitter {
   private loadWatcherConfig(config: TsHelperConfig, options: TsHelperOption) {
     const configFile = options.configFile || config.configFile;
     const eggInfo = utils.getEggInfo(config.cwd);
+    const getConfigFromPkg = pkg => (pkg.egg || {}).tsHelper;
 
     // read from enabled plugins
     if (eggInfo.plugins) {
@@ -303,7 +305,7 @@ export default class TsHelper extends EventEmitter {
         .forEach(k => {
           const pluginInfo = eggInfo.plugins![k];
           if (pluginInfo.enable && pluginInfo.path) {
-            this.mergeConfig(config, utils.getConfigFromPkg(utils.getPkgInfo(pluginInfo.path)));
+            this.mergeConfig(config, getConfigFromPkg(utils.getPkgInfo(pluginInfo.path)));
           }
         });
     }
@@ -311,15 +313,17 @@ export default class TsHelper extends EventEmitter {
     // read from eggPaths
     if (eggInfo.eggPaths) {
       eggInfo.eggPaths.forEach(p => {
-        this.mergeConfig(config, utils.getConfigFromPkg(utils.getPkgInfo(p)));
+        this.mergeConfig(config, getConfigFromPkg(utils.getPkgInfo(p)));
       });
     }
 
     // read from package.json
-    this.mergeConfig(config, utils.getConfigFromPkg(utils.getPkgInfo(config.cwd)));
+    this.mergeConfig(config, getConfigFromPkg(utils.getPkgInfo(config.cwd)));
 
-    // read from local file
-    this.mergeConfig(config, utils.requireFile(utils.getAbsoluteUrlByCwd(configFile, config.cwd)));
+    // read from local file( default to tshelper | tsHelper )
+    (Array.isArray(configFile) ? configFile : [ configFile ]).forEach(f => {
+      this.mergeConfig(config, utils.requireFile(utils.getAbsoluteUrlByCwd(f, config.cwd)));
+    });
 
     // merge local config and options to config
     this.mergeConfig(config, options);
@@ -413,23 +417,30 @@ export default class TsHelper extends EventEmitter {
     return false;
   }
 
+  // support dot prop config
+  private formatConfig(config) {
+    const newConfig: any = {};
+    Object.keys(config).forEach(key => deepSet(newConfig, key, deepGet(config, key)));
+    return newConfig;
+  }
+
   // merge ts helper options
   private mergeConfig(base: TsHelperConfig, ...args: Array<TsHelperOption | undefined>) {
     args.forEach(opt => {
       if (!opt) return;
-      Object.keys(opt).forEach(key => {
+
+      const config = this.formatConfig(opt);
+      Object.keys(config).forEach(key => {
         if (key !== 'watchDirs') {
-          base[key] = opt[key] === undefined ? base[key] : opt[key];
+          base[key] = config[key] === undefined ? base[key] : config[key];
           return;
         }
 
-        const watchDirs = opt.watchDirs || {};
+        const watchDirs = config.watchDirs || {};
         Object.keys(watchDirs).forEach(k => {
           const item = watchDirs[k];
           if (typeof item === 'boolean') {
-            if (base.watchDirs[k]) {
-              base.watchDirs[k].enabled = item;
-            }
+            if (base.watchDirs[k]) base.watchDirs[k].enabled = item;
           } else if (item) {
             // check private generator
             assert(!Watcher.isPrivateGenerator(item.generator), `${item.generator} is a private generator, can not configure in config file`);

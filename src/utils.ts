@@ -4,7 +4,7 @@ import glob from 'globby';
 import path from 'path';
 import ts from 'typescript';
 import yn from 'yn';
-import { eggInfoPath, tmpDir, configFields } from './config';
+import { eggInfoPath, tmpDir } from './config';
 import { execSync, exec, ExecOptions } from 'child_process';
 
 export const JS_CONFIG = {
@@ -36,50 +36,6 @@ export const TS_CONFIG = {
     inlineSourceMap: true,
   },
 };
-
-export function deepGet(obj, props: string) {
-  if (!obj) return;
-  const propList = props.split('.');
-  while (propList.length) {
-    obj = obj[propList.shift()!];
-    if (!obj || (typeof obj !== 'object' && propList.length)) return;
-  }
-  return obj;
-}
-
-export function deepSet(obj, props: string, value: any) {
-  if (!obj) return;
-  const propList = props.split('.');
-  while (propList.length > 1) {
-    const key = propList.shift()!;
-    if (obj[key] && typeof obj[key] !== 'object') {
-      return;
-    }
-    obj = obj[key] = obj[key] || {};
-  }
-  obj[propList.shift()!] = value;
-  return obj;
-}
-
-export function getConfigFromPkg(pkg) {
-  return composeValueByFields(pkg, configFields) || composeValueByFields(pkg.egg, configFields);
-}
-
-export function composeValueByFields(obj, fields: string[]) {
-  if (!obj) return;
-  let baseConfig: PlainObject | undefined;
-  Object.keys(obj).forEach(key => {
-    for (const field of fields) {
-      if (key === field) {
-        baseConfig = obj[key] || {};
-      } else if (key.startsWith(`${field}.`)) {
-        baseConfig = baseConfig || {};
-        deepSet(baseConfig, key.substring(field.length + 1), obj[key]);
-      }
-    }
-  });
-  return baseConfig;
-}
 
 export interface GetEggInfoOpt {
   async?: boolean;
