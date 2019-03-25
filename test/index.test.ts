@@ -402,4 +402,19 @@ describe('index.test.ts', () => {
     assert(fs.existsSync(path.resolve(baseDir, './typings/app/middleware/index.d.ts')));
     assert(fs.existsSync(path.resolve(baseDir, './typings/config/index.d.ts')));
   });
+
+  it('should support tsHelper.json and dot-prop', async () => {
+    const baseDir = path.resolve(__dirname, './fixtures/app12/');
+    tsHelper = createTsHelper({
+      cwd: baseDir,
+      execAtInit: false,
+      autoRemoveJs: false,
+    });
+
+    assert(tsHelper.config.watchDirs.dal);
+    assert(tsHelper.config.watchDirs.dal.interface === 'IDAL2');
+    assert(tsHelper.config.watchDirs.dal.directory === 'app/dal/dao');
+    assert(tsHelper.config.watchDirs.model.enabled === false);
+    assert(tsHelper.config.watchDirs.service.enabled === false);
+  });
 });

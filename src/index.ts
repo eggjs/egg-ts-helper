@@ -67,7 +67,7 @@ export const defaultConfig = {
   watchOptions: undefined,
   execAtInit: utils.convertString(process.env.ETS_EXEC_AT_INIT, false),
   silent: utils.convertString(process.env.ETS_SILENT, isInUnitTest),
-  watchDirs: {},
+  watchDirs: {} as PlainObject<WatchItem>,
   configFile: utils.convertString(process.env.ETS_CONFIG_FILE, '') || [ './tshelper', './tsHelper' ],
 };
 
@@ -267,7 +267,6 @@ export default class TsHelper extends EventEmitter {
     const directories = Array.isArray(watchConfig.directory)
       ? watchConfig.directory
       : [ watchConfig.directory ];
-    delete watchConfig.directory;
 
     // support array directory.
     return directories.map(dir => {
@@ -420,7 +419,7 @@ export default class TsHelper extends EventEmitter {
   // support dot prop config
   private formatConfig(config) {
     const newConfig: any = {};
-    Object.keys(config).forEach(key => deepSet(newConfig, key, deepGet(config, key)));
+    Object.keys(config).forEach(key => deepSet(newConfig, key, config[key]));
     return newConfig;
   }
 

@@ -1,0 +1,12 @@
+{
+  "name": "app",
+  "egg": {
+    "tsHelper": {
+      "watchDirs.model.enabled": false,
+      "watchDirs.service": false,
+      "watchDirs.dal": {
+        "interface": "IDAL2"
+      }
+    }
+  }
+}
