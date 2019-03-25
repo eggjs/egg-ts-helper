@@ -1,14 +1,15 @@
 import chokidar from 'chokidar';
-import d from 'debug';
 import assert from 'assert';
 import { EventEmitter } from 'events';
 import fs from 'fs';
+import chalk from 'chalk';
 import path from 'path';
+import { get as deepGet, set as deepSet } from 'dot-prop';
 import { declMapping, dtsComment, dtsCommentRE } from './config';
 import Watcher, { WatchItem } from './watcher';
 import * as utils from './utils';
 import glob from 'globby';
-const debug = d('egg-ts-helper#index');
+const isInUnitTest = process.env.NODE_ENV === 'test';
 
 declare global {
   interface PlainObject<T = any> {
@@ -27,7 +28,7 @@ export interface TsHelperOption {
   autoRemoveJs?: boolean;
   throttle?: number;
   execAtInit?: boolean;
-  configFile?: string;
+  configFile?: string | string[];
   silent?: boolean;
 }
 
@@ -65,9 +66,9 @@ export const defaultConfig = {
   watch: utils.convertString(process.env.ETS_WATCH, false),
   watchOptions: undefined,
   execAtInit: utils.convertString(process.env.ETS_EXEC_AT_INIT, false),
-  silent: utils.convertString(process.env.ETS_SILENT, process.env.NODE_ENV === 'test'),
-  watchDirs: {},
-  configFile: utils.convertString(process.env.ETS_CONFIG_FILE, './tshelper'),
+  silent: utils.convertString(process.env.ETS_SILENT, isInUnitTest),
+  watchDirs: {} as PlainObject<WatchItem>,
+  configFile: utils.convertString(process.env.ETS_CONFIG_FILE, '') || [ './tshelper', './tsHelper' ],
 };
 
 // default watch dir
@@ -104,8 +105,8 @@ export function getDefaultWatchDirs(opt: TsHelperOption = {}) {
 
   // model
   const eggInfo = (opt && opt.cwd) ? utils.getEggInfo(opt.cwd) : undefined;
-  const hasModelInCustomLoader = !!utils.deepGet(eggInfo, 'config.customLoader.model');
-  const sequelizeInfo = utils.deepGet(eggInfo, 'plugins.sequelize') || {};
+  const hasModelInCustomLoader = !!deepGet(eggInfo, 'config.customLoader.model');
+  const sequelizeInfo = deepGet(eggInfo, 'plugins.sequelize', {});
   const isUsingSequelize = sequelizeInfo.package === 'egg-sequelize' && sequelizeInfo.enable;
   baseConfig.model = {
     directory: 'app/model',
@@ -114,8 +115,8 @@ export function getDefaultWatchDirs(opt: TsHelperOption = {}) {
     caseStyle: 'upper',
     enabled: !hasModelInCustomLoader,
     ...(isUsingSequelize ? {
-      interface: 'Sequelize',
       framework: 'sequelize',
+      interface: 'Sequelize',
     } : {}),
   };
 
@@ -157,7 +158,7 @@ export function getDefaultWatchDirs(opt: TsHelperOption = {}) {
 }
 export default class TsHelper extends EventEmitter {
   config: TsHelperConfig;
-  watcherList: Map<string, Watcher> = new Map();
+  watcherList: Watcher[] = [];
   private cacheDist: PlainObject = {};
   private dtsFileList: string[] = [];
 
@@ -170,15 +171,14 @@ export default class TsHelper extends EventEmitter {
     // configure ets
     this.configure(options);
 
-    // clean files
-    this.cleanFiles();
-
     // init watcher
     this.initWatcher();
   }
 
   // build all watcher
   build() {
+    // clean old files
+    this.cleanFiles();
     this.watcherList.forEach(watcher => watcher.execute());
     return this;
   }
@@ -187,16 +187,20 @@ export default class TsHelper extends EventEmitter {
   destroy() {
     this.removeAllListeners();
     this.watcherList.forEach(item => item.destroy());
-    this.watcherList.clear();
+    this.watcherList.length = 0;
   }
 
   // log
-  log(info) {
-    if (this.config.silent) {
+  log(info: string, ignoreSilent?: boolean) {
+    if (!ignoreSilent && this.config.silent) {
       return;
     }
 
     utils.log(info);
+  }
+
+  warn(info: string) {
+    this.log(chalk.yellow(info), !isInUnitTest);
   }
 
   // create oneForAll file
@@ -223,16 +227,19 @@ export default class TsHelper extends EventEmitter {
   // init watcher
   private initWatcher() {
     Object.keys(this.config.watchDirs).forEach(key => {
-      this.registerWatcher(key, this.config.watchDirs[key]);
+      this.registerWatcher(key, this.config.watchDirs[key], false);
     });
   }
 
   // destroy watcher
-  destroyWatcher(name: string) {
-    if (this.watcherList.has(name)) {
-      this.watcherList.get(name)!.destroy();
-      this.watcherList.delete(name);
-    }
+  destroyWatcher(...refs: string[]) {
+    this.watcherList = this.watcherList.filter(w => {
+      if (refs.includes(w.ref)) {
+        w.destroy();
+        return false;
+      }
+      return true;
+    });
   }
 
   // clean old files in startup
@@ -241,34 +248,84 @@ export default class TsHelper extends EventEmitter {
     glob.sync([ '**/*.d.ts', '!**/node_modules' ], { cwd })
       .forEach(file => {
         const fileUrl = path.resolve(cwd, file);
-        const content = fs.readFileSync(fileUrl, { encoding: 'utf-8' });
+        const content = fs.readFileSync(fileUrl, 'utf-8');
         const isGeneratedByEts = content.match(dtsCommentRE);
         if (isGeneratedByEts) fs.unlinkSync(fileUrl);
       });
   }
 
   // register watcher
-  registerWatcher(name: string, watchConfig: WatchItem) {
-    this.destroyWatcher(name);
+  registerWatcher(name: string, watchConfig: WatchItem & { directory: string | string[]; }, removeDuplicate: boolean = true) {
+    if (removeDuplicate) {
+      this.destroyWatcher(name);
+    }
+
     if (watchConfig.hasOwnProperty('enabled') && !watchConfig.enabled) {
       return;
     }
 
-    const options = {
-      name,
-      execAtInit: this.config.execAtInit,
-      ...watchConfig,
-    };
+    const directories = Array.isArray(watchConfig.directory)
+      ? watchConfig.directory
+      : [ watchConfig.directory ];
 
-    if (!this.config.watch) {
-      options.watch = false;
+    // support array directory.
+    return directories.map(dir => {
+      const options = {
+        name,
+        ref: name,
+        execAtInit: this.config.execAtInit,
+        ...watchConfig,
+      };
+
+      if (dir) {
+        options.directory = dir;
+      }
+
+      if (!this.config.watch) {
+        options.watch = false;
+      }
+
+      const watcher = new Watcher(this);
+      watcher.on('update', this.generateTs.bind(this));
+      watcher.init(options);
+      this.watcherList.push(watcher);
+      return watcher;
+    });
+  }
+
+  private loadWatcherConfig(config: TsHelperConfig, options: TsHelperOption) {
+    const configFile = options.configFile || config.configFile;
+    const eggInfo = utils.getEggInfo(config.cwd);
+    const getConfigFromPkg = pkg => (pkg.egg || {}).tsHelper;
+
+    // read from enabled plugins
+    if (eggInfo.plugins) {
+      Object.keys(eggInfo.plugins)
+        .forEach(k => {
+          const pluginInfo = eggInfo.plugins![k];
+          if (pluginInfo.enable && pluginInfo.path) {
+            this.mergeConfig(config, getConfigFromPkg(utils.getPkgInfo(pluginInfo.path)));
+          }
+        });
     }
 
-    const watcher = new Watcher(this);
-    watcher.on('update', this.generateTs.bind(this));
-    watcher.init(options);
-    this.watcherList.set(name, watcher);
-    return watcher;
+    // read from eggPaths
+    if (eggInfo.eggPaths) {
+      eggInfo.eggPaths.forEach(p => {
+        this.mergeConfig(config, getConfigFromPkg(utils.getPkgInfo(p)));
+      });
+    }
+
+    // read from package.json
+    this.mergeConfig(config, getConfigFromPkg(utils.getPkgInfo(config.cwd)));
+
+    // read from local file( default to tshelper | tsHelper )
+    (Array.isArray(configFile) ? configFile : [ configFile ]).forEach(f => {
+      this.mergeConfig(config, utils.requireFile(utils.getAbsoluteUrlByCwd(f, config.cwd)));
+    });
+
+    // merge local config and options to config
+    this.mergeConfig(config, options);
   }
 
   // configure
@@ -280,29 +337,19 @@ export default class TsHelper extends EventEmitter {
 
     // base config
     const config = { ...defaultConfig };
-    const configFile = options.configFile || config.configFile;
     config.cwd = options.cwd || config.cwd;
-    const pkgInfo = utils.getPkgInfo(config.cwd);
     config.framework = options.framework || defaultConfig.framework;
     config.watchDirs = getDefaultWatchDirs(config);
+    config.typings = utils.getAbsoluteUrlByCwd(config.typings, config.cwd);
+    this.config = config as TsHelperConfig;
 
-    // read from package.json
-    if (pkgInfo.egg) {
-      mergeConfig(config, pkgInfo.egg.tsHelper);
+    // deprecated framework
+    if (options.framework !== defaultConfig.framework) {
+      this.warn(`options.framework are deprecated, using default value(${defaultConfig.framework}) instead`);
     }
 
-    // read from local file
-    mergeConfig(config, utils.requireFile(utils.getAbsoluteUrlByCwd(configFile, config.cwd)));
-    debug('%o', config);
-
-    // merge local config and options to config
-    mergeConfig(config, options);
-    debug('%o', options);
-
-    // resolve config.typings to absolute url
-    config.typings = utils.getAbsoluteUrlByCwd(config.typings, config.cwd);
-
-    this.config = config as TsHelperConfig;
+    // load watcher config
+    this.loadWatcherConfig(this.config, options);
   }
 
   private generateTs(result: GeneratorCbResult<GeneratorAllResult>, file: string | undefined, startTime: number) {
@@ -368,48 +415,56 @@ export default class TsHelper extends EventEmitter {
     this.cacheDist[fileUrl] = content;
     return false;
   }
+
+  // support dot prop config
+  private formatConfig(config) {
+    const newConfig: any = {};
+    Object.keys(config).forEach(key => deepSet(newConfig, key, config[key]));
+    return newConfig;
+  }
+
+  // merge ts helper options
+  private mergeConfig(base: TsHelperConfig, ...args: Array<TsHelperOption | undefined>) {
+    args.forEach(opt => {
+      if (!opt) return;
+
+      const config = this.formatConfig(opt);
+      Object.keys(config).forEach(key => {
+        if (key !== 'watchDirs') {
+          base[key] = config[key] === undefined ? base[key] : config[key];
+          return;
+        }
+
+        const watchDirs = config.watchDirs || {};
+        Object.keys(watchDirs).forEach(k => {
+          const item = watchDirs[k];
+          if (typeof item === 'boolean') {
+            if (base.watchDirs[k]) base.watchDirs[k].enabled = item;
+          } else if (item) {
+            // check private generator
+            assert(!Watcher.isPrivateGenerator(item.generator), `${item.generator} is a private generator, can not configure in config file`);
+
+            // compatible for deprecated fields
+            [
+              [ 'path', 'directory' ],
+            ].forEach(([ oldValue, newValue ]) => {
+              if (item[oldValue]) {
+                item[newValue] = item[oldValue];
+              }
+            });
+
+            if (base.watchDirs[k]) {
+              Object.assign(base.watchDirs[k], item);
+            } else {
+              base.watchDirs[k] = item;
+            }
+          }
+        });
+      });
+    });
+  }
 }
 
 export function createTsHelperInstance(options: TsHelperOption) {
   return new TsHelper(options);
-}
-
-// merge ts helper options
-function mergeConfig(base: TsHelperConfig, ...args: TsHelperOption[]) {
-  args.forEach(opt => {
-    if (!opt) {
-      return;
-    }
-
-    Object.keys(opt).forEach(key => {
-      if (key !== 'watchDirs') {
-        base[key] = opt[key] === undefined ? base[key] : opt[key];
-        return;
-      }
-
-      const watchDirs = opt.watchDirs || {};
-      Object.keys(watchDirs).forEach(k => {
-        const item = watchDirs[k];
-        if (typeof item === 'boolean') {
-          if (base.watchDirs[k]) {
-            base.watchDirs[k].enabled = item;
-          }
-        } else if (item) {
-          // check private generator
-          assert(!Watcher.isPrivateGenerator(item.generator), `${item.generator} is a private generator, can not configure in config file`);
-
-          // compatible for deprecated field
-          if (item.path) {
-            item.directory = item.path;
-          }
-
-          if (base.watchDirs[k]) {
-            Object.assign(base.watchDirs[k], item);
-          } else {
-            base.watchDirs[k] = item;
-          }
-        }
-      });
-    });
-  });
 }

@@ -1,7 +1,6 @@
 // generator for custom loader
 import { default as TsHelper, TsGenConfig, TsHelperConfig } from '..';
 import { declMapping } from '../config';
-import Watcher from '../watcher';
 import * as utils from '../utils';
 import path from 'path';
 
@@ -16,7 +15,8 @@ export const defaultConfig = {
   ],
 };
 
-const customWatcherPrefix = 'custom-';
+const customWatcherName = 'custom';
+const customSpecRef = `${customWatcherName}_spec_ref`;
 const DeclareMapping = utils.pickFields<keyof typeof declMapping>(declMapping, [ 'ctx', 'app' ]);
 
 export default function(config: TsGenConfig, baseConfig: TsHelperConfig, tsHelper: TsHelper) {
@@ -27,23 +27,26 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig, tsHelpe
     if (eggConfig.customLoader) {
       Object.keys(eggConfig.customLoader).forEach(key => {
         const loaderConfig = eggConfig.customLoader[key];
-        if (
-          !loaderConfig ||
-          !loaderConfig.directory ||
-          !DeclareMapping[loaderConfig.inject] ||
-          loaderConfig.tsd === false
-        ) return;
+        if (!loaderConfig || !loaderConfig.directory) {
+          return;
+        }
+
+        loaderConfig.inject = loaderConfig.inject || 'app';
+        if (!DeclareMapping[loaderConfig.inject] || loaderConfig.tsd === false) return;
 
         // custom d.ts name
-        const name = `${customWatcherPrefix}${key}`;
+        const name = `${customWatcherName}-${key}`;
         newCustomWatcherList.push(name);
 
         // create a custom watcher
         tsHelper.registerWatcher(name, {
+          ref: customSpecRef,
           distName: `${name}.d.ts`,
           directory: loaderConfig.directory,
+          pattern: loaderConfig.match,
+          ignore: loaderConfig.ignore,
           caseStyle: loaderConfig.caseStyle || 'lower',
-          interface: declMapping[key],
+          interface: loaderConfig.interface || declMapping[key],
           declareTo: `${DeclareMapping[loaderConfig.inject]}.${key}`,
           generator: 'auto',
           execAtInit: true,
@@ -52,18 +55,15 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig, tsHelpe
     }
 
     // collect watcher which is need to remove.
-    const removeList: Watcher[] = [];
-    tsHelper.watcherList.forEach(w => {
-      if (w.name.startsWith(customWatcherPrefix) && !newCustomWatcherList.includes(w.name)) {
-        removeList.push(w);
-      }
-    });
+    const removeList = tsHelper.watcherList.filter(w => (
+      w.ref === customSpecRef && !newCustomWatcherList.includes(w.name)
+    ));
 
     // remove watcher and old d.ts
-    return removeList.map(w => {
-      tsHelper.destroyWatcher(w.name);
-      return { dist: path.resolve(w.dtsDir, `${w.name}.d.ts`) };
-    });
+    tsHelper.destroyWatcher.apply(tsHelper, removeList.map(w => w.name));
+    return removeList.map(w => ({
+      dist: path.resolve(w.dtsDir, `${w.name}.d.ts`),
+    }));
   };
 
   return utils.getEggInfo(baseConfig.cwd, {

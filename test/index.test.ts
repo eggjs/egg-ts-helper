@@ -3,6 +3,7 @@ import del from 'del';
 import fs from 'fs';
 import mkdirp from 'mkdirp';
 import path from 'path';
+import mm from 'egg-mock';
 import { sleep, spawn, getStd, eggBin, timeoutPromise, mockFile, createTsHelper, createNodeModuleSym } from './utils';
 import assert = require('assert');
 import TsHelper, { getDefaultWatchDirs } from '../dist/';
@@ -12,6 +13,8 @@ describe('index.test.ts', () => {
   before(() => {
     del.sync(path.resolve(__dirname, './fixtures/*/typings'), { force: true });
   });
+
+  afterEach(mm.restore);
 
   it('should works without error', async () => {
     const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
@@ -253,8 +256,8 @@ describe('index.test.ts', () => {
       watchDirs,
     });
 
-    assert(tsHelper.watcherList.size === 1);
-    assert(!!tsHelper.watcherList.has('proxy'));
+    assert(tsHelper.watcherList.length === 1);
+    assert(!!tsHelper.watcherList.find(w => w.name === 'proxy'));
   });
 
   it('should auto create customLoader with config', () => {
@@ -280,6 +283,22 @@ describe('index.test.ts', () => {
     assert(!fs.existsSync(path.resolve(customPath, './typings/app/custom4/custom-custom4.d.ts')));
     assert(!fs.existsSync(path.resolve(customPath, './typings/app/custom5/custom-custom5.d.ts')));
     assert(!fs.existsSync(path.resolve(customPath, './typings/app/custom6/custom-custom6.d.ts')));
+  });
+
+  it('should support multiple directories', () => {
+    const multiPath = path.resolve(__dirname, './fixtures/app-multi');
+    createTsHelper({
+      cwd: multiPath,
+      watch: false,
+      execAtInit: true,
+    });
+
+    const dts1 = path.resolve(multiPath, './typings/app/abc/custom-abc.d.ts');
+    const dts2 = path.resolve(multiPath, './typings/app/bbc/custom-abc.d.ts');
+    assert(fs.existsSync(dts1));
+    assert(fs.existsSync(dts2));
+    assert(fs.readFileSync(dts1, 'utf-8').match(/interface T_custom_abc {\s+test: AutoInstanceType<typeof ExportTest>;/));
+    assert(fs.readFileSync(dts2, 'utf-8').match(/interface T_custom_abc {\s+test2: AutoInstanceType<typeof ExportTest2>;/));
   });
 
   it('should support read framework by package.json', () => {
@@ -309,8 +328,8 @@ describe('index.test.ts', () => {
       const item = (watchDirs[k] as any);
       return !item.hasOwnProperty('enabled') || item.enabled;
     }).length;
-    assert(tsHelper.watcherList.size === len - 2);
-    assert(!!tsHelper.watcherList.has('controller'));
+    assert(tsHelper.watcherList.length === len - 2);
+    assert(!!tsHelper.watcherList.find(w => w.name === 'controller'));
   });
 
   it('should works without error in real app', async () => {
@@ -385,5 +404,36 @@ describe('index.test.ts', () => {
     assert(fs.existsSync(path.resolve(baseDir, './typings/app/service/index.d.ts')));
     assert(fs.existsSync(path.resolve(baseDir, './typings/app/middleware/index.d.ts')));
     assert(fs.existsSync(path.resolve(baseDir, './typings/config/index.d.ts')));
+  });
+
+  it('should support tsHelper.json and dot-prop', async () => {
+    const baseDir = path.resolve(__dirname, './fixtures/app12/');
+    tsHelper = createTsHelper({
+      cwd: baseDir,
+      execAtInit: false,
+      autoRemoveJs: false,
+    });
+
+    assert(tsHelper.config.watchDirs.dal);
+    assert(tsHelper.config.watchDirs.dal.interface === 'IDAL2');
+    assert(tsHelper.config.watchDirs.dal.directory === 'app/dal/dao');
+    assert(tsHelper.config.watchDirs.model.enabled === false);
+    assert(tsHelper.config.watchDirs.service.enabled === false);
+  });
+
+  it('should support custom config file', async () => {
+    const baseDir = path.resolve(__dirname, './fixtures/app12/');
+    mm(process.env, 'ETS_CONFIG_FILE', path.resolve(baseDir, 'tsCustom.json'));
+    tsHelper = createTsHelper({
+      cwd: baseDir,
+      execAtInit: false,
+      autoRemoveJs: false,
+    });
+
+    assert(tsHelper.config.watchDirs.dal);
+    assert(tsHelper.config.watchDirs.dal.interface === 'IDAL2');
+    assert(tsHelper.config.watchDirs.dal.directory === 'app/dal/dao');
+    assert(tsHelper.config.watchDirs.model.enabled === false);
+    assert(tsHelper.config.watchDirs.service.enabled === false);
   });
 });

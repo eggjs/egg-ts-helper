@@ -13,6 +13,7 @@ const generators = utils.loadModules(
 );
 
 export interface BaseWatchItem {
+  ref: string;
   directory: string;
   generator: string;
   enabled?: boolean;
@@ -40,6 +41,7 @@ function formatGenerator(generator) {
 }
 
 export default class Watcher extends EventEmitter {
+  ref: string;
   name: string;
   dir: string;
   options: WatcherOptions;
@@ -60,6 +62,7 @@ export default class Watcher extends EventEmitter {
     const generatorName = options.generator || 'class';
     this.config = this.helper.config;
     this.name = options.name;
+    this.ref = options.ref;
     this.generator = this.getGenerator(generatorName);
     options = this.options = {
       trigger: [ 'add', 'unlink' ],

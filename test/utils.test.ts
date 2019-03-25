@@ -201,11 +201,4 @@ describe('utils.test.ts', () => {
     json = utils.getJson('{ "abc: 123 }');
     assert(json);
   });
-
-  it('should deepGet without error', async () => {
-    assert(utils.deepGet(undefined, 'abc') === undefined);
-    assert(utils.deepGet({ abc: 1 }, 'abc') === 1);
-    assert(utils.deepGet({ abc: { bbc: 1 } }, 'abc.bbc') === 1);
-    assert(utils.deepGet({ abc: undefined }, 'abc.bbc') === undefined);
-  });
 });

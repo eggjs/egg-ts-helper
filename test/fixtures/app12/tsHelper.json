@@ -1,0 +1,7 @@
+{
+  "watchDirs.dal": {
+    "directory": "app/dal/dao",
+    "caseStyle": "upper",
+    "watch": false
+  }
+}

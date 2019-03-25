@@ -37,24 +37,23 @@ export const TS_CONFIG = {
   },
 };
 
-export function deepGet(obj, props: string) {
-  if (!obj) return;
-  const propList = props.split('.');
-  while (propList.length) {
-    obj = obj[propList.shift()!];
-    if (!obj) return;
-  }
-  return obj;
-}
-
 export interface GetEggInfoOpt {
   async?: boolean;
   env?: PlainObject<string>;
   callback?: (result: EggInfoResult) => any;
 }
 
+export interface EggPluginInfo {
+  from: string;
+  enable: boolean;
+  package?: string;
+  path: string;
+  etsConfig?: PlainObject;
+}
+
 export interface EggInfoResult {
-  plugins?: PlainObject<{ from: string; enable: boolean; package?: string; }>;
+  eggPaths?: string[];
+  plugins?: PlainObject<EggPluginInfo>;
   config?: PlainObject;
   timing?: number;
 }
@@ -99,14 +98,14 @@ export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(cwd: string, opt
       exec(cmd, opt, err => {
         caches.runningPromise = null;
         if (err) reject(err);
-        resolve(end(getJson(fs.readFileSync(eggInfoPath).toString())));
+        resolve(end(getJson(fs.readFileSync(eggInfoPath, 'utf-8'))));
       });
     });
     return caches.runningPromise;
   } else {
     try {
       execSync(cmd, opt);
-      return end(getJson(fs.readFileSync(eggInfoPath).toString()));
+      return end(getJson(fs.readFileSync(eggInfoPath, 'utf-8')));
     } catch (e) {
       return end({});
     }
@@ -358,9 +357,15 @@ export function extend<T = any>(obj, ...args: Array<Partial<T>>): T {
   return obj;
 }
 
-// require package.json
+// load package.json
 export function getPkgInfo(cwd: string) {
-  return requireFile(path.resolve(cwd, './package.json')) || {};
+  const pkgPath = path.resolve(cwd, './package.json');
+  if (!fs.existsSync(pkgPath)) return {};
+  try {
+    return JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+  } catch (e) {
+    return {};
+  }
 }
 
 // format property

@@ -1,5 +1,6 @@
 import cluster from 'cluster';
 import d from 'debug';
+import { get as deepGet } from 'dot-prop';
 import { createTsHelperInstance } from './';
 import * as util from './utils';
 const debug = d('egg-ts-helper#register');
@@ -22,7 +23,7 @@ function register(watch: boolean) {
     // write jsconfig if the project is wrote by js
     util.writeJsConfig(cwd);
   } else {
-    const tsNodeMode = util.deepGet(util.getPkgInfo(cwd), 'egg.typescript') ||
+    const tsNodeMode = deepGet(util.getPkgInfo(cwd), 'egg.typescript') ||
       process.argv.includes('--ts') ||
       process.argv.includes('--typescript') ||
       process.env.EGG_TYPESCRIPT === 'true';
