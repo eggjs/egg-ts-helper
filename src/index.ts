@@ -343,13 +343,13 @@ export default class TsHelper extends EventEmitter {
     config.typings = utils.getAbsoluteUrlByCwd(config.typings, config.cwd);
     this.config = config as TsHelperConfig;
 
-    // deprecated framework
-    if (options.framework !== defaultConfig.framework) {
-      this.warn(`options.framework are deprecated, using default value(${defaultConfig.framework}) instead`);
-    }
-
     // load watcher config
     this.loadWatcherConfig(this.config, options);
+
+    // deprecated framework
+    if (this.config.framework && this.config.framework !== defaultConfig.framework) {
+      this.warn(`options.framework are deprecated, using default value(${defaultConfig.framework}) instead`);
+    }
   }
 
   private generateTs(result: GeneratorCbResult<GeneratorAllResult>, file: string | undefined, startTime: number) {
