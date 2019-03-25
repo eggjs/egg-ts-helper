@@ -3,6 +3,7 @@ import del from 'del';
 import fs from 'fs';
 import mkdirp from 'mkdirp';
 import path from 'path';
+import mm from 'egg-mock';
 import { sleep, spawn, getStd, eggBin, timeoutPromise, mockFile, createTsHelper, createNodeModuleSym } from './utils';
 import assert = require('assert');
 import TsHelper, { getDefaultWatchDirs } from '../dist/';
@@ -12,6 +13,8 @@ describe('index.test.ts', () => {
   before(() => {
     del.sync(path.resolve(__dirname, './fixtures/*/typings'), { force: true });
   });
+
+  afterEach(mm.restore);
 
   it('should works without error', async () => {
     const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
@@ -405,6 +408,22 @@ describe('index.test.ts', () => {
 
   it('should support tsHelper.json and dot-prop', async () => {
     const baseDir = path.resolve(__dirname, './fixtures/app12/');
+    tsHelper = createTsHelper({
+      cwd: baseDir,
+      execAtInit: false,
+      autoRemoveJs: false,
+    });
+
+    assert(tsHelper.config.watchDirs.dal);
+    assert(tsHelper.config.watchDirs.dal.interface === 'IDAL2');
+    assert(tsHelper.config.watchDirs.dal.directory === 'app/dal/dao');
+    assert(tsHelper.config.watchDirs.model.enabled === false);
+    assert(tsHelper.config.watchDirs.service.enabled === false);
+  });
+
+  it('should support custom config file', async () => {
+    const baseDir = path.resolve(__dirname, './fixtures/app12/');
+    mm(process.env, 'ETS_CONFIG_FILE', path.resolve(baseDir, 'tsCustom.json'));
     tsHelper = createTsHelper({
       cwd: baseDir,
       execAtInit: false,
