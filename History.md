@@ -1,4 +1,9 @@
 
+1.25.1 / 2019-03-25
+===================
+
+  * [[`f36d699`](http://github.com/whxaxes/egg-ts-helper/commit/f36d69934403424f9715984dc9483c038b89725d)] - fix: check framework before deprecated (wanghx <<whxaxes@gmail.com>>)
+
 1.25.0 / 2019-03-25
 ===================
 
