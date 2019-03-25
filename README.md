@@ -69,8 +69,7 @@ $ ets -h
     -v, --version           output the version number
     -w, --watch             Watching files, d.ts would recreated while file changed
     -c, --cwd [path]        Egg application base dir (default: process.cwd)
-    -C, --config [path]     Configuration file, The argument can be a file path to a valid JSON/JS configuration file.（default: {cwd}/tshelper.js
-    -f, --framework [name]  Egg framework(default: egg)
+    -C, --config [path]     Configuration file, The argument can be a file path to a valid JSON/JS configuration file.（default: {cwd}/tshelper
     -o, --oneForAll [path]  Create a d.ts import all types (default: typings/ets.d.ts)
     -s, --silent            Running without output
     -i, --ignore [dirs]     Ignore watchDirs, your can ignore multiple dirs with comma like: -i controller,service
@@ -91,7 +90,7 @@ $ ets -h
 | typings | `string` | {cwd}/typings | typings dir |
 | caseStyle | `string` `Function` | lower | egg case style(lower,upper,camel) or `(filename) => {return 'YOUR_CASE'}`|
 | silent | `boolean` | false | ignore logging |
-| watch | `boolean` | false | watch file change or not |
+| watch | `boolean` | false | watch file change or not, default to `true` in `register`  |
 | watchOptions | `object` | undefined | chokidar [options](https://github.com/paulmillr/chokidar#api) |
 | configFile | `string` | {cwd}/tshelper.(js|json) | configure file path |
 | watchDirs | `object` | | generator configuration |
@@ -104,7 +103,6 @@ In `tshelper.js`
 // {cwd}/tshelper.js
 
 module.exports = {
-  watch: true,
   watchDirs: {
     model: {
       enabled: true,
@@ -121,7 +119,6 @@ In `tshelper.json`
 // {cwd}/tshelper.json
 
 {
-  "watch": true,
   "watchDirs": {
     "model": {
       "enabled": true,
@@ -141,7 +138,6 @@ In `package.json`
   "egg": {
     "framework": "egg",
     "tsHelper": {
-      "watch": true,
       "watchDirs": {
         "model": {
           "enabled": true,

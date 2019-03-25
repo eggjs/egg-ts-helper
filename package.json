@@ -1,6 +1,6 @@
 {
   "name": "egg-ts-helper",
-  "version": "1.24.1",
+  "version": "1.24.2",
   "description": "egg typescript helper",
   "bin": {
     "ets": "dist/bin.js"
@@ -14,11 +14,12 @@
   "scripts": {
     "build": "tsc -d",
     "build:w": "tsc -d -w",
-    "release": "del ./dist && npm run build",
+    "release": "del dist && npm run build",
     "lint": "tslint ./src/**/*.ts ./test/**/*.test.ts",
     "check": "npm run build && npm run lint",
     "test": "npm run check && npm run test-local",
     "test-local": "egg-bin test --ts",
+    "prepublish": "npm run release",
     "cov": "npm run check && egg-bin cov --ts"
   },
   "keywords": [
