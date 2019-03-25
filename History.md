@@ -1,4 +1,9 @@
 
+1.25.0 / 2019-03-25
+===================
+
+  * [[`958b117`](http://github.com/whxaxes/egg-ts-helper/commit/958b1172c09a59eb0122bfa5e8afe9b296325faa)] - feat: config improvement (#45) (吖猩 <<whxaxes@qq.com>>)
+
 1.24.2 / 2019-03-21
 ===================
 
