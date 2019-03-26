@@ -1,4 +1,10 @@
 
+1.25.2 / 2019-03-26
+==================
+
+**fixes**
+  * [[`928fad6`](http://github.com/whxaxes/egg-ts-helper/commit/928fad663cdf5da7352c7fd534dcd4d46d238d59)] - fix: downgrade ts-node (#46) (吖猩 <<whxaxes@qq.com>>)
+
 1.25.1 / 2019-03-25
 ===================
 
