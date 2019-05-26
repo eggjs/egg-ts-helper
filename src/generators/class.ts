@@ -44,7 +44,7 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
       if (!props.length) {
         collector[name] = moduleName;
       } else {
-        collector = collector[name] = collector[name] || {};
+        collector = collector[name] = typeof collector[name] === 'object' ? collector[name] : {};
       }
     }
   });
