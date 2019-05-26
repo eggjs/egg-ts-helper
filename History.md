@@ -1,4 +1,10 @@
 
+1.25.3 / 2019-05-26
+==================
+
+**fixes**
+  * [[`0cce02d`](http://github.com/whxaxes/egg-ts-helper/commit/0cce02dab86f05573fd50eccd703e4e23a7cb569)] - fix: same name dir and file (#48) (吖猩 <<whxaxes@gmail.com>>)
+
 1.25.2 / 2019-03-26
 ==================
 
