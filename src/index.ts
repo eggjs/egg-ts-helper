@@ -105,19 +105,12 @@ export function getDefaultWatchDirs(opt: TsHelperOption = {}) {
 
   // model
   const eggInfo = (opt && opt.cwd) ? utils.getEggInfo(opt.cwd) : undefined;
-  const hasModelInCustomLoader = !!deepGet(eggInfo, 'config.customLoader.model');
-  const sequelizeInfo = deepGet(eggInfo, 'plugins.sequelize', {});
-  const isUsingSequelize = sequelizeInfo.package === 'egg-sequelize' && sequelizeInfo.enable;
   baseConfig.model = {
     directory: 'app/model',
     generator: 'function',
     interface: 'IModel',
     caseStyle: 'upper',
-    enabled: !hasModelInCustomLoader,
-    ...(isUsingSequelize ? {
-      framework: 'sequelize',
-      interface: 'Sequelize',
-    } : {}),
+    enabled: !deepGet(eggInfo, 'config.customLoader.model'),
   };
 
   // config
