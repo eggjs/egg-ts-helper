@@ -2,7 +2,6 @@ import path from 'path';
 import assert = require('assert');
 import { GeneratorResult } from '../../dist/';
 import { triggerGenerator } from './utils';
-import { createNodeModuleSym } from '../utils';
 
 describe('generators/class.test.ts', () => {
   const appDir = path.resolve(__dirname, '../fixtures/app');
@@ -50,14 +49,6 @@ describe('generators/class.test.ts', () => {
     assert(result.content!.includes('interface IModel'));
     assert(result.content!.includes('User: ReturnType<typeof ExportUser>;'));
     assert(result.content!.includes('Person: ReturnType<typeof ExportPerson>;'));
-  });
-
-  it('should support sequelize with model', () => {
-    const newAppDir = path.resolve(__dirname, '../fixtures/app4');
-    createNodeModuleSym(newAppDir);
-    const result = triggerGenerator<GeneratorResult>('model', newAppDir, undefined);
-    assert(result.content!.includes('declare module \'sequelize\' {'));
-    assert(result.content!.includes('interface Sequelize'));
   });
 
   it('should support interfaceHandle with model without error', () => {
