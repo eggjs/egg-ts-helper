@@ -1,4 +1,10 @@
 
+1.25.4 / 2019-06-10
+==================
+
+**features**
+  * [[`8003dc2`](http://github.com/whxaxes/egg-ts-helper/commit/8003dc238ab845c291ee6c6a2e390f2669dbd8a0)] - feat: remove compatible for sequelize (#49) (吖猩 <<whxaxes@gmail.com>>)
+
 1.25.3 / 2019-05-26
 ==================
 
