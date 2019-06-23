@@ -62,6 +62,7 @@ function execute() {
     watch: watchFiles,
     watchDirs,
     configFile: program.config,
+    oneForAll: program.oneForAll,
     ...(program.extra ? JSON.parse(program.extra) : {}),
   };
 
