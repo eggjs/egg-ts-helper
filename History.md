@@ -1,4 +1,10 @@
 
+1.25.5 / 2019-06-23
+==================
+
+**fixes**
+  * [[`8dcb9f2`](http://github.com/whxaxes/egg-ts-helper/commit/8dcb9f2da0814370f789a64d7f817b075971f8c7)] - fix: duplicate declaration (#50) (吖猩 <<whxaxes@gmail.com>>)
+
 1.25.4 / 2019-06-10
 ==================
 
