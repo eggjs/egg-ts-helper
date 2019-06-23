@@ -57,8 +57,8 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
       dist,
       content:
         `${importContext}\n` +
+        `type ${moduleName}Type = typeof ${moduleName};\n` +
         `declare module \'${baseConfig.framework}\' {\n` +
-        `  type ${moduleName}Type = typeof ${moduleName};\n` +
         `  interface ${interfaceName} extends ${moduleName}Type { }\n` +
         '}',
     });

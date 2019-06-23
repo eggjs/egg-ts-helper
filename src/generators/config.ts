@@ -81,8 +81,8 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
       `import { ${config.interface} } from '${baseConfig.framework}';\n` +
       `${importList.join('\n')}\n` +
       `${declarationList.join('\n')}\n` +
+      `type ${newConfigType} = ${moduleList.join(' & ')};\n` +
       `declare module '${baseConfig.framework}' {\n` +
-      `  type ${newConfigType} = ${moduleList.join(' & ')};\n` +
       `  interface ${config.interface} extends ${newConfigType} { }\n` +
       '}',
   };
