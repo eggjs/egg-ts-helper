@@ -1,6 +1,13 @@
 import path from 'path';
 import packInfo from '../package.json';
 
+/** ts helper mode */
+export enum TsHelperMode {
+  APP = 'app',
+  PLUGIN = 'plugin',
+  FRAMEWORK = 'framework',
+}
+
 export const tmpDir = path.resolve(__dirname, '../.tmp');
 export const eggInfoPath = path.resolve(tmpDir, './eggInfo.json');
 export const dtsCommentRE = new RegExp(`^\\/\\/ [\\w ]+ ${packInfo.name}(@\\d+\\.\\d+\\.\\d+)?`);

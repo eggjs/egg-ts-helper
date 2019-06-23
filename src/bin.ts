@@ -25,6 +25,7 @@ const program = new Command()
   .option('-c, --cwd [path]', 'Egg application base dir (default: process.cwd)')
   .option('-C, --config [path]', 'Configuration file, The argument can be a file path to a valid JSON/JS configuration file.（default: {cwd}/tshelper.js')
   .option('-f, --framework [name]', 'Egg framework(default: egg)')
+  .option('-m, --mode [mode]', 'TS helper mode, can be app, plugin, framework, default is app')
   .option('-o, --oneForAll [path]', 'Create a d.ts import all types (default: typings/ets.d.ts)')
   .option('-s, --silent', 'Running without output')
   .option('-i, --ignore [dirs]', 'Ignore watchDirs, your can ignore multiple dirs with comma like: -i controller,service')
@@ -75,10 +76,5 @@ function execute() {
   }
 
   // create instance
-  const tsHelper = createTsHelperInstance(tsHelperConfig).build();
-
-  if (program.oneForAll) {
-    // create one for all
-    tsHelper.createOneForAll(program.oneForAll);
-  }
+  createTsHelperInstance(tsHelperConfig).build();
 }

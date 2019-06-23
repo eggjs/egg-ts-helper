@@ -4,7 +4,7 @@ import glob from 'globby';
 import path from 'path';
 import ts from 'typescript';
 import yn from 'yn';
-import { eggInfoPath, tmpDir } from './config';
+import { eggInfoPath, tmpDir, TsHelperMode } from './config';
 import { execSync, exec, ExecOptions } from 'child_process';
 
 export const JS_CONFIG = {
@@ -122,6 +122,10 @@ export function getJson(jsonStr: string) {
   } else {
     return {};
   }
+}
+
+export function isNpmPackageMode(mode: TsHelperMode) {
+  return mode === TsHelperMode.FRAMEWORK || mode === TsHelperMode.PLUGIN;
 }
 
 // convert string to same type with default value

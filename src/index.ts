@@ -5,7 +5,7 @@ import fs from 'fs';
 import chalk from 'chalk';
 import path from 'path';
 import { get as deepGet, set as deepSet } from 'dot-prop';
-import { declMapping, dtsComment, dtsCommentRE } from './config';
+import { declMapping, dtsComment, dtsCommentRE, TsHelperMode } from './config';
 import Watcher, { WatchItem } from './watcher';
 import * as utils from './utils';
 import glob from 'globby';
@@ -19,6 +19,7 @@ declare global {
 
 export interface TsHelperOption {
   cwd?: string;
+  mode?: TsHelperMode;
   framework?: string;
   typings?: string;
   watchDirs?: { [key: string]: WatchItem | boolean };
@@ -28,6 +29,7 @@ export interface TsHelperOption {
   autoRemoveJs?: boolean;
   throttle?: number;
   execAtInit?: boolean;
+  oneForAll?: string;
   configFile?: string | string[];
   silent?: boolean;
 }
@@ -60,11 +62,13 @@ export const defaultConfig = {
   cwd: utils.convertString(process.env.ETS_CWD, process.cwd()),
   framework: utils.convertString(process.env.ETS_FRAMEWORK, 'egg'),
   typings: utils.convertString(process.env.ETS_TYPINGS, './typings'),
+  mode: utils.convertString(process.env.ETS_MODE, TsHelperMode.APP),
   caseStyle: utils.convertString(process.env.ETS_CASE_STYLE, 'lower'),
   autoRemoveJs: utils.convertString(process.env.ETS_AUTO_REMOVE_JS, true),
   throttle: utils.convertString(process.env.ETS_THROTTLE, 500),
   watch: utils.convertString(process.env.ETS_WATCH, false),
   watchOptions: undefined,
+  oneForAll: utils.convertString(process.env.ETS_ONE_FOR_ALL, ''),
   execAtInit: utils.convertString(process.env.ETS_EXEC_AT_INIT, false),
   silent: utils.convertString(process.env.ETS_SILENT, isInUnitTest),
   watchDirs: {} as PlainObject<WatchItem>,
@@ -173,6 +177,12 @@ export default class TsHelper extends EventEmitter {
     // clean old files
     this.cleanFiles();
     this.watcherList.forEach(watcher => watcher.execute());
+
+    // Create one for all declarations if mode is plugin or framework
+    if (this.config.oneForAll || utils.isNpmPackageMode(this.config.mode)) {
+      this.createOneForAll();
+    }
+
     return this;
   }
 
@@ -197,7 +207,7 @@ export default class TsHelper extends EventEmitter {
   }
 
   // create oneForAll file
-  createOneForAll(dist?: string) {
+  createOneForAll(dist: string = this.config.oneForAll) {
     const config = this.config;
     const oneForAllDist = (typeof dist === 'string') ? dist : path.join(config.typings, './ets.d.ts');
     const oneForAllDistDir = path.dirname(oneForAllDist);
