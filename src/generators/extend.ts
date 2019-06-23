@@ -33,36 +33,48 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
   fileList.forEach(f => {
     let basename = path.basename(f);
     basename = basename.substring(0, basename.lastIndexOf('.'));
-    const moduleNames = basename.split('.');
-    const interfaceNameKey = moduleNames[0];
-    const interfaceEnvironment = moduleNames[1]
-      ? moduleNames[1].replace(/^[a-z]/, r => r.toUpperCase())
-      : '';
-
-    const interfaceName = config.interface[interfaceNameKey];
-    if (!interfaceName) {
-      return;
-    }
-
     const dist = path.resolve(config.dtsDir, `${basename}.d.ts`);
     f = path.resolve(config.dir, f);
     if (!fs.existsSync(f)) {
       return tsList.push({ dist });
     }
 
-    // get import info
-    const moduleName = `Extend${interfaceEnvironment}${interfaceName}`;
-    const importContext = utils.getImportStr(config.dtsDir, f, moduleName);
-    tsList.push({
-      dist,
-      content:
-        `${importContext}\n` +
-        `declare module \'${baseConfig.framework}\' {\n` +
-        `  type ${moduleName}Type = typeof ${moduleName};\n` +
-        `  interface ${interfaceName} extends ${moduleName}Type { }\n` +
-        '}',
-    });
+    const opt = { config, baseConfig, file: f, basename };
+    const content = createAppModeDeclarations(opt);
+    if (!content) return;
+
+    tsList.push({ dist, content });
   });
 
   return tsList;
+}
+
+interface CreateContentOption {
+  config: TsGenConfig;
+  baseConfig: TsHelperConfig;
+  file: string;
+  basename: string;
+}
+
+// create declaration files using `extend`
+function createAppModeDeclarations({ config, baseConfig, file, basename }: CreateContentOption) {
+  const moduleNames = basename.split('.');
+  const interfaceNameKey = moduleNames[0];
+  const interfaceEnvironment = moduleNames[1]
+    ? moduleNames[1].replace(/^[a-z]/, r => r.toUpperCase())
+    : '';
+
+  const interfaceName = config.interface[interfaceNameKey];
+  if (!interfaceName) {
+    return;
+  }
+
+  const moduleName = `Extend${interfaceEnvironment}${interfaceName}`;
+  const importContext = utils.getImportStr(config.dtsDir, file, moduleName);
+
+  return `${importContext}\n` +
+        `type ${moduleName}Type = typeof ${moduleName};\n` +
+        `declare module \'${baseConfig.framework}\' {\n` +
+        `  interface ${interfaceName} extends ${moduleName}Type { }\n` +
+        '}';
 }
