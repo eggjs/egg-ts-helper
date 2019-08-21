@@ -8,6 +8,7 @@ import { get as deepGet, set as deepSet } from 'dot-prop';
 import { declMapping, dtsComment, dtsCommentRE } from './config';
 import Watcher, { WatchItem } from './watcher';
 import * as utils from './utils';
+import { CompilerOptions } from 'typescript';
 import glob from 'globby';
 const isInUnitTest = process.env.NODE_ENV === 'test';
 
@@ -33,12 +34,16 @@ export interface TsHelperOption {
 }
 
 export type WatchItem = WatchItem;
-export type TsHelperConfig = typeof defaultConfig;
+export type TsHelperConfig = typeof defaultConfig & {
+  id: string;
+  tsConfig: CompilerOptions;
+};
+
 export type TsGenConfig = {
   name: string;
   dir: string;
   dtsDir: string;
-  fileList: string[],
+  fileList: string[];
   file?: string;
 } & WatchItem;
 
@@ -314,18 +319,22 @@ export default class TsHelper extends EventEmitter {
 
     // read from local file( default to tshelper | tsHelper )
     (Array.isArray(configFile) ? configFile : [ configFile ]).forEach(f => {
-      this.mergeConfig(config, utils.requireFile(utils.getAbsoluteUrlByCwd(f, config.cwd)));
+      this.mergeConfig(config, utils.requireFile(path.resolve(config.cwd, f)));
     });
 
     // merge local config and options to config
     this.mergeConfig(config, options);
+
+    // create extra config
+    config.id = `${Date.now()}-${Math.ceil(Math.random() * 1000000)}`;
+    config.tsConfig = utils.loadTsConfig(path.resolve(config.cwd, './tsconfig.json'));
   }
 
   // configure
   // options > configFile > package.json
   private configure(options: TsHelperOption) {
     if (options.cwd) {
-      options.cwd = utils.getAbsoluteUrlByCwd(options.cwd, defaultConfig.cwd);
+      options.cwd = path.resolve(defaultConfig.cwd, options.cwd);
     }
 
     // base config
@@ -333,7 +342,7 @@ export default class TsHelper extends EventEmitter {
     config.cwd = options.cwd || config.cwd;
     config.framework = options.framework || defaultConfig.framework;
     config.watchDirs = getDefaultWatchDirs(config);
-    config.typings = utils.getAbsoluteUrlByCwd(config.typings, config.cwd);
+    config.typings = path.resolve(config.cwd, config.typings);
     this.config = config as TsHelperConfig;
 
     // load watcher config

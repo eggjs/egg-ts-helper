@@ -5,7 +5,10 @@ import os from 'os';
 import del from 'del';
 import { promisify } from 'util';
 import { createTsHelperInstance, TsHelperOption } from '../dist';
+import mm from 'egg-mock';
 const psList: child_process.ChildProcess[] = [];
+
+beforeEach(mm.restore);
 
 export const tscBin = getBin('tsc');
 export const eggBin = getBin('egg-bin');

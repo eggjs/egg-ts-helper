@@ -7,6 +7,7 @@ import mm from 'egg-mock';
 import { sleep, spawn, getStd, eggBin, timeoutPromise, mockFile, createTsHelper, createNodeModuleSym } from './utils';
 import assert = require('assert');
 import TsHelper, { getDefaultWatchDirs } from '../dist/';
+import * as utils from '../dist/utils';
 const debug = d('egg-ts-helper#index.test');
 describe('index.test.ts', () => {
   let tsHelper: TsHelper;
@@ -142,6 +143,7 @@ describe('index.test.ts', () => {
   });
 
   it('should works without error while config file changed', async () => {
+    mm(utils, 'loadTsConfig', () => ({ skipLibCheck: true }));
     const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
     mkdirp.sync(dir);
 
@@ -354,6 +356,12 @@ describe('index.test.ts', () => {
     const { stdout, stderr } = await getStd(proc, true);
     assert(!stderr);
     assert(stdout.includes('egg started on http'));
+    assert(fs.existsSync(path.resolve(baseDir, './typings/app/controller/index.d.ts')));
+    assert(fs.existsSync(path.resolve(baseDir, './typings/app/custom/index.d.ts')));
+    assert(fs.existsSync(path.resolve(baseDir, './typings/app/extend/application.d.ts')));
+    assert(fs.existsSync(path.resolve(baseDir, './typings/app/model/index.d.ts')));
+    assert(fs.existsSync(path.resolve(baseDir, './typings/config/plugin.d.ts')));
+    assert(fs.existsSync(path.resolve(baseDir, './typings/config/index.d.ts')));
   });
 
   it('should works without error in unittest', async () => {
