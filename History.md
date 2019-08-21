@@ -1,4 +1,11 @@
 
+1.25.6 / 2019-08-21
+==================
+
+**fixes**
+  * [[`368e2a9`](http://github.com/whxaxes/egg-ts-helper/commit/368e2a99d303668ac540a56d47a489149d634a2c)] - fix: fix config types error (#51) (吖猩 <<whxaxes@gmail.com>>)
+  * [[`a357f28`](http://github.com/whxaxes/egg-ts-helper/commit/a357f286d3c41c3d87211f8fb72897b5ee7330ec)] - fix: travis ci (wanghx <<whxaxes@gmail.com>>)
+
 1.25.5 / 2019-06-23
 ==================
 
