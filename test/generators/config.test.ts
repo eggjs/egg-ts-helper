@@ -1,7 +1,9 @@
 import path from 'path';
 import assert = require('assert');
 import { GeneratorResult } from '../../dist/';
+import * as utils from '../../dist/utils';
 import { triggerGenerator } from './utils';
+import mm from 'egg-mock';
 
 describe('generators/config.test.ts', () => {
   const appDir = path.resolve(__dirname, '../fixtures/app');
@@ -20,6 +22,7 @@ describe('generators/config.test.ts', () => {
   });
 
   it('should works without error with *.ts', () => {
+    mm(utils, 'loadTsConfig', () => ({ skipLibCheck: true }));
     const result = triggerGenerator<GeneratorResult>('config', appDir, undefined, commonConfig);
     assert(result.content);
     assert(result.content!.includes("import ExportConfigDefault from '../../config/config.default';"));
@@ -33,7 +36,15 @@ describe('generators/config.test.ts', () => {
     assert(result.content!.includes('interface EggAppConfig extends NewEggAppConfig { }\n'));
   });
 
+  it('should not generate d.ts with export plain object', () => {
+    const result = triggerGenerator<GeneratorResult>('config', appDir, undefined, commonConfig);
+    assert(result.content);
+    assert(result.content!.includes("import ExportConfigDefault from '../../config/config.default';"));
+    assert(!result.content!.includes("import ExportConfigLocal from '../../config/config.local';"));
+  });
+
   it('should works without error with file changed', () => {
+    mm(utils, 'loadTsConfig', () => ({ skipLibCheck: true }));
     triggerGenerator<GeneratorResult>('config', appDir, undefined, commonConfig);
     const result = triggerGenerator<GeneratorResult>('config', appDir, 'config.default', commonConfig);
     assert(result.content);
@@ -49,6 +60,7 @@ describe('generators/config.test.ts', () => {
   });
 
   it('should works while file was not exist', () => {
+    mm(utils, 'loadTsConfig', () => ({ skipLibCheck: true }));
     triggerGenerator<GeneratorResult>('config', appDir, undefined, commonConfig);
     const result = triggerGenerator<GeneratorResult>('config', appDir, 'config.xxx', commonConfig);
     assert(!result.content!.includes("config.xxx';"));
@@ -57,6 +69,7 @@ describe('generators/config.test.ts', () => {
   });
 
   it('should works while only has config.ts', () => {
+    mm(utils, 'loadTsConfig', () => ({ skipLibCheck: true }));
     const result = triggerGenerator<GeneratorResult>('config', path.resolve(__dirname, '../fixtures/app2'));
     assert(result.content);
     assert(result.content!.includes("import ExportConfig from '../../config/config';"));
@@ -64,7 +77,17 @@ describe('generators/config.test.ts', () => {
     assert(result.content!.includes('Config'));
   });
 
+  it('should works with js project anyway', () => {
+    const result = triggerGenerator<GeneratorResult>('config', path.resolve(__dirname, '../fixtures/real-js'), undefined, commonConfig);
+    assert(result.content);
+    assert(result.content!.includes("import ExportConfigDefault = require('../../config/config.default');"));
+    assert(result.content!.includes("import ExportConfigLocal = require('../../config/config.local');"));
+    assert(result.content!.includes('type ConfigDefault = typeof ExportConfigDefault;'));
+    assert(result.content!.includes('type ConfigLocal = ReturnType<typeof ExportConfigLocal>;'));
+  });
+
   it('should works without error with empty config.ts', () => {
+    mm(utils, 'loadTsConfig', () => ({ skipLibCheck: true }));
     const result = triggerGenerator<GeneratorResult>('config', path.resolve(__dirname, '../fixtures/app4'));
     assert(!result.content);
   });

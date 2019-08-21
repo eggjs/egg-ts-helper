@@ -193,12 +193,19 @@ describe('utils.test.ts', () => {
     assert(customEggInfo.config!.customLoader);
   });
 
-  it('should get json without error', async () => {
-    let json = utils.getJson('');
+  it('should parse json without error', async () => {
+    let json = utils.parseJson('');
     assert(json);
-    json = utils.getJson('{ "abc": 123 }');
+    json = utils.parseJson('{ "abc": 123 }');
     assert(json.abc);
-    json = utils.getJson('{ "abc: 123 }');
+    json = utils.parseJson('{ "abc: 123 }');
     assert(json);
+  });
+
+  it('should load tsconfig without error', async () => {
+    const tsConfig = utils.loadTsConfig(path.resolve(__dirname, './fixtures/real/tsconfig'));
+    assert(tsConfig);
+    assert(tsConfig.strict);
+    assert(tsConfig.target);
   });
 });

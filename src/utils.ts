@@ -11,10 +11,10 @@ export const JS_CONFIG = {
   include: [ '**/*' ],
 };
 
-export const TS_CONFIG = {
+export const TS_CONFIG: Partial<TsConfigJson> = {
   compilerOptions: {
-    target: 'es2017',
-    module: 'commonjs',
+    target: ts.ScriptTarget.ES2017,
+    module: ts.ModuleKind.CommonJS,
     strict: true,
     noImplicitAny: false,
     experimentalDecorators: true,
@@ -36,6 +36,11 @@ export const TS_CONFIG = {
     inlineSourceMap: true,
   },
 };
+
+export interface TsConfigJson {
+  extends: string;
+  compilerOptions: ts.CompilerOptions;
+}
 
 export interface GetEggInfoOpt {
   async?: boolean;
@@ -98,29 +103,17 @@ export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(cwd: string, opt
       exec(cmd, opt, err => {
         caches.runningPromise = null;
         if (err) reject(err);
-        resolve(end(getJson(fs.readFileSync(eggInfoPath, 'utf-8'))));
+        resolve(end(parseJson(fs.readFileSync(eggInfoPath, 'utf-8'))));
       });
     });
     return caches.runningPromise;
   } else {
     try {
       execSync(cmd, opt);
-      return end(getJson(fs.readFileSync(eggInfoPath, 'utf-8')));
+      return end(parseJson(fs.readFileSync(eggInfoPath, 'utf-8')));
     } catch (e) {
       return end({});
     }
-  }
-}
-
-export function getJson(jsonStr: string) {
-  if (jsonStr) {
-    try {
-      return JSON.parse(jsonStr);
-    } catch (e) {
-      return {};
-    }
-  } else {
-    return {};
   }
 }
 
@@ -233,10 +226,6 @@ export function pickFields<T extends string = string>(obj: PlainObject, fields: 
 // log
 export function log(msg: string, prefix: boolean = true) {
   console.info(`${prefix ? '[egg-ts-helper] ' : ''}${msg}`);
-}
-
-export function getAbsoluteUrlByCwd(p: string, cwd: string) {
-  return path.isAbsolute(p) ? p : path.resolve(cwd, p);
 }
 
 // get import context
@@ -357,15 +346,28 @@ export function extend<T = any>(obj, ...args: Array<Partial<T>>): T {
   return obj;
 }
 
-// load package.json
-export function getPkgInfo(cwd: string) {
-  const pkgPath = path.resolve(cwd, './package.json');
-  if (!fs.existsSync(pkgPath)) return {};
-  try {
-    return JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
-  } catch (e) {
+// parse json
+export function parseJson(jsonStr: string) {
+  if (jsonStr) {
+    try {
+      return JSON.parse(jsonStr);
+    } catch (e) {
+      return {};
+    }
+  } else {
     return {};
   }
+}
+
+// load package.json
+export function getPkgInfo(cwd: string) {
+  return readJson(path.resolve(cwd, './package.json'));
+}
+
+// read json file
+export function readJson(jsonUrl: string) {
+  if (!fs.existsSync(jsonUrl)) return {};
+  return parseJson(fs.readFileSync(jsonUrl, 'utf-8'));
 }
 
 // format property
@@ -400,6 +402,20 @@ export function camelProp(
   }
 
   return first + property.substring(1);
+}
+
+// load tsconfig.json
+export function loadTsConfig(tsconfigPath: string): ts.CompilerOptions {
+  tsconfigPath = path.extname(tsconfigPath) === '.json' ? tsconfigPath : `${tsconfigPath}.json`;
+  const tsConfig = readJson(tsconfigPath) as TsConfigJson;
+  if (tsConfig.extends) {
+    const extendTsConfig = loadTsConfig(path.resolve(path.dirname(tsconfigPath), tsConfig.extends));
+    return {
+      ...tsConfig.compilerOptions,
+      ...extendTsConfig,
+    };
+  }
+  return tsConfig.compilerOptions || {};
 }
 
 /**

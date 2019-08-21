@@ -79,7 +79,7 @@ export default class Watcher extends EventEmitter {
 
     assert(options.directory, `options.directory must set in ${generatorName}`);
     const baseDir = options.directory.replace(/\/|\\/, path.sep);
-    this.dir = utils.getAbsoluteUrlByCwd(baseDir, this.config.cwd);
+    this.dir = path.resolve(this.config.cwd, baseDir);
     this.dtsDir = path.resolve(
       this.config.typings,
       path.relative(this.config.cwd, this.dir),
@@ -162,7 +162,7 @@ export default class Watcher extends EventEmitter {
 
   // on file change
   private onChange(filePath: string) {
-    filePath = utils.getAbsoluteUrlByCwd(filePath, this.dir);
+    filePath = path.resolve(this.dir, filePath);
     debug('file changed %s %o', filePath, this.throttleStack);
     if (!this.throttleStack.includes(filePath)) {
       this.throttleStack.push(filePath);

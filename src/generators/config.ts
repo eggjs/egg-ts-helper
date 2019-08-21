@@ -8,7 +8,7 @@ import * as utils from '../utils';
 const EXPORT_DEFAULT_FUNCTION = 1;
 const EXPORT_DEFAULT = 2;
 const EXPORT = 3;
-const cache: { [key: string]: ImportItem } = {};
+const globalCache: { [key: string]: { [key: string]: ImportItem } } = {};
 
 export interface ImportItem {
   import: string;
@@ -25,6 +25,7 @@ export const defaultConfig = {
 export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
   const fileList = config.fileList;
   const dist = path.resolve(config.dtsDir, 'index.d.ts');
+  const cache = globalCache[baseConfig.id] = globalCache[baseConfig.id] || {};
   if (!fileList.length) {
     return { dist };
   }
@@ -37,7 +38,13 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
 
     // read from cache
     if (!cache[abUrl] || config.file === abUrl) {
-      const type = checkConfigReturnType(abUrl);
+      const skipLibCheck = !!baseConfig.tsConfig.skipLibCheck;
+      const { type, usePowerPartial } = checkConfigReturnType(abUrl);
+
+      // skip when not usePowerPartial and skipLibCheck in ts file
+      // because it maybe cause types error.
+      if (path.extname(f) !== '.js' && !usePowerPartial && !skipLibCheck) return;
+
       const { moduleName: sModuleName } = utils.getModuleObjByPath(f);
       const moduleName = `Export${sModuleName}`;
       const importContext = utils.getImportStr(
@@ -91,11 +98,36 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
 // check config return type.
 export function checkConfigReturnType(f: string) {
   const result = utils.findExportNode(fs.readFileSync(f, 'utf-8'));
+  const resp: { type: number | undefined; usePowerPartial: boolean } = {
+    type: undefined,
+    usePowerPartial: false,
+  };
+
   if (result.exportDefaultNode) {
-    return ts.isFunctionLike(result.exportDefaultNode)
-      ? EXPORT_DEFAULT_FUNCTION
-      : EXPORT_DEFAULT;
+    const exportDefaultNode = result.exportDefaultNode;
+    if (ts.isFunctionLike(exportDefaultNode)) {
+      if ((ts.isFunctionDeclaration(exportDefaultNode) || ts.isArrowFunction(exportDefaultNode)) && exportDefaultNode.body) {
+        exportDefaultNode.body.forEachChild(tNode => {
+          if (!resp.usePowerPartial && ts.isVariableStatement(tNode)) {
+            // check wether use PowerPartial<EggAppInfo>
+            resp.usePowerPartial = !!tNode.declarationList.declarations.find(decl => {
+              let typeText = decl.type ? decl.type.getText() : undefined;
+              if (decl.initializer && ts.isAsExpression(decl.initializer) && decl.initializer.type) {
+                typeText = decl.initializer.type.getText();
+              }
+              return !!(typeText && typeText.includes('PowerPartial') && typeText.includes('EggAppConfig'));
+            });
+          }
+        });
+      }
+
+      resp.type = EXPORT_DEFAULT_FUNCTION;
+    } else {
+      resp.type = EXPORT_DEFAULT;
+    }
   } else if (result.exportNodeList.length) {
-    return EXPORT;
+    resp.type = EXPORT;
   }
+
+  return resp;
 }

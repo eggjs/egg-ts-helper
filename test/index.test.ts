@@ -354,6 +354,12 @@ describe('index.test.ts', () => {
     const { stdout, stderr } = await getStd(proc, true);
     assert(!stderr);
     assert(stdout.includes('egg started on http'));
+    assert(fs.existsSync(path.resolve(baseDir, './typings/app/controller/index.d.ts')));
+    assert(fs.existsSync(path.resolve(baseDir, './typings/app/custom/index.d.ts')));
+    assert(fs.existsSync(path.resolve(baseDir, './typings/app/extend/application.d.ts')));
+    assert(fs.existsSync(path.resolve(baseDir, './typings/app/model/index.d.ts')));
+    assert(fs.existsSync(path.resolve(baseDir, './typings/config/plugin.d.ts')));
+    assert(fs.existsSync(path.resolve(baseDir, './typings/config/index.d.ts')));
   });
 
   it('should works without error in unittest', async () => {
