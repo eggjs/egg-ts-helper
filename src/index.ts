@@ -33,7 +33,7 @@ export interface TsHelperOption {
   silent?: boolean;
 }
 
-export type WatchItem = WatchItem;
+export { WatchItem };
 export type TsHelperConfig = typeof defaultConfig & {
   id: string;
   tsConfig: CompilerOptions;
