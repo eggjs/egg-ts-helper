@@ -12,6 +12,10 @@ describe('generators/class.test.ts', () => {
     assert(result.content!.includes('../../../app/controller/home'));
     assert(result.content!.includes('interface IController'));
     assert(result.content!.includes('home: ExportHome;'));
+    assert(result.content!.includes('multiParent: ExportMultiParent &'));
+    assert(result.content!.includes('sub: ExportMultiParentSub;'));
+    assert(!result.content!.includes('multi: ExportMulti'));
+    assert(result.content!.includes('sub: ExportMultiSub;'));
   });
 
   it('should works without error with no interface', () => {
@@ -20,6 +24,10 @@ describe('generators/class.test.ts', () => {
     assert(result.content!.includes('../../../app/controller/home'));
     assert(result.content!.includes('interface IController'));
     assert(result.content!.includes('home: ExportHome;'));
+    assert(result.content!.includes('multiParent: ExportMultiParent &'));
+    assert(result.content!.includes('sub: ExportMultiParentSub;'));
+    assert(!result.content!.includes('multi: ExportMulti'));
+    assert(result.content!.includes('sub: ExportMultiSub;'));
   });
 
   it('should support interfaceHandle is string', () => {

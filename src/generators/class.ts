@@ -44,7 +44,11 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
       if (!props.length) {
         collector[name] = moduleName;
       } else {
-        collector = collector[name] = typeof collector[name] === 'object' ? collector[name] : {};
+        collector = collector[name] = typeof collector[name] === 'object' ? collector[name] : Object.create(Object.prototype, {
+          parentModuleName: {
+            value: typeof collector[name] === 'string' ? collector[name] : undefined,
+          },
+        });
       }
     }
   });
@@ -115,7 +119,7 @@ function composeInterface(
     } else {
       const newVal = composeInterface(val, undefined, preHandle, indent + '  ');
       if (newVal) {
-        mid += `${indent + key}: {\n${newVal + indent}}\n`;
+        mid += `${indent + key}: ${val.parentModuleName ? `${val.parentModuleName} & ` : ''}{\n${newVal + indent}}\n`;
       }
     }
   });
