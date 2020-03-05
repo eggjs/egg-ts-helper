@@ -33,7 +33,7 @@ export interface TsHelperOption {
   silent?: boolean;
 }
 
-export type WatchItem = WatchItem;
+export { WatchItem };
 export type TsHelperConfig = typeof defaultConfig & {
   id: string;
   tsConfig: CompilerOptions;
@@ -136,7 +136,7 @@ export function getDefaultWatchDirs(opt: TsHelperOption = {}) {
   baseConfig.service = {
     directory: 'app/service',
     interface: declMapping.service,
-    generator: 'class',
+    generator: 'auto',
   };
 
   // egg
