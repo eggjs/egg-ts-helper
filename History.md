@@ -1,4 +1,13 @@
 
+1.25.7 / 2020-03-05
+==================
+
+**features**
+  * [[`cfed138`](http://github.com/whxaxes/egg-ts-helper/commit/cfed13880588650cc5bc9514cf775a12c080cb29)] - feat: support multi-level directory with intersection types (#53) (jinasonlin <<jinasonlin@gmail.com>>)
+
+**fixes**
+  * [[`29b6299`](http://github.com/whxaxes/egg-ts-helper/commit/29b6299118f814173d12c5e83569c08559ab3384)] - fix: service is method (#58) (吖猩 <<whxaxes@gmail.com>>)
+
 1.25.6 / 2019-08-21
 ==================
 
