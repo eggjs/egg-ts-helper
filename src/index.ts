@@ -136,7 +136,7 @@ export function getDefaultWatchDirs(opt: TsHelperOption = {}) {
   baseConfig.service = {
     directory: 'app/service',
     interface: declMapping.service,
-    generator: 'class',
+    generator: 'auto',
   };
 
   // egg
