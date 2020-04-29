@@ -92,6 +92,7 @@ $ ets -h
 | silent | `boolean` | false | ignore logging |
 | watch | `boolean` | false | watch file change or not, default to `true` in `register`  |
 | watchOptions | `object` | undefined | chokidar [options](https://github.com/paulmillr/chokidar#api) |
+| autoRemoveJs | `boolean` | true | auto remove same name js on startup |
 | configFile | `string` | {cwd}/tshelper.(js|json) | configure file path |
 | watchDirs | `object` | | generator configuration |
 
