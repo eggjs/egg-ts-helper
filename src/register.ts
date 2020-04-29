@@ -19,6 +19,8 @@ if (cluster.isMaster) {
 // start to register
 function register(watch: boolean) {
   const cwd = process.cwd();
+  const instance = createTsHelperInstance({ watch });
+
   if (util.checkMaybeIsJsProj(cwd)) {
     // write jsconfig if the project is wrote by js
     util.writeJsConfig(cwd);
@@ -31,7 +33,7 @@ function register(watch: boolean) {
     // no need to clean in js project
     // clean local js file at first.
     // because egg-loader cannot load the same property name to egg.
-    if (tsNodeMode) {
+    if (tsNodeMode && instance.config.autoRemoveJs) {
       util.cleanJs(cwd);
     }
   }
