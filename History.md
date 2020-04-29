@@ -1,4 +1,13 @@
 
+1.25.8 / 2020-04-30
+==================
+
+**fixes**
+  * [[`f633470`](http://github.com/whxaxes/egg-ts-helper/commit/f6334701fb91e9c9e03ec22f8e5af7b948f2be1a)] - fix: autoRemoveJs should works in register (#62) (吖猩 <<whxaxes@gmail.com>>)
+
+**others**
+  * [[`8f2c7a7`](http://github.com/whxaxes/egg-ts-helper/commit/8f2c7a7d518d0c5cca9a97573bc83ea91373bbb0)] - docs: update options (吖猩 <<whxaxes@gmail.com>>)
+
 1.25.7 / 2020-03-05
 ==================
 
