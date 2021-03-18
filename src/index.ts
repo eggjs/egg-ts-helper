@@ -270,7 +270,8 @@ export default class TsHelper extends EventEmitter {
     return directories.map(dir => {
       const options = {
         name,
-        ref: name,
+        // Fix 'ref' is specified more than once, so this usage will be overwritten.
+        // ref: name,
         execAtInit: this.config.execAtInit,
         ...watchConfig,
       };

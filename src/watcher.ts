@@ -66,7 +66,8 @@ export default class Watcher extends EventEmitter {
     this.generator = this.getGenerator(generatorName);
     options = this.options = {
       trigger: [ 'add', 'unlink' ],
-      generator: generatorName,
+      // Fix 'generator' is specified more than once, so this usage will be overwritten.
+      // generator: generatorName,
       pattern: '**/*.(ts|js)',
       watch: true,
       ...this.generator.defaultConfig,
