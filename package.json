@@ -43,8 +43,8 @@
     "globby": "^8.0.1",
     "mkdirp": "^0.5.1",
     "ts-node": "^7.0.0",
-    "tslib": "^1.9.3",
-    "typescript": "^3.0.0",
+    "tslib": "^2.0.0",
+    "typescript": "^4.0.0",
     "yn": "^3.0.0"
   },
   "publishConfig": {
