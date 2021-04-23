@@ -1,4 +1,10 @@
 
+1.25.9 / 2021-04-23
+==================
+
+**fixes**
+  * [[`e0f067e`](http://github.com/whxaxes/egg-ts-helper/commit/e0f067e5d7f1c9ac21fdf03357a6c7b120eaac56)] - fix: remove ts args checking (#73) (吖猩 <<whxaxes@gmail.com>>)
+
 1.25.8 / 2020-04-30
 ==================
 
