@@ -1,6 +1,5 @@
 import cluster from 'cluster';
 import d from 'debug';
-import { get as deepGet } from 'dot-prop';
 import { createTsHelperInstance } from './';
 import * as util from './utils';
 const debug = d('egg-ts-helper#register');
