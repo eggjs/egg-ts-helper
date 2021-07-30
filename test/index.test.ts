@@ -364,11 +364,10 @@ describe('index.test.ts', () => {
     assert(fs.existsSync(path.resolve(baseDir, './typings/config/index.d.ts')));
   });
 
-  it('should works without error in unittest', async () => {
+  it.skip('should works without error in unittest', async () => {
     const baseDir = path.join(__dirname, './fixtures/real-unittest/');
     del.sync(path.resolve(baseDir, './typings'));
-    del.sync(path.resolve(baseDir, './node_modules'));
-    fs.symlinkSync(path.resolve(__dirname, '../node_modules'), path.resolve(baseDir, './node_modules'), 'dir');
+    createNodeModuleSym(baseDir);
     const proc = spawn(eggBin, [ 'test', '--ts', '-r', path.resolve(__dirname, '../register') ], {
       cwd: baseDir,
       env: {
