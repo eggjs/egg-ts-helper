@@ -37,7 +37,7 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
 
     const composeInterface = (list: string[]) => {
       return `    ${list
-        .map(name => `${utils.isIdentifierName(name) ? name : `'${name}'` }?: EggPluginItem;`)
+        .map(name => `${utils.isIdentifierName(name) ? name : `'${name}'`}?: EggPluginItem;`)
         .join('\n    ')}`;
     };
 

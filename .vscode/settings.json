@@ -11,5 +11,17 @@
   },
   "typescript.tsdk": "node_modules/typescript/lib",
   "prettier.trailingComma": "all",
-  "debug.node.autoAttach": "on"
+  "debug.node.autoAttach": "on",
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    {
+      "language": "typescript",
+      "autoFix": true
+    },
+    {
+      "language": "typescriptreact",
+      "autoFix": true
+    }
+  ]
 }

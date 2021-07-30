@@ -15,7 +15,7 @@
     "build": "tsc -d",
     "build:w": "tsc -d -w",
     "release": "del dist && npm run build",
-    "lint": "tslint ./src/**/*.ts ./test/**/*.test.ts",
+    "lint": "eslint . --ext .ts",
     "check": "npm run build && npm run lint",
     "test": "npm run check && npm run test-local",
     "test-local": "egg-bin test --ts",
@@ -38,7 +38,6 @@
     "chokidar": "^3.0.0",
     "commander": "^2.15.1",
     "debug": "^3.1.0",
-    "dot-prop": "^4.2.0",
     "enquirer": "^2.3.0",
     "globby": "^8.0.1",
     "mkdirp": "^0.5.1",
@@ -67,7 +66,7 @@
     "egg-sequelize": "^4.3.1",
     "extend2": "^1.0.0",
     "runscript": "^1.3.0",
-    "tslint": "^5.9.1",
-    "tslint-config-egg": "^1.0.0"
+    "eslint": "^7.0.0",
+    "eslint-config-egg": "^9.0.0"
   }
 }

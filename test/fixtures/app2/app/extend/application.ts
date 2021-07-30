@@ -1,11 +1,11 @@
 const exportApp = {
-  get go(this: any) {
-    this.fucker = 'go';
-    return this.fucker;
+  get go() {
+    (this as any).fucker = 'go';
+    return (this as any).fucker;
   },
 
   set go(val) {
-    this._go = val;
+    (this as any)._go = val;
   },
 
   isCool() {
@@ -17,7 +17,7 @@ const exportApp = {
     console.info('ko');
   },
 
-  ['test-ggs']: () => {
+  'test-ggs': () => {
     console.info('ko');
   },
 

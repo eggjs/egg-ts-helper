@@ -253,7 +253,7 @@ export default class TsHelper extends EventEmitter {
   }
 
   // register watcher
-  registerWatcher(name: string, watchConfig: WatchItem & { directory: string | string[]; }, removeDuplicate: boolean = true) {
+  registerWatcher(name: string, watchConfig: WatchItem & { directory: string | string[]; }, removeDuplicate = true) {
     if (removeDuplicate) {
       this.destroyWatcher(name);
     }
@@ -391,9 +391,9 @@ export default class TsHelper extends EventEmitter {
       return (result as Promise<GeneratorAllResult>)
         .then(r => updateTs(r, file))
         .catch(e => { this.log(e.message); });
-    } else {
-      updateTs(result as GeneratorAllResult, file);
     }
+    updateTs(result as GeneratorAllResult, file);
+
   }
 
   private updateDistFiles(fileUrl: string, isRemove?: boolean) {

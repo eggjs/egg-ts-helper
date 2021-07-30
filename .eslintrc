@@ -1,0 +1,16 @@
+{
+  "extends": "eslint-config-egg/typescript",
+  "parserOptions": {
+    "project": "./tsconfig.eslint.json",
+    "createDefaultProgram": true
+  },
+  "rules": {
+    "prefer-spread": "off",
+    "no-return-assign": "off",
+    "no-case-declarations": "off",
+    "prefer-const": "off",
+    "@typescript-eslint/no-use-before-define": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-var-requires": "off"
+  }
+}

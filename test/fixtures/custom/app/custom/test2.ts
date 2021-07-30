@@ -1,4 +1,4 @@
-export default function () {
+export default function() {
   return {
     test() {
       console.info('123');

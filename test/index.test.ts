@@ -222,17 +222,17 @@ describe('index.test.ts', () => {
       tsHelper.on('remove', file => {
         if (file === path.resolve(cwd, './typings/app/custom3/custom-custom3.d.ts')) {
           return setTimeout(restore, 2000);
-        } else {
-          reject('should delete custom3.d.ts');
         }
+        reject('should delete custom3.d.ts');
+
       });
 
       tsHelper.on('update', file => {
         if (file === path.resolve(cwd, './typings/app/custom3/custom-custom3.d.ts')) {
           return resolve();
-        } else {
-          reject('should create custom3.d.ts');
         }
+        reject('should create custom3.d.ts');
+
       });
     }, 30000);
   });
