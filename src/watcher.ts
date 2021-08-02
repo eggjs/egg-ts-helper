@@ -120,6 +120,7 @@ export default class Watcher extends EventEmitter {
     const watcher = chokidar.watch(this.pattern, {
       cwd: this.dir,
       ignoreInitial: true,
+      usePolling: true,
       ...(this.config.watchOptions || {}),
     });
 
