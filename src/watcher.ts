@@ -4,9 +4,7 @@ import assert from 'assert';
 import { EventEmitter } from 'events';
 import { TsGenerator, TsGenConfig, TsHelperConfig, default as TsHelper } from './';
 import * as utils from './utils';
-import * as os from 'os';
 import d from 'debug';
-const platform = os.platform();
 const debug = d('egg-ts-helper#watcher');
 const generators = utils.loadModules(
   path.resolve(__dirname, './generators'),
@@ -122,12 +120,12 @@ export default class Watcher extends EventEmitter {
     const watcher = chokidar.watch(this.pattern, {
       cwd: this.dir,
       ignoreInitial: true,
-      usePolling: platform !== 'darwin',
       ...(this.config.watchOptions || {}),
     });
 
     // listen watcher event
     this.options.trigger!.forEach(evt => {
+      console.info('watch listen', evt);
       watcher.on(evt, this.onChange.bind(this));
     });
 
@@ -165,6 +163,8 @@ export default class Watcher extends EventEmitter {
 
   // on file change
   private onChange(filePath: string) {
+    console.info('file changed', filePath);
+
     filePath = path.resolve(this.dir, filePath);
     debug('file changed %s %o', filePath, this.throttleStack);
     if (!this.throttleStack.includes(filePath)) {
