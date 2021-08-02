@@ -84,9 +84,9 @@ export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(cwd: string, opt
     caches.cacheTime = Date.now();
     if (option.callback) {
       return option.callback(json);
-    } else {
-      return json;
     }
+    return json;
+
   };
 
   // check cache
@@ -107,14 +107,14 @@ export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(cwd: string, opt
       });
     });
     return caches.runningPromise;
-  } else {
-    try {
-      execSync(cmd, opt);
-      return end(parseJson(fs.readFileSync(eggInfoPath, 'utf-8')));
-    } catch (e) {
-      return end({});
-    }
   }
+  try {
+    execSync(cmd, opt);
+    return end(parseJson(fs.readFileSync(eggInfoPath, 'utf-8')));
+  } catch (e) {
+    return end({});
+  }
+
 }
 
 // convert string to same type with default value
@@ -195,7 +195,7 @@ export function loadModules<T = any>(cwd: string, loadDefault?: boolean, preHand
   fs
     .readdirSync(cwd)
     .filter(f => f.endsWith('.js'))
-    .map(f => {
+    .forEach(f => {
       const name = f.substring(0, f.lastIndexOf('.'));
       const obj = require(path.resolve(cwd, name));
       if (loadDefault && obj.default) {
@@ -211,9 +211,9 @@ export function loadModules<T = any>(cwd: string, loadDefault?: boolean, preHand
 export function strToFn(fn) {
   if (typeof fn === 'string') {
     return (...args: any[]) => fn.replace(/{{\s*(\d+)\s*}}/g, (_, index) => args[index]);
-  } else {
-    return fn;
   }
+  return fn;
+
 }
 
 // pick fields from object
@@ -224,7 +224,7 @@ export function pickFields<T extends string = string>(obj: PlainObject, fields: 
 }
 
 // log
-export function log(msg: string, prefix: boolean = true) {
+export function log(msg: string, prefix = true) {
   console.info(`${prefix ? '[egg-ts-helper] ' : ''}${msg}`);
 }
 
@@ -334,7 +334,8 @@ export function requireFile(url) {
 // extend
 export function extend<T = any>(obj, ...args: Array<Partial<T>>): T {
   args.forEach(source => {
-    let descriptor, prop;
+    let descriptor,
+      prop;
     if (source) {
       for (prop in source) {
         descriptor = Object.getOwnPropertyDescriptor(source, prop);

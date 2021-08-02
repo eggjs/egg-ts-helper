@@ -117,11 +117,12 @@ export default class Watcher extends EventEmitter {
       this.fsWatcher.close();
     }
 
-    const watcher = chokidar.watch(this.pattern, {
+    const watcherOption = {
       cwd: this.dir,
       ignoreInitial: true,
       ...(this.config.watchOptions || {}),
-    });
+    };
+    const watcher = chokidar.watch(this.pattern, watcherOption);
 
     // listen watcher event
     this.options.trigger!.forEach(evt => {

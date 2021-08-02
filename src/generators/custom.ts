@@ -10,8 +10,8 @@ export const defaultConfig = {
   directory: 'config',
   execAtInit: true,
   pattern: [
-    'config(.local|.default|).(ts|js)',
-    'plugin(.local|.default|).(ts|js)',
+    'config*(.local|.default).+(ts|js)',
+    'plugin*(.local|.default).+(ts|js)',
   ],
 };
 

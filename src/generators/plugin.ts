@@ -7,7 +7,7 @@ export const isPrivate = true;
 
 // only load plugin.ts|plugin.local.ts|plugin.default.ts
 export const defaultConfig = {
-  pattern: 'plugin(.local|.default|).(ts|js)',
+  pattern: 'plugin*(.local|.default).+(ts|js)',
   interface: declMapping.plugin,
 };
 
@@ -37,7 +37,7 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
 
     const composeInterface = (list: string[]) => {
       return `    ${list
-        .map(name => `${utils.isIdentifierName(name) ? name : `'${name}'` }?: EggPluginItem;`)
+        .map(name => `${utils.isIdentifierName(name) ? name : `'${name}'`}?: EggPluginItem;`)
         .join('\n    ')}`;
     };
 

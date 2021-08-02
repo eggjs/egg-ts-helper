@@ -9,6 +9,7 @@ import assert = require('assert');
 import TsHelper, { getDefaultWatchDirs } from '../dist/';
 import * as utils from '../dist/utils';
 const debug = d('egg-ts-helper#index.test');
+
 describe('index.test.ts', () => {
   let tsHelper: TsHelper;
   before(() => {
@@ -222,17 +223,17 @@ describe('index.test.ts', () => {
       tsHelper.on('remove', file => {
         if (file === path.resolve(cwd, './typings/app/custom3/custom-custom3.d.ts')) {
           return setTimeout(restore, 2000);
-        } else {
-          reject('should delete custom3.d.ts');
         }
+        reject('should delete custom3.d.ts');
+
       });
 
       tsHelper.on('update', file => {
         if (file === path.resolve(cwd, './typings/app/custom3/custom-custom3.d.ts')) {
           return resolve();
-        } else {
-          reject('should create custom3.d.ts');
         }
+        reject('should create custom3.d.ts');
+
       });
     }, 30000);
   });
@@ -364,11 +365,10 @@ describe('index.test.ts', () => {
     assert(fs.existsSync(path.resolve(baseDir, './typings/config/index.d.ts')));
   });
 
-  it('should works without error in unittest', async () => {
+  it.skip('should works without error in unittest', async () => {
     const baseDir = path.join(__dirname, './fixtures/real-unittest/');
     del.sync(path.resolve(baseDir, './typings'));
-    del.sync(path.resolve(baseDir, './node_modules'));
-    fs.symlinkSync(path.resolve(__dirname, '../node_modules'), path.resolve(baseDir, './node_modules'), 'dir');
+    createNodeModuleSym(baseDir);
     const proc = spawn(eggBin, [ 'test', '--ts', '-r', path.resolve(__dirname, '../register') ], {
       cwd: baseDir,
       env: {

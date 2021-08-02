@@ -101,9 +101,9 @@ export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, wai
     const checkStd = (c: string | RegExp, std: string) => {
       if (typeof c === 'string') {
         return std === c;
-      } else {
-        return c.exec(std);
       }
+      return c.exec(std);
+
     };
 
     proc.stdout.on('data', data => {
@@ -154,7 +154,7 @@ export function timeout(delay, callback?: () => any) {
   return new Promise((_, reject) => {
     setTimeout(() => {
       if (callback) callback();
-      reject('timeout');
+      reject(new Error('timeout'));
     }, delay);
   });
 }

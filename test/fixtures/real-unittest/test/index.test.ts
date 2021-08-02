@@ -1,4 +1,4 @@
-'use strict';
+
 
 import mm from 'egg-mock';
 import { app } from 'egg-mock/bootstrap';
