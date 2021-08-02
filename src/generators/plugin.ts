@@ -7,7 +7,7 @@ export const isPrivate = true;
 
 // only load plugin.ts|plugin.local.ts|plugin.default.ts
 export const defaultConfig = {
-  pattern: 'plugin(.local|.default|).(ts|js)',
+  pattern: 'plugin*(.local|.default).+(ts|js)',
   interface: declMapping.plugin,
 };
 
