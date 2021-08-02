@@ -183,7 +183,7 @@ describe('index.test.ts', () => {
     await sleep(100);
   });
 
-  it('should works without error while plugin file changed', async () => {
+  it.only('should works without error while plugin file changed', async () => {
     tsHelper = createTsHelper({
       cwd: path.resolve(__dirname, './fixtures/app2'),
       watch: true,
