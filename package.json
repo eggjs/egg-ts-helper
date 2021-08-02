@@ -21,7 +21,7 @@
     "test-local": "egg-bin test --ts",
     "prepublish": "npm run release",
     "cov": "egg-bin cov --ts",
-    "ci": "npm run check && npm run cov"
+    "ci": "npm run check && DEBUG=egg-ts-helper npm run cov"
   },
   "keywords": [
     "egg",
