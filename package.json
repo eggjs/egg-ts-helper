@@ -20,7 +20,8 @@
     "test": "npm run check && npm run test-local",
     "test-local": "egg-bin test --ts",
     "prepublish": "npm run release",
-    "cov": "npm run check && egg-bin cov --ts"
+    "cov": "egg-bin cov --ts",
+    "ci": "npm run check && npm run cov"
   },
   "keywords": [
     "egg",
