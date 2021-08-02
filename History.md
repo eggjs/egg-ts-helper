@@ -1,4 +1,10 @@
 
+1.26.0 / 2021-08-02
+==================
+
+**features**
+  * [[`d45266c`](http://github.com/whxaxes/egg-ts-helper/commit/d45266c924d42a776d4f296c74482dc1aaa27ea0)] - feat: upgrade chokidar (#66) (吖猩 <<whxaxes@gmail.com>>)
+
 1.25.9 / 2021-04-23
 ==================
 
