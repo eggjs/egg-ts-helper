@@ -125,7 +125,6 @@ export default class Watcher extends EventEmitter {
 
     // listen watcher event
     this.options.trigger!.forEach(evt => {
-      console.info('watch listen', evt);
       watcher.on(evt, this.onChange.bind(this));
     });
 
@@ -163,8 +162,6 @@ export default class Watcher extends EventEmitter {
 
   // on file change
   private onChange(filePath: string) {
-    console.info('file changed', filePath);
-
     filePath = path.resolve(this.dir, filePath);
     debug('file changed %s %o', filePath, this.throttleStack);
     if (!this.throttleStack.includes(filePath)) {

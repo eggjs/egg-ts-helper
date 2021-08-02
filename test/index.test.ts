@@ -8,7 +8,9 @@ import { sleep, spawn, getStd, eggBin, timeoutPromise, mockFile, createTsHelper,
 import assert = require('assert');
 import TsHelper, { getDefaultWatchDirs } from '../dist/';
 import * as utils from '../dist/utils';
+import chokidar from 'chokidar';
 const debug = d('egg-ts-helper#index.test');
+
 describe('index.test.ts', () => {
   let tsHelper: TsHelper;
   before(() => {
@@ -442,5 +444,23 @@ describe('index.test.ts', () => {
     assert(tsHelper.config.watchDirs.dal.directory === 'app/dal/dao');
     assert(tsHelper.config.watchDirs.model.enabled === false);
     assert(tsHelper.config.watchDirs.service.enabled === false);
+  });
+
+  it.only('test chokidar 3.0', async () => {
+    const watcher = chokidar.watch(
+      path.resolve(__dirname, './fixtures/app2/**/*'),
+    );
+
+    const defaultPluginPath = path.resolve(__dirname, './fixtures/app2/config/plugin.local.ts');
+    const pluginPath = path.resolve(__dirname, './fixtures/app2/config/plugin.ts');
+    await sleep(2000);
+    mockFile(defaultPluginPath, undefined, pluginPath);
+
+    await timeoutPromise(resolve => {
+      watcher.on('change', p => {
+        console.info(p);
+        resolve();
+      });
+    });
   });
 });
