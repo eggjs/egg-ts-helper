@@ -4,7 +4,9 @@ import assert from 'assert';
 import { EventEmitter } from 'events';
 import { TsGenerator, TsGenConfig, TsHelperConfig, default as TsHelper } from './';
 import * as utils from './utils';
+import * as os from 'os';
 import d from 'debug';
+const platform = os.platform();
 const debug = d('egg-ts-helper#watcher');
 const generators = utils.loadModules(
   path.resolve(__dirname, './generators'),
@@ -120,7 +122,7 @@ export default class Watcher extends EventEmitter {
     const watcher = chokidar.watch(this.pattern, {
       cwd: this.dir,
       ignoreInitial: true,
-      usePolling: true,
+      usePolling: platform !== 'darwin',
       ...(this.config.watchOptions || {}),
     });
 
