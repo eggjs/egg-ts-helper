@@ -123,7 +123,6 @@ export default class Watcher extends EventEmitter {
       ...(this.config.watchOptions || {}),
     };
     const watcher = chokidar.watch(this.pattern, watcherOption);
-    console.info(this.pattern, watcherOption);
 
     // listen watcher event
     this.options.trigger!.forEach(evt => {
@@ -164,8 +163,6 @@ export default class Watcher extends EventEmitter {
 
   // on file change
   private onChange(filePath: string) {
-    console.info('file changed', filePath);
-
     filePath = path.resolve(this.dir, filePath);
     debug('file changed %s %o', filePath, this.throttleStack);
     if (!this.throttleStack.includes(filePath)) {
