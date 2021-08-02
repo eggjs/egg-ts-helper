@@ -448,7 +448,13 @@ describe('index.test.ts', () => {
 
   it.only('test chokidar 3.0', async () => {
     const watcher = chokidar.watch(
-      path.resolve(__dirname, './fixtures/app2/**/*'),
+      [
+        'config(.local|.default|).(ts|js)',
+        'plugin(.local|.default|).(ts|js)',
+      ], {
+        cwd: path.resolve(__dirname, './fixtures/app2/config'),
+        ignoreInitial: true,
+      },
     );
 
     const defaultPluginPath = path.resolve(__dirname, './fixtures/app2/config/plugin.local.ts');
