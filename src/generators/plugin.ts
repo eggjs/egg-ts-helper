@@ -26,7 +26,7 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
       if (pluginInfo.package && pluginInfo.from) {
         appPluginNameList.push(name);
         if (pluginInfo.enable) {
-          importContent.push(`import '${pluginInfo.package}';`);
+          importContent.push(`import '${pluginInfo.package || pluginInfo.path}';`);
         }
       }
     });
