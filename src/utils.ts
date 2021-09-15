@@ -6,6 +6,7 @@ import ts from 'typescript';
 import yn from 'yn';
 import { eggInfoPath, tmpDir } from './config';
 import { execSync, exec, ExecOptions } from 'child_process';
+import JSON5 from 'json5';
 
 export const JS_CONFIG = {
   include: [ '**/*' ],
@@ -371,6 +372,11 @@ export function readJson(jsonUrl: string) {
   return parseJson(fs.readFileSync(jsonUrl, 'utf-8'));
 }
 
+export function readJson5(jsonUrl: string) {
+  if (!fs.existsSync(jsonUrl)) return {};
+  return JSON5.parse(fs.readFileSync(jsonUrl, 'utf-8'));
+}
+
 // format property
 export function formatProp(prop: string) {
   return prop.replace(/[._-][a-z]/gi, s => s.substring(1).toUpperCase());
@@ -408,7 +414,7 @@ export function camelProp(
 // load tsconfig.json
 export function loadTsConfig(tsconfigPath: string): ts.CompilerOptions {
   tsconfigPath = path.extname(tsconfigPath) === '.json' ? tsconfigPath : `${tsconfigPath}.json`;
-  const tsConfig = readJson(tsconfigPath) as TsConfigJson;
+  const tsConfig = readJson5(tsconfigPath) as TsConfigJson;
   if (tsConfig.extends) {
     const extendTsConfig = loadTsConfig(path.resolve(path.dirname(tsconfigPath), tsConfig.extends));
     return {

@@ -7,12 +7,19 @@ import fs from 'fs';
 import path from 'path';
 import { eggInfoPath } from '../config';
 import * as utils from '../utils';
+
 const cwd = process.cwd();
 const eggInfo: utils.EggInfoResult = {};
 const startTime = Date.now();
+
 if (utils.checkMaybeIsTsProj(cwd)) {
   // only require ts-node in ts project
-  require('ts-node/register');
+  const tsconfigPath = path.resolve(cwd, './tsconfig.json');
+  if (fs.existsSync(tsconfigPath)) {
+    require('ts-node').register(utils.readJson5(tsconfigPath));
+  } else {
+    require('ts-node/register');
+  }
 }
 
 const framework = (utils.getPkgInfo(cwd).egg || {}).framework || 'egg';
