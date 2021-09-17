@@ -1,4 +1,13 @@
 
+1.27.0 / 2021-09-17
+==================
+
+**features**
+  * [[`6e2bd32`](http://github.com/whxaxes/egg-ts-helper/commit/6e2bd32038d3ff83100b56d7288791810de67947)] - feat: register use tsconfig.json , parse use json5 (#76) (Bung <<crc32@qq.com>>)
+
+**fixes**
+  * [[`d10b55b`](http://github.com/whxaxes/egg-ts-helper/commit/d10b55bb93dfe480915ca02767c27f8538d0a9e3)] - fix: should read pluginInfo.path (#74) (kiho <<monkindey@163.com>>)
+
 1.26.0 / 2021-08-02
 ==================
 
