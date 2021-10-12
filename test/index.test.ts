@@ -352,7 +352,7 @@ describe('index.test.ts', () => {
       },
     });
 
-    const { stdout, stderr } = await getStd(proc, true);
+    const { stdout, stderr } = await getStd(proc, true, undefined, { stdout: 'egg started' });
     assert(!stderr);
     assert(stdout.includes('egg started on http'));
     assert(fs.existsSync(path.resolve(baseDir, './typings/app/controller/index.d.ts')));
@@ -390,7 +390,7 @@ describe('index.test.ts', () => {
         ETS_SILENT: 'false',
       },
     });
-    const { stdout, stderr } = await getStd(proc, true);
+    const { stdout, stderr } = await getStd(proc, true, undefined, { stdout: 'passing' });
     assert(stdout.includes('passing'));
     assert(!stderr);
   });

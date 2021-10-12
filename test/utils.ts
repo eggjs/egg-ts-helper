@@ -72,14 +72,22 @@ export function addProc(proc: child_process.ChildProcess) {
   if (!psList.includes(proc)) psList.push(proc);
 }
 
-export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, waitTime = +(process.env.UT_WAIT_TIME || 5000), waitInfo?: { stdout?: string | RegExp; stderr?: string | RegExp }) {
+export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, waitTime?: number, waitInfo?: { stdout?: string | RegExp; stderr?: string | RegExp }) {
   addProc(proc);
+  if (!waitInfo && waitTime === undefined) {
+    waitTime = +(process.env.UT_WAIT_TIME || 5000);
+  }
+
   return new Promise<{ stdout: string; stderr: string}>(resolve => {
     let stdout = '';
     let stderr = '';
     let tick;
     const killProc = () => proc.emit('SIGINT');
-    const end = () => resolve({ stdout, stderr });
+    const end = () => {
+      proc.removeListener('close', end);
+      resolve({ stdout, stderr });
+    };
+
     const wait = () => {
       if (!waitTime) {
         return;
@@ -88,7 +96,6 @@ export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, wai
       clearTimeout(tick);
       tick = setTimeout(() => {
         end();
-        proc.removeListener('close', end);
         if (autoKill) {
           if (process.env.DEBUG) {
             console.info('auto kill');
@@ -98,12 +105,12 @@ export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, wai
         }
       }, waitTime);
     };
+
     const checkStd = (c: string | RegExp, std: string) => {
       if (typeof c === 'string') {
-        return std === c;
+        return std.includes(c);
       }
       return c.exec(std);
-
     };
 
     proc.stdout.on('data', data => {
@@ -113,6 +120,7 @@ export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, wai
       stdout += data.toString();
       if (waitInfo && waitInfo.stdout) {
         if (checkStd(waitInfo.stdout, stdout)) {
+          end();
           killProc();
         }
       } else {
@@ -127,6 +135,7 @@ export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, wai
       stderr += data.toString();
       if (waitInfo && waitInfo.stderr) {
         if (checkStd(waitInfo.stderr, stderr)) {
+          end();
           killProc();
         }
       } else {
