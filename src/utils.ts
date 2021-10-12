@@ -45,6 +45,7 @@ export interface TsConfigJson {
 
 export interface GetEggInfoOpt {
   cwd: string;
+  cacheIndex?: string;
   customLoader?: any;
   async?: boolean;
   env?: PlainObject<string>;
@@ -68,12 +69,15 @@ export interface EggInfoResult {
 
 const cacheEggInfo = {};
 export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(option: GetEggInfoOpt): T extends 'async' ? Promise<EggInfoResult> : EggInfoResult {
-  const { cwd, customLoader } = option;
-
-  cacheEggInfo[cwd] = cacheEggInfo[cwd] || {};
+  const { cacheIndex, cwd, customLoader } = option;
+  const cacheKey = cacheIndex ? `${cacheIndex}${cwd}` : undefined;
+  const caches = cacheKey ? (cacheEggInfo[cacheKey] = cacheEggInfo[cacheKey] || {}) : undefined;
   const end = (json: EggInfoResult) => {
-    caches.eggInfo = json;
-    caches.cacheTime = Date.now();
+    if (caches) {
+      caches.eggInfo = json;
+      caches.cacheTime = Date.now();
+    }
+
     if (option.callback) {
       return option.callback(json);
     }
@@ -82,11 +86,12 @@ export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(option: GetEggIn
   };
 
   // check cache
-  const caches = cacheEggInfo[cwd];
-  if (caches.cacheTime && (Date.now() - caches.cacheTime) < 1000) {
-    return end(caches.eggInfo);
-  } else if (caches.runningPromise) {
-    return caches.runningPromise;
+  if (caches) {
+    if (caches.cacheTime && (Date.now() - caches.cacheTime) < 1000) {
+      return end(caches.eggInfo);
+    } else if (caches.runningPromise) {
+      return caches.runningPromise;
+    }
   }
 
   // get egg info from customLoader

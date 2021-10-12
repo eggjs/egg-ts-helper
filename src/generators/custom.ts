@@ -70,6 +70,7 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig, tsHelpe
   return utils.getEggInfo({
     cwd: baseConfig.cwd,
     customLoader: baseConfig.customLoader,
+    cacheIndex: baseConfig.id,
     async: !!config.file,
     callback: createCustomLoader,
   });

@@ -2,6 +2,7 @@ import chokidar from 'chokidar';
 import assert from 'assert';
 import { EventEmitter } from 'events';
 import fs from 'fs';
+import crypto from 'crypto';
 import chalk from 'chalk';
 import path from 'path';
 import { get as deepGet, set as deepSet } from 'dot-prop';
@@ -329,7 +330,6 @@ export default class TsHelper extends EventEmitter {
     this.mergeConfig(config, options);
 
     // create extra config
-    config.id = `${Date.now()}-${Math.ceil(Math.random() * 1000000)}`;
     config.tsConfig = utils.loadTsConfig(path.resolve(config.cwd, './tsconfig.json'));
   }
 
@@ -342,12 +342,14 @@ export default class TsHelper extends EventEmitter {
 
     // base config
     const config = { ...defaultConfig } as TsHelperConfig;
+    config.id = crypto.randomBytes(16).toString('base64');
     config.cwd = options.cwd || config.cwd;
     config.customLoader = config.customLoader || options.customLoader;
 
     // load egg info
     config.eggInfo = utils.getEggInfo({
       cwd: config.cwd!,
+      cacheIndex: config.id,
       customLoader: config.customLoader,
     });
 
