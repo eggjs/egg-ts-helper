@@ -331,7 +331,7 @@ describe('index.test.ts', () => {
       const item = (watchDirs[k] as any);
       return !item.hasOwnProperty('enabled') || item.enabled;
     }).length;
-    assert(tsHelper.watcherList.length === len - 2);
+    assert(tsHelper.watcherList.length === len - 1);
     assert(!!tsHelper.watcherList.find(w => w.name === 'controller'));
   });
 

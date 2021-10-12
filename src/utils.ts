@@ -44,6 +44,8 @@ export interface TsConfigJson {
 }
 
 export interface GetEggInfoOpt {
+  cwd: string;
+  customLoader?: any;
   async?: boolean;
   env?: PlainObject<string>;
   callback?: (result: EggInfoResult) => any;
@@ -65,8 +67,38 @@ export interface EggInfoResult {
 }
 
 const cacheEggInfo = {};
-export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(cwd: string, option: GetEggInfoOpt = {}): T extends 'async' ? Promise<EggInfoResult> : EggInfoResult {
+export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(option: GetEggInfoOpt): T extends 'async' ? Promise<EggInfoResult> : EggInfoResult {
+  const { cwd, customLoader } = option;
+
   cacheEggInfo[cwd] = cacheEggInfo[cwd] || {};
+  const end = (json: EggInfoResult) => {
+    caches.eggInfo = json;
+    caches.cacheTime = Date.now();
+    if (option.callback) {
+      return option.callback(json);
+    }
+
+    return json;
+  };
+
+  // check cache
+  const caches = cacheEggInfo[cwd];
+  if (caches.cacheTime && (Date.now() - caches.cacheTime) < 1000) {
+    return end(caches.eggInfo);
+  } else if (caches.runningPromise) {
+    return caches.runningPromise;
+  }
+
+  // get egg info from customLoader
+  if (customLoader) {
+    return end({
+      config: customLoader.config,
+      plugins: customLoader.plugins,
+      eggPaths: customLoader.eggPaths,
+    });
+  }
+
+  // prepare options
   const cmd = `node ${path.resolve(__dirname, './scripts/eggInfo')}`;
   const opt: ExecOptions = {
     cwd,
@@ -80,23 +112,6 @@ export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(cwd: string, opt
       ...option.env,
     },
   };
-  const end = json => {
-    caches.eggInfo = json;
-    caches.cacheTime = Date.now();
-    if (option.callback) {
-      return option.callback(json);
-    }
-    return json;
-
-  };
-
-  // check cache
-  const caches = cacheEggInfo[cwd];
-  if (caches.cacheTime && (Date.now() - caches.cacheTime) < 1000) {
-    return end(caches.eggInfo);
-  } else if (caches.runningPromise) {
-    return caches.runningPromise;
-  }
 
   if (option.async) {
     // cache promise
@@ -107,15 +122,16 @@ export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(cwd: string, opt
         resolve(end(parseJson(fs.readFileSync(eggInfoPath, 'utf-8'))));
       });
     });
+
     return caches.runningPromise;
   }
+
   try {
     execSync(cmd, opt);
     return end(parseJson(fs.readFileSync(eggInfoPath, 'utf-8')));
   } catch (e) {
     return end({});
   }
-
 }
 
 // convert string to same type with default value

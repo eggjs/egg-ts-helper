@@ -66,7 +66,10 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig, tsHelpe
     }));
   };
 
-  return utils.getEggInfo(baseConfig.cwd, {
+  // reload egg info by file
+  return utils.getEggInfo({
+    cwd: baseConfig.cwd,
+    customLoader: baseConfig.customLoader,
     async: !!config.file,
     callback: createCustomLoader,
   });

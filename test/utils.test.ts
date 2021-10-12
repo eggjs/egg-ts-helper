@@ -182,15 +182,24 @@ describe('utils.test.ts', () => {
   });
 
   it('should get eggInfo without error', async () => {
-    const eggInfo = utils.getEggInfo(path.resolve(__dirname, './fixtures/real-unittest'));
+    const eggInfo = utils.getEggInfo({ cwd: path.resolve(__dirname, './fixtures/real-unittest') });
     assert(eggInfo.plugins);
     assert(eggInfo.config);
-    const asyncEggInfo = await utils.getEggInfo<'async'>(path.resolve(__dirname, './fixtures/real-unittest'));
+    const asyncEggInfo = await utils.getEggInfo<'async'>({ cwd: path.resolve(__dirname, './fixtures/real-unittest') });
     assert(asyncEggInfo.plugins);
     assert(asyncEggInfo.config);
-    const customEggInfo = await utils.getEggInfo<'async'>(path.resolve(__dirname, './fixtures/custom'));
+    const customEggInfo = await utils.getEggInfo<'async'>({ cwd: path.resolve(__dirname, './fixtures/custom') });
     assert(customEggInfo.plugins);
     assert(customEggInfo.config!.customLoader);
+    const customEggInfo2 = utils.getEggInfo({
+      cwd: path.resolve(__dirname, './fixtures/app'),
+      customLoader: {
+        plugins: {},
+        config: { key: '123' },
+      },
+    });
+    assert(Object.keys(customEggInfo2.plugins!).length === 0);
+    assert(customEggInfo2.config!.key === '123');
   });
 
   it('should parse json without error', async () => {

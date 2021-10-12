@@ -54,7 +54,9 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
     };
   };
 
-  return utils.getEggInfo(baseConfig.cwd, {
+  return utils.getEggInfo({
+    cwd: baseConfig.cwd,
+    customLoader: baseConfig.customLoader,
     async: !!config.file,
     callback: getContent,
   });
