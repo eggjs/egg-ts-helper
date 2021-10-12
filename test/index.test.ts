@@ -444,4 +444,24 @@ describe('index.test.ts', () => {
     assert(tsHelper.config.watchDirs.model.enabled === false);
     assert(tsHelper.config.watchDirs.service.enabled === false);
   });
+
+  it('should support customLoader without error', () => {
+    const cwd = path.resolve(__dirname, './fixtures/app');
+    createTsHelper({
+      cwd,
+      watch: false,
+      execAtInit: true,
+      customLoader: {
+        config: {
+          customLoader: {
+            specialCustom: {
+              directory: 'app/custom',
+              inject: 'ctx',
+            },
+          },
+        },
+      },
+    });
+    assert(fs.existsSync(path.resolve(cwd, './typings/app/custom/custom-specialCustom.d.ts')));
+  });
 });
