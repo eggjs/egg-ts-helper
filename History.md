@@ -1,4 +1,10 @@
 
+1.28.0 / 2021-10-13
+==================
+
+**features**
+  * [[`3e4509d`](http://github.com/whxaxes/egg-ts-helper/commit/3e4509dba8243a0171c8d85c448c3ec2aa1e7974)] - feat: support custom loader (#77) (吖猩 <<whxaxes@gmail.com>>)
+
 1.27.0 / 2021-09-17
 ==================
 
