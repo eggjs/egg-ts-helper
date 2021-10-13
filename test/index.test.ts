@@ -225,7 +225,6 @@ describe('index.test.ts', () => {
           return setTimeout(restore, 2000);
         }
         reject('should delete custom3.d.ts');
-
       });
 
       tsHelper.on('update', file => {
@@ -233,7 +232,6 @@ describe('index.test.ts', () => {
           return resolve();
         }
         reject('should create custom3.d.ts');
-
       });
     }, 30000);
   });
@@ -354,7 +352,7 @@ describe('index.test.ts', () => {
       },
     });
 
-    const { stdout, stderr } = await getStd(proc, true);
+    const { stdout, stderr } = await getStd(proc, true, undefined, { stdout: 'egg started' });
     assert(!stderr);
     assert(stdout.includes('egg started on http'));
     assert(fs.existsSync(path.resolve(baseDir, './typings/app/controller/index.d.ts')));
@@ -392,7 +390,7 @@ describe('index.test.ts', () => {
         ETS_SILENT: 'false',
       },
     });
-    const { stdout, stderr } = await getStd(proc, true);
+    const { stdout, stderr } = await getStd(proc, true, undefined, { stdout: 'passing' });
     assert(stdout.includes('passing'));
     assert(!stderr);
   });
@@ -443,5 +441,25 @@ describe('index.test.ts', () => {
     assert(tsHelper.config.watchDirs.dal.directory === 'app/dal/dao');
     assert(tsHelper.config.watchDirs.model.enabled === false);
     assert(tsHelper.config.watchDirs.service.enabled === false);
+  });
+
+  it('should support customLoader without error', () => {
+    const cwd = path.resolve(__dirname, './fixtures/app');
+    createTsHelper({
+      cwd,
+      watch: false,
+      execAtInit: true,
+      customLoader: {
+        config: {
+          customLoader: {
+            specialCustom: {
+              directory: 'app/custom',
+              inject: 'ctx',
+            },
+          },
+        },
+      },
+    });
+    assert(fs.existsSync(path.resolve(cwd, './typings/app/custom/custom-specialCustom.d.ts')));
   });
 });

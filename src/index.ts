@@ -2,6 +2,7 @@ import chokidar from 'chokidar';
 import assert from 'assert';
 import { EventEmitter } from 'events';
 import fs from 'fs';
+import crypto from 'crypto';
 import chalk from 'chalk';
 import path from 'path';
 import { get as deepGet, set as deepSet } from 'dot-prop';
@@ -29,6 +30,7 @@ export interface TsHelperOption {
   autoRemoveJs?: boolean;
   throttle?: number;
   execAtInit?: boolean;
+  customLoader?: any;
   configFile?: string | string[];
   silent?: boolean;
 }
@@ -36,6 +38,8 @@ export interface TsHelperOption {
 export { WatchItem };
 export type TsHelperConfig = typeof defaultConfig & {
   id: string;
+  eggInfo: utils.EggInfoResult;
+  customLoader: any;
   tsConfig: CompilerOptions;
 };
 
@@ -77,7 +81,7 @@ export const defaultConfig = {
 };
 
 // default watch dir
-export function getDefaultWatchDirs(opt: TsHelperOption = {}) {
+export function getDefaultWatchDirs(opt?: TsHelperConfig) {
   const baseConfig: { [key: string]: Partial<WatchItem> } = {};
 
   // extend
@@ -109,13 +113,12 @@ export function getDefaultWatchDirs(opt: TsHelperOption = {}) {
   };
 
   // model
-  const eggInfo = (opt && opt.cwd) ? utils.getEggInfo(opt.cwd) : undefined;
   baseConfig.model = {
     directory: 'app/model',
     generator: 'function',
     interface: 'IModel',
     caseStyle: 'upper',
-    enabled: !deepGet(eggInfo, 'config.customLoader.model'),
+    enabled: !deepGet(opt?.eggInfo, 'config.customLoader.model'),
   };
 
   // config
@@ -154,6 +157,7 @@ export function getDefaultWatchDirs(opt: TsHelperOption = {}) {
 
   return baseConfig as PlainObject;
 }
+
 export default class TsHelper extends EventEmitter {
   config: TsHelperConfig;
   watcherList: Watcher[] = [];
@@ -293,7 +297,7 @@ export default class TsHelper extends EventEmitter {
 
   private loadWatcherConfig(config: TsHelperConfig, options: TsHelperOption) {
     const configFile = options.configFile || config.configFile;
-    const eggInfo = utils.getEggInfo(config.cwd);
+    const eggInfo = config.eggInfo;
     const getConfigFromPkg = pkg => (pkg.egg || {}).tsHelper;
 
     // read from enabled plugins
@@ -326,7 +330,6 @@ export default class TsHelper extends EventEmitter {
     this.mergeConfig(config, options);
 
     // create extra config
-    config.id = `${Date.now()}-${Math.ceil(Math.random() * 1000000)}`;
     config.tsConfig = utils.loadTsConfig(path.resolve(config.cwd, './tsconfig.json'));
   }
 
@@ -338,12 +341,22 @@ export default class TsHelper extends EventEmitter {
     }
 
     // base config
-    const config = { ...defaultConfig };
+    const config = { ...defaultConfig } as TsHelperConfig;
+    config.id = crypto.randomBytes(16).toString('base64');
     config.cwd = options.cwd || config.cwd;
+    config.customLoader = config.customLoader || options.customLoader;
+
+    // load egg info
+    config.eggInfo = utils.getEggInfo({
+      cwd: config.cwd!,
+      cacheIndex: config.id,
+      customLoader: config.customLoader,
+    });
+
     config.framework = options.framework || defaultConfig.framework;
     config.watchDirs = getDefaultWatchDirs(config);
     config.typings = path.resolve(config.cwd, config.typings);
-    this.config = config as TsHelperConfig;
+    this.config = config;
 
     // load watcher config
     this.loadWatcherConfig(this.config, options);
