@@ -1,4 +1,10 @@
 
+1.29.0 / 2021-10-14
+==================
+
+**features**
+  * [[`94db906`](http://github.com/whxaxes/egg-ts-helper/commit/94db9068bd34e5912d74e60c61e7acd7a25331c7)] - feat: update watchDirs to generatorConfig (#78) (吖猩 <<whxaxes@gmail.com>>)
+
 1.28.0 / 2021-10-13
 ==================
 
