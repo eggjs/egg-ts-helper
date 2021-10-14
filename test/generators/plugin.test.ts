@@ -48,6 +48,8 @@ describe('generators/plugin.test.ts', () => {
 
     assert(result.dist);
     assert(result.content);
-    assert(result.content!.match(/import \'(\.\.\/)+/));
+    if (path.sep === '/') {
+      assert(result.content!.match(/import \'\/([\w\-]+\/)+node_modules\//));
+    }
   });
 });
