@@ -2,9 +2,9 @@
   "name": "app",
   "egg": {
     "tsHelper": {
-      "watchDirs.model.enabled": false,
-      "watchDirs.service": false,
-      "watchDirs.dal": {
+      "generatorConfig.model.enabled": false,
+      "generatorConfig.service": false,
+      "generatorConfig.dal": {
         "interface": "IDAL2"
       }
     }

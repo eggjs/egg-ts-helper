@@ -1,6 +1,6 @@
 {
   "framework": "chair",
-  "watchDirs": {
+  "generatorConfig": {
     "service": {
       "enabled": false
     },

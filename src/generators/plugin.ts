@@ -9,6 +9,9 @@ export const isPrivate = true;
 export const defaultConfig = {
   pattern: 'plugin*(.local|.default).+(ts|js)',
   interface: declMapping.plugin,
+
+  /** 引入 package 是否用 path 而不是 package */
+  usePath: false,
 };
 
 export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
@@ -26,7 +29,8 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
       if (pluginInfo.package && pluginInfo.from) {
         appPluginNameList.push(name);
         if (pluginInfo.enable) {
-          importContent.push(`import '${pluginInfo.package || pluginInfo.path}';`);
+          const pluginPath = config.usePath ? pluginInfo.path : (pluginInfo.package || pluginInfo.path);
+          importContent.push(`import '${pluginPath}';`);
         }
       }
     });

@@ -71,8 +71,8 @@ $ ets -h
     -C, --config [path]     配置文件，入参应该是合法的 JSON/JS 文件 (默认值: {cwd}/tshelper)
     -o, --oneForAll [path]  创建一个 import 了所有生成的 d.ts 的声明 (默认值: typings/ets.d.ts)
     -s, --silent            静默执行，不输出日志
-    -i, --ignore [dirs]     忽略 watchDirs 中的相关配置，可以通过逗号配置忽略多个，比如: -i controller,service
-    -e, --enabled [dirs]    开启 watchDirs 中的相关配置， 可以通过逗号配置忽略多个，比如: -e proxy,other
+    -i, --ignore [dirs]     忽略 generator 中的相关配置，可以通过逗号配置忽略多个，比如: -i controller,service
+    -e, --enabled [dirs]    开启 generator 中的相关配置， 可以通过逗号配置忽略多个，比如: -e proxy,other
     -E, --extra [json]      额外配置，可以是 json 字符串
     -h, --help              帮助
 
@@ -93,7 +93,7 @@ $ ets -h
 | watch | `boolean` | false | 是否监听文件改动，使用 `register` 的话该值默认为 true |
 | watchOptions | `object` | undefined | chokidar 的[配置](https://github.com/paulmillr/chokidar#api) |
 | configFile | `string` | {cwd}/tshelper.(js|json) | 配置文件路径 |
-| watchDirs | `object` | | 生成器配置 |
+| generatorConfig | `object` | | 生成器配置 |
 
 可以在  `./tshelper.js`  `./tshelper.json` 或者 `package.json` 中配置上面的配置
 
@@ -103,7 +103,7 @@ $ ets -h
 // {cwd}/tshelper.js
 
 module.exports = {
-  watchDirs: {
+  generatorConfig: {
     model: {
       enabled: true,
       generator: "function",
@@ -119,7 +119,7 @@ module.exports = {
 // {cwd}/tshelper.json
 
 {
-  "watchDirs": {
+  "generatorConfig": {
     "model": {
       "enabled": true,
       "generator": "function",
@@ -138,7 +138,7 @@ module.exports = {
   "egg": {
     "framework": "egg",
     "tsHelper": {
-      "watchDirs": {
+      "generatorConfig": {
         "model": {
           "enabled": true,
           "generator": "function",
@@ -228,13 +228,13 @@ declare module 'egg' {
 
 ### 示例
 
-比如需要给 `app/model` 下的文件创建 `d.ts`，则需要在你的配置文件中配置一下 `watchDirs.model`。
+比如需要给 `app/model` 下的文件创建 `d.ts`，则需要在你的配置文件中配置一下 `generatorConfig.model`。
 
 ```typescript
 // ./tshelper.js
 
 module.exports = {
-  watchDirs: {
+  generatorConfig: {
     model: {
       directory: 'app/model', // 监听目录
       // pattern: '**/*.(ts|js)', // 遍历的文件表达式，一般都不需要改这个
@@ -365,7 +365,7 @@ interface IModel {
 
 ```js
 module.exports = {
-  watchDirs: {
+  generatorConfig: {
     model: {
       ...
 
@@ -387,7 +387,7 @@ interface IModel {
 
 ```js
 module.exports = {
-  watchDirs: {
+  generatorConfig: {
     model: {
       ...
 
@@ -463,7 +463,7 @@ function myGenerator(config, baseConfig) {
   }
 }
 module.exports = {
-  watchDirs: {
+  generatorConfig: {
     model: {
       directory: 'app/model',
       generator: myGenerator,
@@ -506,7 +506,7 @@ module.exports = (config, baseConfig) => {
 // ./tshelper.js
 
 module.exports = {
-  watchDirs: {
+  generatorConfig: {
     model: {
       directory: 'app/model',
       generator: './my-generator',

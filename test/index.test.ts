@@ -6,7 +6,7 @@ import path from 'path';
 import mm from 'egg-mock';
 import { sleep, spawn, getStd, eggBin, timeoutPromise, mockFile, createTsHelper, createNodeModuleSym } from './utils';
 import assert = require('assert');
-import TsHelper, { getDefaultWatchDirs } from '../dist/';
+import TsHelper, { getDefaultGeneratorConfig } from '../dist/';
 import * as utils from '../dist/utils';
 const debug = d('egg-ts-helper#index.test');
 
@@ -143,6 +143,21 @@ describe('index.test.ts', () => {
     assert(!fs.existsSync(dts));
   });
 
+  it('should compatitable with watchDirs option', async () => {
+    tsHelper = createTsHelper({
+      cwd: path.resolve(__dirname, './fixtures/app'),
+      watch: true,
+      execAtInit: true,
+      autoRemoveJs: false,
+      watchDirs: {
+        config: { pattern: 'config.*.ts' },
+      } as any,
+    });
+
+    assert(tsHelper.config.generatorConfig);
+    assert(tsHelper.config.generatorConfig.config.pattern === 'config.*.ts');
+  });
+
   it('should works without error while config file changed', async () => {
     mm(utils, 'loadTsConfig', () => ({ skipLibCheck: true }));
     const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
@@ -153,7 +168,7 @@ describe('index.test.ts', () => {
       watch: true,
       execAtInit: true,
       autoRemoveJs: false,
-      watchDirs: {
+      generatorConfig: {
         config: { pattern: 'config.*.ts' },
       } as any,
     });
@@ -236,25 +251,25 @@ describe('index.test.ts', () => {
     }, 30000);
   });
 
-  it('should support rewrite by options.watchDirs', () => {
-    const watchDirs = getDefaultWatchDirs();
-    Object.keys(watchDirs).forEach(key => {
+  it('should support rewrite by options.generatorConfig', () => {
+    const generatorConfig = getDefaultGeneratorConfig();
+    Object.keys(generatorConfig).forEach(key => {
       if (key === 'proxy') {
-        watchDirs[key] = {
-          ...(watchDirs[key] as any),
+        generatorConfig[key] = {
+          ...(generatorConfig[key] as any),
           path: 'app/test/proxy',
           interface: 'IProxy',
           generator: 'class',
           enabled: true,
         };
       } else {
-        watchDirs[key] = false;
+        generatorConfig[key] = false;
       }
     });
 
     tsHelper = createTsHelper({
       cwd: path.resolve(__dirname, './fixtures/app3'),
-      watchDirs,
+      generatorConfig,
     });
 
     assert(tsHelper.watcherList.length === 1);
@@ -321,12 +336,12 @@ describe('index.test.ts', () => {
   });
 
   it('should support rewrite by package.json', () => {
-    const watchDirs = getDefaultWatchDirs();
+    const generatorConfig = getDefaultGeneratorConfig();
     tsHelper = createTsHelper({
       cwd: path.resolve(__dirname, './fixtures/app4'),
     });
-    const len = Object.keys(watchDirs).filter(k => {
-      const item = (watchDirs[k] as any);
+    const len = Object.keys(generatorConfig).filter(k => {
+      const item = (generatorConfig[k] as any);
       return !item.hasOwnProperty('enabled') || item.enabled;
     }).length;
     assert(tsHelper.watcherList.length === len - 2);
@@ -420,11 +435,11 @@ describe('index.test.ts', () => {
       autoRemoveJs: false,
     });
 
-    assert(tsHelper.config.watchDirs.dal);
-    assert(tsHelper.config.watchDirs.dal.interface === 'IDAL2');
-    assert(tsHelper.config.watchDirs.dal.directory === 'app/dal/dao');
-    assert(tsHelper.config.watchDirs.model.enabled === false);
-    assert(tsHelper.config.watchDirs.service.enabled === false);
+    assert(tsHelper.config.generatorConfig.dal);
+    assert(tsHelper.config.generatorConfig.dal.interface === 'IDAL2');
+    assert(tsHelper.config.generatorConfig.dal.directory === 'app/dal/dao');
+    assert(tsHelper.config.generatorConfig.model.enabled === false);
+    assert(tsHelper.config.generatorConfig.service.enabled === false);
   });
 
   it('should support custom config file', async () => {
@@ -436,11 +451,11 @@ describe('index.test.ts', () => {
       autoRemoveJs: false,
     });
 
-    assert(tsHelper.config.watchDirs.dal);
-    assert(tsHelper.config.watchDirs.dal.interface === 'IDAL2');
-    assert(tsHelper.config.watchDirs.dal.directory === 'app/dal/dao');
-    assert(tsHelper.config.watchDirs.model.enabled === false);
-    assert(tsHelper.config.watchDirs.service.enabled === false);
+    assert(tsHelper.config.generatorConfig.dal);
+    assert(tsHelper.config.generatorConfig.dal.interface === 'IDAL2');
+    assert(tsHelper.config.generatorConfig.dal.directory === 'app/dal/dao');
+    assert(tsHelper.config.generatorConfig.model.enabled === false);
+    assert(tsHelper.config.generatorConfig.service.enabled === false);
   });
 
   it('should support customLoader without error', () => {
