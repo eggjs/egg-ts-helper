@@ -40,4 +40,14 @@ describe('generators/plugin.test.ts', () => {
     assert(result.dist);
     assert(result.content!.includes('\'kiss-ass\'?: EggPluginItem'));
   });
+
+  it('should support useAbsolutePackagePath without error', async () => {
+    const result = triggerGenerator<GeneratorResult>('plugin', path.resolve(__dirname, appDir), undefined, {
+      usePath: true,
+    });
+
+    assert(result.dist);
+    assert(result.content);
+    assert(result.content!.match(/import \'(\.\.\/)+/));
+  });
 });

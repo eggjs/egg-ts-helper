@@ -72,8 +72,8 @@ $ ets -h
     -C, --config [path]     Configuration file, The argument can be a file path to a valid JSON/JS configuration file.（default: {cwd}/tshelper
     -o, --oneForAll [path]  Create a d.ts import all types (default: typings/ets.d.ts)
     -s, --silent            Running without output
-    -i, --ignore [dirs]     Ignore watchDirs, your can ignore multiple dirs with comma like: -i controller,service
-    -e, --enabled [dirs]    Enable watchDirs, your can enable multiple dirs with comma like: -e proxy,other
+    -i, --ignore [dirs]     Ignore generator, your can ignore multiple dirs with comma like: -i controller,service
+    -e, --enabled [dirs]    Enable generator, your can enable multiple dirs with comma like: -e proxy,other
     -E, --extra [json]      Extra config, the value should be json string
     -h, --help              output usage information
 
@@ -94,7 +94,7 @@ $ ets -h
 | watchOptions | `object` | undefined | chokidar [options](https://github.com/paulmillr/chokidar#api) |
 | autoRemoveJs | `boolean` | true | auto remove same name js on startup |
 | configFile | `string` | {cwd}/tshelper.(js|json) | configure file path |
-| watchDirs | `object` | | generator configuration |
+| generatorConfig | `object` | | generator configuration( watchDirs has been deprecated ) |
 
 You can configure the options above in `./tshelper.js` `./tshelper.json` or `package.json`.
 
@@ -104,7 +104,7 @@ In `tshelper.js`
 // {cwd}/tshelper.js
 
 module.exports = {
-  watchDirs: {
+  generatorConfig: {
     model: {
       enabled: true,
       generator: "function",
@@ -120,7 +120,7 @@ In `tshelper.json`
 // {cwd}/tshelper.json
 
 {
-  "watchDirs": {
+  "generatorConfig": {
     "model": {
       "enabled": true,
       "generator": "function",
@@ -139,7 +139,7 @@ In `package.json`
   "egg": {
     "framework": "egg",
     "tsHelper": {
-      "watchDirs": {
+      "generatorConfig": {
         "model": {
           "enabled": true,
           "generator": "function",
@@ -160,7 +160,7 @@ or use `dot-prop`
   "egg": {
     "framework": "egg",
     "tsHelper": {
-      "watchDirs.model": {
+      "generatorConfig.model": {
         "enabled": true,
         "generator": "function",
         "interfaceHandle": "InstanceType<{{ 0 }}>"
@@ -248,13 +248,13 @@ If you are using `loader.loadToApp` or `loader.loadToContext` to load the instan
 
 ### Example
 
-Creating `d.ts` for files under `app/model`. You should add config `watchDirs.model` in your config file.
+Creating `d.ts` for files under `app/model`. You should add config `generatorConfig.model` in your config file.
 
 ```typescript
 // ./tshelper.js
 
 module.exports = {
-  watchDirs: {
+  generatorConfig: {
     model: {
       directory: 'app/model', // files directory.
       // pattern: '**/*.(ts|js)', // glob pattern, default is **/*.(ts|js). it doesn't need to configure normally.
@@ -385,7 +385,7 @@ If you cannot find suitable generator in above, you can config the type by this 
 
 ```js
 module.exports = {
-  watchDirs: {
+  generatorConfig: {
     model: {
       ...
 
@@ -407,7 +407,7 @@ The type of `interfaceHandle` can be `string` ( Support since `1.18.0` )
 
 ```js
 module.exports = {
-  watchDirs: {
+  generatorConfig: {
     model: {
       ...
 
@@ -484,7 +484,7 @@ function myGenerator(config, baseConfig) {
 }
 
 module.exports = {
-  watchDirs: {
+  generatorConfig: {
     model: {
       directory: 'app/model',
       generator: myGenerator,
@@ -527,7 +527,7 @@ configure in `tshelper.js` or `package.json`
 // ./tshelper.js
 
 module.exports = {
-  watchDirs: {
+  generatorConfig: {
     model: {
       directory: 'app/model',
       generator: './my-generator',

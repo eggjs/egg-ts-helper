@@ -23,6 +23,8 @@ export interface TsHelperOption {
   cwd?: string;
   framework?: string;
   typings?: string;
+  generatorConfig?: { [key: string]: WatchItem | boolean };
+  /** @deprecated alias of generatorConfig, has been deprecated */
   watchDirs?: { [key: string]: WatchItem | boolean };
   caseStyle?: string | ((...args: any[]) => string);
   watch?: boolean;
@@ -76,12 +78,12 @@ export const defaultConfig = {
   watchOptions: undefined,
   execAtInit: utils.convertString(process.env.ETS_EXEC_AT_INIT, false),
   silent: utils.convertString(process.env.ETS_SILENT, isInUnitTest),
-  watchDirs: {} as PlainObject<WatchItem>,
+  generatorConfig: {} as PlainObject<WatchItem>,
   configFile: utils.convertString(process.env.ETS_CONFIG_FILE, '') || [ './tshelper', './tsHelper' ],
 };
 
 // default watch dir
-export function getDefaultWatchDirs(opt?: TsHelperConfig) {
+export function getDefaultGeneratorConfig(opt?: TsHelperConfig) {
   const baseConfig: { [key: string]: Partial<WatchItem> } = {};
 
   // extend
@@ -228,8 +230,8 @@ export default class TsHelper extends EventEmitter {
 
   // init watcher
   private initWatcher() {
-    Object.keys(this.config.watchDirs).forEach(key => {
-      this.registerWatcher(key, this.config.watchDirs[key], false);
+    Object.keys(this.config.generatorConfig).forEach(key => {
+      this.registerWatcher(key, this.config.generatorConfig[key], false);
     });
   }
 
@@ -354,7 +356,7 @@ export default class TsHelper extends EventEmitter {
     });
 
     config.framework = options.framework || defaultConfig.framework;
-    config.watchDirs = getDefaultWatchDirs(config);
+    config.generatorConfig = getDefaultGeneratorConfig(config);
     config.typings = path.resolve(config.cwd, config.typings);
     this.config = config;
 
@@ -444,17 +446,21 @@ export default class TsHelper extends EventEmitter {
       if (!opt) return;
 
       const config = this.formatConfig(opt);
+
+      // compatitable for alias of generatorCofig
+      if (config.watchDirs) config.generatorConfig = config.watchDirs;
+
       Object.keys(config).forEach(key => {
-        if (key !== 'watchDirs') {
+        if (key !== 'generatorConfig') {
           base[key] = config[key] === undefined ? base[key] : config[key];
           return;
         }
 
-        const watchDirs = config.watchDirs || {};
-        Object.keys(watchDirs).forEach(k => {
-          const item = watchDirs[k];
+        const generatorConfig = config.generatorConfig || {};
+        Object.keys(generatorConfig).forEach(k => {
+          const item = generatorConfig[k];
           if (typeof item === 'boolean') {
-            if (base.watchDirs[k]) base.watchDirs[k].enabled = item;
+            if (base.generatorConfig[k]) base.generatorConfig[k].enabled = item;
           } else if (item) {
             // check private generator
             assert(!Watcher.isPrivateGenerator(item.generator), `${item.generator} is a private generator, can not configure in config file`);
@@ -468,10 +474,10 @@ export default class TsHelper extends EventEmitter {
               }
             });
 
-            if (base.watchDirs[k]) {
-              Object.assign(base.watchDirs[k], item);
+            if (base.generatorConfig[k]) {
+              Object.assign(base.generatorConfig[k], item);
             } else {
-              base.watchDirs[k] = item;
+              base.generatorConfig[k] = item;
             }
           }
         });

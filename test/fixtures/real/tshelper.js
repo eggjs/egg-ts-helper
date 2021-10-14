@@ -1,5 +1,5 @@
 module.exports = {
-  watchDirs: {
+  generatorConfig: {
     model: {
       path: 'app/model', // dir path
       generator: 'class', // generator name
@@ -12,6 +12,6 @@ module.exports = {
       path: 'app/custom', // dir path
       generator: 'auto', // generator name
       declareTo: 'Application.custom', // declare to this interface
-    }
-  }
+    },
+  },
 };
