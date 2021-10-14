@@ -10,7 +10,7 @@ export const defaultConfig = {
   pattern: 'plugin*(.local|.default).+(ts|js)',
   interface: declMapping.plugin,
 
-  /** 引入 package 是否用 path 而不是 package */
+  /** use path insteadof package while import plugins */
   usePath: false,
 };
 
@@ -31,6 +31,7 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
         if (pluginInfo.enable) {
           let pluginPath = pluginInfo.package;
           if (!pluginPath || config.usePath) {
+            // use relative path
             pluginPath = path.relative(dist, pluginInfo.path);
             if (path.sep === '\\') pluginPath.replace(/\\/g, '/');
           }
