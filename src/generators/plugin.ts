@@ -31,7 +31,7 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
         if (pluginInfo.enable) {
           let pluginPath = pluginInfo.package;
           if (!pluginPath || config.usePath) {
-            pluginPath = path.relative(dist, pluginInfo.path);
+            pluginPath = path.relative(dist, pluginInfo.path).replace(path.sep, '/');
           }
 
           importContent.push(`import '${pluginPath}';`);
