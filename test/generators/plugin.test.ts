@@ -48,6 +48,6 @@ describe('generators/plugin.test.ts', () => {
 
     assert(result.dist);
     assert(result.content);
-    assert(result.content!.match(/import \'(\/\w+)+/));
+    assert(result.content!.match(/import \'(\.\.\/)+/));
   });
 });

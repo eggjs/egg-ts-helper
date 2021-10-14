@@ -29,7 +29,11 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
       if (pluginInfo.package && pluginInfo.from) {
         appPluginNameList.push(name);
         if (pluginInfo.enable) {
-          const pluginPath = config.usePath ? pluginInfo.path : (pluginInfo.package || pluginInfo.path);
+          let pluginPath = pluginInfo.package;
+          if (!pluginPath || config.usePath) {
+            pluginPath = path.relative(dist, pluginInfo.path);
+          }
+
           importContent.push(`import '${pluginPath}';`);
         }
       }
