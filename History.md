@@ -1,4 +1,10 @@
 
+1.29.1 / 2021-10-14
+==================
+
+**fixes**
+  * [[`757fd30`](http://github.com/whxaxes/egg-ts-helper/commit/757fd30d4de9906db4dd2f132965c9ca88ea7958)] - fix: plugin path (#79) (吖猩 <<whxaxes@gmail.com>>)
+
 1.29.0 / 2021-10-14
 ==================
 
