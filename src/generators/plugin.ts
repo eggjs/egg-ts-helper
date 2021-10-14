@@ -33,7 +33,7 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
           if (!pluginPath || config.usePath) {
             // use relative path
             pluginPath = path.relative(dist, pluginInfo.path);
-            if (path.sep === '\\') pluginPath.replace(/\\/g, '/');
+            if (path.sep === '\\') pluginPath = pluginPath.replace(/\\/g, '/');
           }
 
           importContent.push(`import '${pluginPath}';`);
