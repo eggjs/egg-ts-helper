@@ -1,4 +1,10 @@
 
+1.30.0 / 2022-02-15
+==================
+
+**features**
+  * [[`5609eb3`](http://github.com/whxaxes/egg-ts-helper/commit/5609eb39b6decbfda0b19d7e6a89d4fe94405d8f)] - feat: support class style generator (#80) (吖猩 <<whxaxes@gmail.com>>)
+
 1.29.1 / 2021-10-14
 ==================
 
