@@ -4,13 +4,9 @@ import assert from 'assert';
 import { EventEmitter } from 'events';
 import { TsGenerator, TsGenConfig, TsHelperConfig, default as TsHelper } from './';
 import * as utils from './utils';
+import { generators } from './generator';
 import d from 'debug';
 const debug = d('egg-ts-helper#watcher');
-const generators = utils.loadModules(
-  path.resolve(__dirname, './generators'),
-  false,
-  formatGenerator,
-);
 
 export interface BaseWatchItem {
   ref?: string;
@@ -202,9 +198,13 @@ export default class Watcher extends EventEmitter {
 
     generator = formatGenerator(generator);
     assert(typeof generator === 'function', `generator: ${name} not exist!!`);
+
     if (utils.isClass(generator)) {
-      const instance = new generator(this.config, this.helper);
+      const klass = generator;
+      const instance = new klass(this.config, this.helper);
       generator = (config: TsGenConfig) => instance.render(config);
+      generator.defaultConfig = (klass as any).defaultConfig;
+      generator.isPrivate = (klass as any).isPrivate;
     }
 
     return generator;

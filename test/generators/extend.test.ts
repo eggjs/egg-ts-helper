@@ -1,6 +1,6 @@
 import path from 'path';
 import assert = require('assert');
-import { defaultConfig } from '../../dist/generators/extend';
+import ExtendGenerator from '../../dist/generators/extend';
 import { triggerGenerator } from './utils';
 
 describe('generators/extend.test.ts', () => {
@@ -31,7 +31,7 @@ describe('generators/extend.test.ts', () => {
   it('should works without forwarding file', () => {
     const newAppDir = path.resolve(__dirname, '../fixtures/app8');
     const result = triggerGenerator('extend', newAppDir);
-    assert(result.length === Object.keys(defaultConfig.interface).length);
+    assert(result.length === Object.keys(ExtendGenerator.defaultConfig.interface).length);
   });
 
   it('should not generate dts with unknown interface', () => {

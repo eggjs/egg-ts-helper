@@ -4,7 +4,7 @@ import ts from 'typescript';
 import { TsGenConfig } from '..';
 import { declMapping } from '../config';
 import * as utils from '../utils';
-import { BaseGenerator } from '../generator';
+import { BaseGenerator } from './base';
 
 const EXPORT_DEFAULT_FUNCTION = 1;
 const EXPORT_DEFAULT = 2;
@@ -23,13 +23,13 @@ export interface ConfigGeneratorParams {
   moduleList: string[];
 }
 
-export const defaultConfig = {
-  // only need to parse config.default.ts or config.ts
-  pattern: 'config(.default|).(ts|js)',
-  interface: declMapping.config,
-};
-
 export default class ConfigGenerator extends BaseGenerator<ConfigGeneratorParams | undefined> {
+  static defaultConfig = {
+    // only need to parse config.default.ts or config.ts
+    pattern: 'config(.default|).(ts|js)',
+    interface: declMapping.config,
+  };
+
   buildParams(config: TsGenConfig) {
     const { baseConfig } = this;
     const fileList = config.fileList;

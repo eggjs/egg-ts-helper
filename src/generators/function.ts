@@ -1,10 +1,10 @@
 import { TsGenConfig, TsHelperConfig } from '..';
 import * as utils from '../utils';
-import { defaultConfig as classDefaultConfig, default as classGen } from './class';
+import ClassGenerator from './class';
 
-export const defaultConfig = utils.extend({}, classDefaultConfig);
-
-export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
+export default function FunctionGenerator(config: TsGenConfig, baseConfig: TsHelperConfig) {
   config.interfaceHandle = config.interfaceHandle || 'ReturnType<typeof {{ 0 }}>';
-  return classGen(config, baseConfig);
+  return ClassGenerator(config, baseConfig);
 }
+
+FunctionGenerator.defaultConfig = utils.extend({}, ClassGenerator.defaultConfig);

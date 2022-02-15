@@ -6,19 +6,7 @@ import { declMapping } from '../config';
 import { GeneratorResult, TsGenConfig, TsHelperConfig } from '..';
 const debug = d('egg-ts-helper#generators_extend');
 
-// default config
-export const defaultConfig = {
-  interface: utils.pickFields<keyof typeof declMapping>(declMapping, [
-    'context',
-    'application',
-    'agent',
-    'request',
-    'response',
-    'helper',
-  ]),
-};
-
-export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
+export default function ExtendGenerator(config: TsGenConfig, baseConfig: TsHelperConfig) {
   const fileList = config.file ? [ config.file ] : config.fileList;
 
   debug('file list : %o', fileList);
@@ -66,3 +54,15 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
 
   return tsList;
 }
+
+// default config
+ExtendGenerator.defaultConfig = {
+  interface: utils.pickFields<keyof typeof declMapping>(declMapping, [
+    'context',
+    'application',
+    'agent',
+    'request',
+    'response',
+    'helper',
+  ]),
+};
