@@ -1,4 +1,10 @@
 
+1.30.1 / 2022-02-15
+==================
+
+**fixes**
+  * [[`a12ea16`](http://github.com/whxaxes/egg-ts-helper/commit/a12ea16357f7b190ca50b3b20a1a0274ba580f40)] - fix: exports (wanghx <<whxaxes@gmail.com>>)
+
 1.30.0 / 2022-02-15
 ==================
 
