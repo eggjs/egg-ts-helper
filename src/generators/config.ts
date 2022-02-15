@@ -1,9 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 import ts from 'typescript';
-import { TsGenConfig, TsHelperConfig } from '..';
+import { TsGenConfig } from '..';
 import { declMapping } from '../config';
 import * as utils from '../utils';
+import { BaseGenerator } from './base';
 
 const EXPORT_DEFAULT_FUNCTION = 1;
 const EXPORT_DEFAULT = 2;
@@ -16,83 +17,99 @@ export interface ImportItem {
   moduleName: string;
 }
 
-export const defaultConfig = {
-  // only need to parse config.default.ts or config.ts
-  pattern: 'config(.default|).(ts|js)',
-  interface: declMapping.config,
-};
+export interface ConfigGeneratorParams {
+  importList: string[];
+  declarationList: string[];
+  moduleList: string[];
+}
 
-export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
-  const fileList = config.fileList;
-  const dist = path.resolve(config.dtsDir, 'index.d.ts');
-  const cache = globalCache[baseConfig.id] = globalCache[baseConfig.id] || {};
-  if (!fileList.length) {
-    return { dist };
-  }
+export default class ConfigGenerator extends BaseGenerator<ConfigGeneratorParams | undefined> {
+  static defaultConfig = {
+    // only need to parse config.default.ts or config.ts
+    pattern: 'config(.default|).(ts|js)',
+    interface: declMapping.config,
+  };
 
-  const importList: string[] = [];
-  const declarationList: string[] = [];
-  const moduleList: string[] = [];
-  fileList.forEach(f => {
-    const abUrl = path.resolve(config.dir, f);
+  buildParams(config: TsGenConfig) {
+    const { baseConfig } = this;
+    const fileList = config.fileList;
+    const cache = globalCache[baseConfig.id] = globalCache[baseConfig.id] || {};
+    if (!fileList.length) return;
 
-    // read from cache
-    if (!cache[abUrl] || config.file === abUrl) {
-      const skipLibCheck = !!baseConfig.tsConfig.skipLibCheck;
-      const { type, usePowerPartial } = checkConfigReturnType(abUrl);
+    const importList: string[] = [];
+    const declarationList: string[] = [];
+    const moduleList: string[] = [];
+    fileList.forEach(f => {
+      const abUrl = path.resolve(config.dir, f);
 
-      // skip when not usePowerPartial and skipLibCheck in ts file
-      // because it maybe cause types error.
-      if (path.extname(f) !== '.js' && !usePowerPartial && !skipLibCheck) return;
+      // read from cache
+      if (!cache[abUrl] || config.file === abUrl) {
+        const skipLibCheck = !!baseConfig.tsConfig.skipLibCheck;
+        const { type, usePowerPartial } = checkConfigReturnType(abUrl);
 
-      const { moduleName: sModuleName } = utils.getModuleObjByPath(f);
-      const moduleName = `Export${sModuleName}`;
-      const importContext = utils.getImportStr(
-        config.dtsDir,
-        abUrl,
-        moduleName,
-        type === EXPORT,
-      );
+        // skip when not usePowerPartial and skipLibCheck in ts file
+        // because it maybe cause types error.
+        if (path.extname(f) !== '.js' && !usePowerPartial && !skipLibCheck) return;
 
-      let tds = `type ${sModuleName} = `;
-      if (type === EXPORT_DEFAULT_FUNCTION) {
-        tds += `ReturnType<typeof ${moduleName}>;`;
-      } else if (type === EXPORT_DEFAULT || type === EXPORT) {
-        tds += `typeof ${moduleName};`;
-      } else {
-        return;
+        const { moduleName: sModuleName } = utils.getModuleObjByPath(f);
+        const moduleName = `Export${sModuleName}`;
+        const importContext = utils.getImportStr(
+          config.dtsDir,
+          abUrl,
+          moduleName,
+          type === EXPORT,
+        );
+
+        let tds = `type ${sModuleName} = `;
+        if (type === EXPORT_DEFAULT_FUNCTION) {
+          tds += `ReturnType<typeof ${moduleName}>;`;
+        } else if (type === EXPORT_DEFAULT || type === EXPORT) {
+          tds += `typeof ${moduleName};`;
+        } else {
+          return;
+        }
+
+        // cache the file
+        cache[abUrl] = {
+          import: importContext,
+          declaration: tds,
+          moduleName: sModuleName,
+        };
       }
 
-      // cache the file
-      cache[abUrl] = {
-        import: importContext,
-        declaration: tds,
-        moduleName: sModuleName,
-      };
-    }
+      const cacheItem = cache[abUrl];
+      importList.push(cacheItem.import);
+      declarationList.push(cacheItem.declaration);
+      moduleList.push(cacheItem.moduleName);
+    });
 
-    const cacheItem = cache[abUrl];
-    importList.push(cacheItem.import);
-    declarationList.push(cacheItem.declaration);
-    moduleList.push(cacheItem.moduleName);
-  });
-
-  if (!importList.length) {
-    return { dist };
+    return {
+      importList,
+      declarationList,
+      moduleList,
+    };
   }
 
-  const newConfigType = `New${config.interface}`;
-  return {
-    dist,
-    content:
-      `import { ${config.interface} } from '${baseConfig.framework}';\n` +
-      `${importList.join('\n')}\n` +
-      `${declarationList.join('\n')}\n` +
-      `type ${newConfigType} = ${moduleList.join(' & ')};\n` +
-      `declare module '${baseConfig.framework}' {\n` +
-      `  interface ${config.interface} extends ${newConfigType} { }\n` +
-      '}',
-  };
+  renderWithParams(config: TsGenConfig, params?: ConfigGeneratorParams) {
+    const dist = path.resolve(config.dtsDir, 'index.d.ts');
+    if (!params) return { dist };
+    if (!params.importList.length) return { dist };
+
+    const { baseConfig } = this;
+    const { importList, declarationList, moduleList } = params;
+    const newConfigType = `New${config.interface}`;
+    return {
+      dist,
+      content:
+        `import { ${config.interface} } from '${baseConfig.framework}';\n` +
+        `${importList.join('\n')}\n` +
+        `${declarationList.join('\n')}\n` +
+        `type ${newConfigType} = ${moduleList.join(' & ')};\n` +
+        `declare module '${baseConfig.framework}' {\n` +
+        `  interface ${config.interface} extends ${newConfigType} { }\n` +
+        '}',
+    };
+  }
 }
 
 // check config return type.

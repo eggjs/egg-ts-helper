@@ -5,9 +5,11 @@ import fs from 'fs';
 import crypto from 'crypto';
 import chalk from 'chalk';
 import path from 'path';
+import * as generator from './generator';
 import { get as deepGet, set as deepSet } from 'dot-prop';
 import { declMapping, dtsComment, dtsCommentRE } from './config';
 import Watcher, { WatchItem } from './watcher';
+import { BaseGenerator } from './generators/base';
 import * as utils from './utils';
 import { CompilerOptions } from 'typescript';
 import glob from 'globby';
@@ -37,7 +39,6 @@ export interface TsHelperOption {
   silent?: boolean;
 }
 
-export { WatchItem };
 export type TsHelperConfig = typeof defaultConfig & {
   id: string;
   eggInfo: utils.EggInfoResult;
@@ -463,7 +464,7 @@ export default class TsHelper extends EventEmitter {
             if (base.generatorConfig[k]) base.generatorConfig[k].enabled = item;
           } else if (item) {
             // check private generator
-            assert(!Watcher.isPrivateGenerator(item.generator), `${item.generator} is a private generator, can not configure in config file`);
+            assert(!generator.isPrivateGenerator(item.generator), `${item.generator} is a private generator, can not configure in config file`);
 
             // compatible for deprecated fields
             [
@@ -489,3 +490,5 @@ export default class TsHelper extends EventEmitter {
 export function createTsHelperInstance(options: TsHelperOption) {
   return new TsHelper(options);
 }
+
+export { WatchItem, BaseGenerator, generator };

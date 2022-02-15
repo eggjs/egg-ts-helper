@@ -3,18 +3,7 @@ import { declMapping } from '../config';
 import { TsGenConfig, TsHelperConfig } from '..';
 import * as utils from '../utils';
 
-export const isPrivate = true;
-
-// only load plugin.ts|plugin.local.ts|plugin.default.ts
-export const defaultConfig = {
-  pattern: 'plugin*(.local|.default).+(ts|js)',
-  interface: declMapping.plugin,
-
-  /** use path insteadof package while import plugins */
-  usePath: false,
-};
-
-export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
+export default function PluginGenerator(config: TsGenConfig, baseConfig: TsHelperConfig) {
   const getContent = (eggInfo: utils.EggInfoResult) => {
     const dist = path.resolve(config.dtsDir, 'plugin.d.ts');
     if (!eggInfo.plugins) {
@@ -70,3 +59,14 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
     callback: getContent,
   });
 }
+
+PluginGenerator.isPrivate = true;
+
+// only load plugin.ts|plugin.local.ts|plugin.default.ts
+PluginGenerator.defaultConfig = {
+  pattern: 'plugin*(.local|.default).+(ts|js)',
+  interface: declMapping.plugin,
+
+  /** use path insteadof package while import plugins */
+  usePath: false,
+};

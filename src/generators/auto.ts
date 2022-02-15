@@ -1,13 +1,11 @@
 import { TsGenConfig, TsHelperConfig } from '..';
 import * as utils from '../utils';
-import { defaultConfig as classDefaultConfig, default as classGen } from './class';
+import ClassGenerator from './class';
 
-export const defaultConfig = utils.extend({}, classDefaultConfig);
-
-export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
+export default function AutoGenerator(config: TsGenConfig, baseConfig: TsHelperConfig) {
   config.interfaceHandle = config.interfaceHandle || 'AutoInstanceType<typeof {{ 0 }}>';
 
-  const result = classGen(config, baseConfig);
+  const result = ClassGenerator(config, baseConfig);
   /* istanbul ignore else */
   if (result.content) {
     result.content = [
@@ -21,3 +19,5 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig) {
 
   return result;
 }
+
+AutoGenerator.defaultConfig = utils.extend({}, ClassGenerator.defaultConfig);

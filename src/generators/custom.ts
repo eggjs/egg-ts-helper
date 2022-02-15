@@ -4,22 +4,11 @@ import { declMapping } from '../config';
 import * as utils from '../utils';
 import path from 'path';
 
-export const isPrivate = true;
-
-export const defaultConfig = {
-  directory: 'config',
-  execAtInit: true,
-  pattern: [
-    'config*(.local|.default).+(ts|js)',
-    'plugin*(.local|.default).+(ts|js)',
-  ],
-};
-
 const customWatcherName = 'custom';
 const customSpecRef = `${customWatcherName}_spec_ref`;
 const DeclareMapping = utils.pickFields<keyof typeof declMapping>(declMapping, [ 'ctx', 'app' ]);
 
-export default function(config: TsGenConfig, baseConfig: TsHelperConfig, tsHelper: TsHelper) {
+export default function CustomGenerator(config: TsGenConfig, baseConfig: TsHelperConfig, tsHelper: TsHelper) {
   const createCustomLoader = (eggInfo: utils.EggInfoResult) => {
     const eggConfig = eggInfo.config || {};
     const newCustomWatcherList: string[] = [];
@@ -75,3 +64,13 @@ export default function(config: TsGenConfig, baseConfig: TsHelperConfig, tsHelpe
     callback: createCustomLoader,
   });
 }
+
+CustomGenerator.isPrivate = true;
+CustomGenerator.defaultConfig = {
+  directory: 'config',
+  execAtInit: true,
+  pattern: [
+    'config*(.local|.default).+(ts|js)',
+    'plugin*(.local|.default).+(ts|js)',
+  ],
+};
