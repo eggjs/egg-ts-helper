@@ -1,6 +1,6 @@
 import assert = require('assert');
-import { generators } from '../dist/generator';
-import { registerGenerator, BaseGenerator } from '..';
+import { generator } from '..';
+const { generators, registerGenerator, BaseGenerator } = generator;
 
 describe('generator.test.ts', () => {
   it('should has generators without error', async () => {

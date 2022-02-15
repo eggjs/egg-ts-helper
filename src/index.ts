@@ -5,7 +5,7 @@ import fs from 'fs';
 import crypto from 'crypto';
 import chalk from 'chalk';
 import path from 'path';
-import { registerGenerator } from './generator';
+import * as generator from './generator';
 import { get as deepGet, set as deepSet } from 'dot-prop';
 import { declMapping, dtsComment, dtsCommentRE } from './config';
 import Watcher, { WatchItem } from './watcher';
@@ -464,7 +464,7 @@ export default class TsHelper extends EventEmitter {
             if (base.generatorConfig[k]) base.generatorConfig[k].enabled = item;
           } else if (item) {
             // check private generator
-            assert(!Watcher.isPrivateGenerator(item.generator), `${item.generator} is a private generator, can not configure in config file`);
+            assert(!generator.isPrivateGenerator(item.generator), `${item.generator} is a private generator, can not configure in config file`);
 
             // compatible for deprecated fields
             [
@@ -491,4 +491,4 @@ export function createTsHelperInstance(options: TsHelperOption) {
   return new TsHelper(options);
 }
 
-export { WatchItem, BaseGenerator, registerGenerator };
+export { WatchItem, BaseGenerator, generator };

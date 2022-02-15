@@ -4,7 +4,7 @@ import assert from 'assert';
 import { EventEmitter } from 'events';
 import { TsGenerator, TsGenConfig, TsHelperConfig, default as TsHelper } from './';
 import * as utils from './utils';
-import { generators } from './generator';
+import { loadGenerator } from './generator';
 import d from 'debug';
 const debug = d('egg-ts-helper#watcher');
 
@@ -24,16 +24,6 @@ export interface WatchItem extends PlainObject, BaseWatchItem { }
 
 interface WatcherOptions extends WatchItem {
   name: string;
-}
-
-function formatGenerator(generator) {
-  // check esm default
-  if (generator && typeof generator.default === 'function') {
-    generator.default.defaultConfig = generator.defaultConfig || generator.default.defaultConfig;
-    generator.default.isPrivate = generator.isPrivate || generator.default.isPrivate;
-    generator = generator.default;
-  }
-  return generator;
 }
 
 export default class Watcher extends EventEmitter {
@@ -59,13 +49,21 @@ export default class Watcher extends EventEmitter {
     this.config = this.helper.config;
     this.name = options.name;
     this.ref = options.ref!;
-    this.generator = this.getGenerator(generatorName);
+
+    const generator = loadGenerator(generatorName, { cwd: this.config.cwd });
+    if (utils.isClass(generator)) {
+      const instance = new generator(this.config, this.helper);
+      this.generator = (config: TsGenConfig) => instance.render(config);
+    } else {
+      this.generator = generator;
+    }
+
     options = this.options = {
       trigger: [ 'add', 'unlink' ],
       generator: generatorName,
       pattern: '**/*.(ts|js)',
       watch: true,
-      ...this.generator.defaultConfig,
+      ...generator.defaultConfig,
       ...options,
     };
 
@@ -90,10 +88,6 @@ export default class Watcher extends EventEmitter {
     if (this.options.execAtInit) {
       this.execute();
     }
-  }
-
-  static isPrivateGenerator(name: string) {
-    return !!(generators[name] && generators[name].isPrivate);
   }
 
   public destroy() {
@@ -176,37 +170,5 @@ export default class Watcher extends EventEmitter {
 
       this.throttleTick = null;
     }, this.config.throttle);
-  }
-
-  // get generator
-  private getGenerator(name: string): TsGenerator {
-    const type = typeof name;
-    const typeIsString = type === 'string';
-    let generator = typeIsString ? generators[name] : name;
-
-    if (!generator && typeIsString) {
-      // try to load generator as module path
-      const generatorPath = utils.resolveModule(name.startsWith('.')
-        ? path.join(this.config.cwd, name)
-        : name,
-      );
-
-      if (generatorPath) {
-        generator = require(generatorPath);
-      }
-    }
-
-    generator = formatGenerator(generator);
-    assert(typeof generator === 'function', `generator: ${name} not exist!!`);
-
-    if (utils.isClass(generator)) {
-      const klass = generator;
-      const instance = new klass(this.config, this.helper);
-      generator = (config: TsGenConfig) => instance.render(config);
-      generator.defaultConfig = (klass as any).defaultConfig;
-      generator.isPrivate = (klass as any).isPrivate;
-    }
-
-    return generator;
   }
 }
