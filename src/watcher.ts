@@ -33,8 +33,8 @@ interface WatcherOptions extends WatchItem {
 function formatGenerator(generator) {
   // check esm default
   if (generator && typeof generator.default === 'function') {
-    generator.default.defaultConfig = generator.defaultConfig;
-    generator.default.isPrivate = generator.isPrivate;
+    generator.default.defaultConfig = generator.defaultConfig || generator.default.defaultConfig;
+    generator.default.isPrivate = generator.isPrivate || generator.default.isPrivate;
     generator = generator.default;
   }
   return generator;
@@ -202,6 +202,10 @@ export default class Watcher extends EventEmitter {
 
     generator = formatGenerator(generator);
     assert(typeof generator === 'function', `generator: ${name} not exist!!`);
+    if (utils.isClass(generator)) {
+      const instance = new generator(this.config, this.helper);
+      generator = (config: TsGenConfig) => instance.render(config);
+    }
 
     return generator;
   }

@@ -524,6 +524,10 @@ export function findExportNode(code: string) {
   };
 }
 
+export function isClass(v): v is { new (...args: any[]): any } {
+  return typeof v === 'function' && /^\s*class\s+/.test(v.toString());
+}
+
 // check kind in node.modifiers.
 export function modifierHas(node: ts.Node, kind) {
   return node.modifiers && node.modifiers.find(mod => kind === mod.kind);

@@ -362,6 +362,7 @@ describe('index.test.ts', () => {
         ...process.env,
         ...{
           NODE_ENV: 'development',
+          NODE_OPTIONS: '--no-deprecation',
           TS_NODE_PROJECT: path.resolve(baseDir, './tsconfig.json'),
         },
       },
@@ -403,6 +404,7 @@ describe('index.test.ts', () => {
       env: {
         ...process.env,
         ETS_SILENT: 'false',
+        NODE_OPTIONS: '--no-deprecation',
       },
     });
     const { stdout, stderr } = await getStd(proc, true, undefined, { stdout: 'passing' });
