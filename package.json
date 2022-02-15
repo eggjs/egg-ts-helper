@@ -7,7 +7,6 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "exports": "./dist/*",
   "repository": {
     "type": "git",
     "url": "git@github.com:whxaxes/egg-ts-helper.git"
