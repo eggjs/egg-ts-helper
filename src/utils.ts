@@ -437,11 +437,28 @@ export function loadTsConfig(tsconfigPath: string): ts.CompilerOptions {
   tsconfigPath = path.extname(tsconfigPath) === '.json' ? tsconfigPath : `${tsconfigPath}.json`;
   const tsConfig = readJson5(tsconfigPath) as TsConfigJson;
   if (tsConfig.extends) {
-    const extendTsConfig = loadTsConfig(path.resolve(path.dirname(tsconfigPath), tsConfig.extends));
-    return {
-      ...tsConfig.compilerOptions,
-      ...extendTsConfig,
-    };
+    const extendPattern = tsConfig.extends;
+    const tsconfigDirName = path.dirname(tsconfigPath);
+    const maybeRealExtendPath: string[] = [
+      path.resolve(tsconfigDirName, extendPattern),
+      path.resolve(tsconfigDirName, `${extendPattern}.json`),
+    ];
+
+    if (!path.extname(tsConfig.extends) && !extendPattern.startsWith('.') && !extendPattern.startsWith('/')) {
+      maybeRealExtendPath.push(
+        path.resolve(tsconfigDirName, 'node_modules', extendPattern, 'tsconfig.json'),
+        path.resolve(process.cwd(), 'node_modules', extendPattern, 'tsconfig.json'),
+      );
+    }
+
+    const extendRealPath = maybeRealExtendPath.find(f => fs.existsSync(f));
+    if (extendRealPath) {
+      const extendTsConfig = loadTsConfig(extendRealPath);
+      return {
+        ...tsConfig.compilerOptions,
+        ...extendTsConfig,
+      };
+    }
   }
   return tsConfig.compilerOptions || {};
 }
