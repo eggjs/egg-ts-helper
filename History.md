@@ -1,4 +1,10 @@
 
+1.30.2 / 2022-02-16
+==================
+
+**fixes**
+  * [[`371d743`](http://github.com/whxaxes/egg-ts-helper/commit/371d7436f6b5441674cd62390c96fbb1fc94ccd1)] - fix: load tsconfig with extends (#82) (吖猩 <<whxaxes@gmail.com>>)
+
 1.30.1 / 2022-02-15
 ==================
 
