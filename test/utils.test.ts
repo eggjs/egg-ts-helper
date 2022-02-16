@@ -216,5 +216,9 @@ describe('utils.test.ts', () => {
     assert(tsConfig);
     assert(tsConfig.strict);
     assert(tsConfig.target);
+
+    const tsConfig2 = utils.loadTsConfig(path.resolve(__dirname, './fixtures/test-tsconfig/tsconfig.json'));
+    assert(tsConfig2);
+    assert(tsConfig2.skipLibCheck);
   });
 });
