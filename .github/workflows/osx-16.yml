@@ -1,4 +1,4 @@
-name: CI-OSX-10
+name: CI-OSX-16
 
 on:
   push:
@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [10]
+        node-version: [16]
         os: [macos-latest]
 
     steps:
