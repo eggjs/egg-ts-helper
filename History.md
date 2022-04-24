@@ -1,4 +1,10 @@
 
+1.30.3 / 2022-04-24
+==================
+
+**fixes**
+  * [[`67e667d`](http://github.com/whxaxes/egg-ts-helper/commit/67e667d21b15de4f972db76ca595de20e8136c13)] - fix: startup failed in node18 (#83) (吖猩 <<whxaxes@gmail.com>>)
+
 1.30.2 / 2022-02-16
 ==================
 
