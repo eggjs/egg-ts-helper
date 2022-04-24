@@ -49,7 +49,7 @@ describe('generators/plugin.test.ts', () => {
     assert(result.dist);
     assert(result.content);
     if (path.sep === '/') {
-      assert(result.content!.match(/import \'\/([\w\-]+\/)+node_modules\//));
+      assert(result.content!.match(/import \'\/([\w\.\-]+\/)+node_modules\//));
     }
   });
 });
