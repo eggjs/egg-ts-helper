@@ -1,4 +1,4 @@
-name: CI-Windows-10
+name: CI-Linux-16
 
 on:
   push:
@@ -16,8 +16,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [10]
-        os: [windows-latest]
+        node-version: [16]
+        os: [ubuntu-latest]
 
     steps:
       - name: Checkout Git Source
