@@ -5,7 +5,7 @@ import path from 'path';
 import ts from 'typescript';
 import yn from 'yn';
 import { eggInfoPath, tmpDir } from './config';
-import { execSync, exec, ExecOptions } from 'child_process';
+import { execFileSync, execFile, ExecFileOptions } from 'child_process';
 import JSON5 from 'json5';
 
 export const JS_CONFIG = {
@@ -104,8 +104,9 @@ export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(option: GetEggIn
   }
 
   // prepare options
-  const cmd = `node ${path.resolve(__dirname, './scripts/eggInfo')}`;
-  const opt: ExecOptions = {
+  const cmd = 'node';
+  const args = [ path.resolve(__dirname, './scripts/eggInfo') ];
+  const opt: ExecFileOptions = {
     cwd,
     env: {
       ...process.env,
@@ -121,7 +122,7 @@ export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(option: GetEggIn
   if (option.async) {
     // cache promise
     caches.runningPromise = new Promise((resolve, reject) => {
-      exec(cmd, opt, err => {
+      execFile(cmd, args, opt, err => {
         caches.runningPromise = null;
         if (err) reject(err);
         resolve(end(parseJson(fs.readFileSync(eggInfoPath, 'utf-8'))));
@@ -132,7 +133,7 @@ export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(option: GetEggIn
   }
 
   try {
-    execSync(cmd, opt);
+    execFileSync(cmd, args, opt);
     return end(parseJson(fs.readFileSync(eggInfoPath, 'utf-8')));
   } catch (e) {
     return end({});
