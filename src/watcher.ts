@@ -64,7 +64,7 @@ export default class Watcher extends EventEmitter {
       pattern: '**/*.(ts|js)',
       watch: true,
       ...generator.defaultConfig,
-      ...options,
+      ...utils.cleanEmpty(options),
     };
 
     this.pattern = utils.toArray(this.options.pattern)
