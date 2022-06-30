@@ -35,12 +35,13 @@ describe('watcher.test.ts', () => {
     assert(content.includes('User: ReturnType<typeof ExportUser>;'));
   });
 
-  it('should works with pattern without error', () => {
+  it('should works with ignore option without error', () => {
     watcher = new Watcher(tsHelper);
     watcher.init({
       ...defaultWatchDir.model as WatchItem,
       name: 'xxx',
-      pattern: [ '*.ts', '!User.ts' ],
+      pattern: [ '*.ts' ],
+      ignore: [ 'User.ts' ],
     });
     assert(!!watcher.execute().dist);
     const content = watcher.execute().content;
