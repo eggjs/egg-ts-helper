@@ -137,6 +137,7 @@ export default class Watcher extends EventEmitter {
       file,
       dir: this.dir,
       dtsDir: this.dtsDir,
+      pattern: this.pattern,
       get fileList() {
         return _fileList || (_fileList = utils.loadFiles(this.dir, this.pattern));
       },
