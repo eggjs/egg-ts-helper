@@ -29,7 +29,25 @@ describe('watcher.test.ts', () => {
       name: 'xxx',
     });
     assert(!!watcher.execute().dist);
-    assert(!!watcher.execute().content);
+    const content = watcher.execute().content;
+    assert(!!content);
+    assert(content.includes('Person: ReturnType<typeof ExportPerson>;'));
+    assert(content.includes('User: ReturnType<typeof ExportUser>;'));
+  });
+
+  it('should works with ignore option without error', () => {
+    watcher = new Watcher(tsHelper);
+    watcher.init({
+      ...defaultWatchDir.model as WatchItem,
+      name: 'xxx',
+      pattern: [ '*.ts' ],
+      ignore: [ 'User.ts' ],
+    });
+    assert(!!watcher.execute().dist);
+    const content = watcher.execute().content;
+    assert(!!content);
+    assert(content.includes('Person: ReturnType<typeof ExportPerson>;'));
+    assert(!content.includes('User: ReturnType<typeof ExportUser>;'));
   });
 
   it('should watch multiple times without error', () => {

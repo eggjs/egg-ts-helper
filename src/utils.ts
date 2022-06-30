@@ -550,3 +550,14 @@ export function isClass(v): v is { new (...args: any[]): any } {
 export function modifierHas(node: ts.Node, kind) {
   return node.modifiers && node.modifiers.find(mod => kind === mod.kind);
 }
+
+export function cleanEmpty(data) {
+  const clearData = {};
+  Object.keys(data).forEach(k => {
+    const dataValue = data[k];
+    if (dataValue !== undefined && dataValue !== null) {
+      clearData[k] = data[k];
+    }
+  });
+  return clearData;
+}
