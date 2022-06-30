@@ -1,4 +1,11 @@
 
+1.30.4 / 2022-06-30
+==================
+
+**fixes**
+  * [[`6a73a32`](http://github.com/whxaxes/egg-ts-helper/commit/6a73a32893e1ad1d324252ea8879696b45e66cfa)] - fix: ignore options not works (#87) (吖猩 <<whxaxes@gmail.com>>)
+  * [[`c2fe947`](http://github.com/whxaxes/egg-ts-helper/commit/c2fe947b6ecdb3b844de0ba4f1a00a62b5a81341)] - fix: use execFile for getEggInfo (#86) (zhangyuantao <<zhangyuantao@163.com>>)
+
 1.30.3 / 2022-04-24
 ==================
 
