@@ -5,26 +5,20 @@ import assert from 'assert';
 import packInfo from '../package.json';
 import TsHelper, { defaultConfig } from './';
 import { loadModules, writeJsConfig, checkMaybeIsJsProj } from './utils';
-const commands = loadModules<SubCommand>(path.resolve(__dirname, './cmd'), true);
-let executeCmd: string | undefined;
-
-// override executeSubCommand to support async subcommand.
-Command.prototype.addImplicitHelpCommand = () => {};
-Command.prototype.executeSubCommand = async function(argv, args, unknown) {
-  const cwd = this.cwd || defaultConfig.cwd;
-  const command = commands[executeCmd!];
-  assert(command, executeCmd + ' does not exist');
-  await command.run(this, { cwd, argv, args: args.filter(item => item !== this), unknown });
-};
 
 export default class Commander {
   program: Command;
+  commands: Record<string, SubCommand>;
   tsHelperClazz: typeof TsHelper;
 
-  constructor(options?: { tsHelperClazz?: typeof TsHelper; }) {
+  constructor(options?: {
+    version?: string;
+    tsHelperClazz?: typeof TsHelper;
+  }) {
+    this.commands = loadModules<SubCommand>(path.resolve(__dirname, './cmd'), true);
     this.tsHelperClazz = options?.tsHelperClazz || TsHelper;
     this.program = new Command()
-      .version(packInfo.version, '-v, --version')
+      .version(options?.version || packInfo.version, '-v, --version')
       .usage('[commands] [options]')
       .option('-w, --watch', 'Watching files, d.ts would recreated while file changed')
       .option('-c, --cwd [path]', 'Egg application base dir (default: process.cwd)')
@@ -35,10 +29,22 @@ export default class Commander {
       .option('-i, --ignore [dirs]', 'Ignore watchDirs, your can ignore multiple dirs with comma like: -i controller,service')
       .option('-e, --enabled [dirs]', 'Enable watchDirs, your can enable multiple dirs with comma like: -e proxy,other')
       .option('-E, --extra [json]', 'Extra config, the value should be json string');
+
   }
 
   init(argv: string[]) {
-    const { program } = this;
+    const { program, commands } = this;
+    let executeCmd: string | undefined;
+
+    // override executeSubCommand to support async subcommand.
+    program.addImplicitHelpCommand = () => {};
+    program.executeSubCommand = async function(argv, args, unknown) {
+      const cwd = this.cwd || defaultConfig.cwd;
+      const command = commands[executeCmd!];
+      assert(command, executeCmd + ' does not exist');
+      await command.run(this, { cwd, argv, args: args.filter(item => item !== this), unknown });
+    };
+
     if (!argv.slice(2).length) {
       this.execute();
     } else {
