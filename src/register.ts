@@ -40,10 +40,8 @@ export default class Register {
       }
     }
 
-    if (watch) {
-      // cache pid to env, prevent child process executing ets again
-      process.env.ETS_REGISTER_PID = `${process.pid}`;
-    }
+    // cache pid to env, prevent child process executing ets again
+    process.env.ETS_REGISTER_PID = `${process.pid}`;
 
     // exec building
     instance.build();
