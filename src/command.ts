@@ -29,7 +29,6 @@ export default class Commander {
       .option('-i, --ignore [dirs]', 'Ignore watchDirs, your can ignore multiple dirs with comma like: -i controller,service')
       .option('-e, --enabled [dirs]', 'Enable watchDirs, your can enable multiple dirs with comma like: -e proxy,other')
       .option('-E, --extra [json]', 'Extra config, the value should be json string');
-
   }
 
   init(argv: string[]) {

@@ -14,7 +14,10 @@
   "exports": {
     ".": "./dist/index.js",
     "./command": "./dist/command.js",
-    "./register": "./dist/register.js"
+    "./register": "./dist/register.js",
+    "./config": "./dist/config.js",
+    "./watcher": "./dist/watcher.js",
+    "./generators/*": "./dist/generators/*.js"
   },
   "scripts": {
     "build": "tsc -d",
