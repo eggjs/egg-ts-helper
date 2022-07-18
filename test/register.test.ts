@@ -2,6 +2,8 @@ import del from 'del';
 import fs from 'fs';
 import { getStd, fork, spawn } from './utils';
 import path from 'path';
+import TsHelper from '../dist';
+import Register from '../dist/register';
 import assert = require('assert');
 import extend from 'extend2';
 
@@ -90,5 +92,18 @@ describe('register.test.ts', () => {
     assert(!stderr);
     assert(fs.existsSync(jsConfigPath));
     assert(!!JSON.parse(fs.readFileSync(jsConfigPath).toString()).mySpecConfig);
+  });
+
+  it('should pass tsHelperClazz with register without error', async () => {
+    let customBuild = false;
+    class CustomTsHelper extends TsHelper {
+      build() {
+        customBuild = true;
+        return this;
+      }
+    }
+    const register = new Register({ tsHelperClazz: CustomTsHelper });
+    register.init();
+    assert(customBuild);
   });
 });

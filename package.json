@@ -11,6 +11,11 @@
     "type": "git",
     "url": "git@github.com:whxaxes/egg-ts-helper.git"
   },
+  "exports": {
+    "default": "./dist/index.js",
+    "command": "./dist/command.js",
+    "register": "./dist/register.js"
+  },
   "scripts": {
     "build": "tsc -d",
     "build:w": "tsc -d -w",

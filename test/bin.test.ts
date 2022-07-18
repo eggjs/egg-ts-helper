@@ -2,6 +2,8 @@ import del from 'del';
 import fs from 'fs';
 import mkdirp from 'mkdirp';
 import path from 'path';
+import TsHelper from '../dist';
+import Command from '../dist/command';
 import assert = require('assert');
 import { triggerBinSync, triggerBin, getOutput, sleep, spawn, getStd } from './utils';
 
@@ -108,5 +110,18 @@ describe('bin.test.ts', () => {
     await sleep(2000);
 
     assert(!fs.existsSync(dts));
+  });
+
+  it('should pass tsHelperClazz with commander without error', async () => {
+    let customBuild = false;
+    class CustomTsHelper extends TsHelper {
+      build() {
+        customBuild = true;
+        return this;
+      }
+    }
+    const cmd = new Command({ tsHelperClazz: CustomTsHelper });
+    cmd.init([]);
+    assert(customBuild);
   });
 });
