@@ -1,4 +1,10 @@
 
+1.31.2 / 2022-07-18
+==================
+
+**fixes**
+  * [[`9089ca8`](http://github.com/whxaxes/egg-ts-helper/commit/9089ca896e48f649b38ff47d995970ac54446c48)] - fix: ETS_REGISTER_PID should not relate watch mode (#90) (mansonchor.github.com <<mansonchor1987@gmail.com>>)
+
 1.31.1 / 2022-07-18
 ==================
 
