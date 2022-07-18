@@ -1,6 +1,6 @@
 {
   "name": "egg-ts-helper",
-  "version": "1.31.0",
+  "version": "1.31.1",
   "description": "egg typescript helper",
   "bin": {
     "ets": "dist/bin.js"

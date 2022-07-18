@@ -1,4 +1,10 @@
 
+1.31.1 / 2022-07-18
+==================
+
+**fixes**
+  * [[`9469ecc`](http://github.com/whxaxes/egg-ts-helper/commit/9469ecca8457c3700bab9169b088129e5f588a03)] - fix: should not use exports (#89) (吖猩 <<whxaxes@gmail.com>>)
+
 1.31.0 / 2022-07-18
 ==================
 
