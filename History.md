@@ -1,4 +1,10 @@
 
+1.31.0 / 2022-07-18
+==================
+
+**features**
+  * [[`874c1b2`](http://github.com/whxaxes/egg-ts-helper/commit/874c1b210e48626a33a98cafaba4a0bf986b3372)] - feat: make command & register as clazz (#88) (吖猩 <<whxaxes@gmail.com>>)
+
 1.30.4 / 2022-06-30
 ==================
 
