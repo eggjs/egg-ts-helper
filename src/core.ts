@@ -491,4 +491,4 @@ export function createTsHelperInstance(options: TsHelperOption) {
   return new TsHelper(options);
 }
 
-export { WatchItem, BaseGenerator, generator };
+export { TsHelper, WatchItem, BaseGenerator, generator };
