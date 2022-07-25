@@ -1,4 +1,10 @@
 
+1.33.0 / 2022-07-25
+==================
+
+**features**
+  * [[`d14405d`](http://github.com/whxaxes/egg-ts-helper/commit/d14405dd0c39ae5276a4d2ba1aeeb466aa1e5e3c)] - feat: deprecated clean command (#92) (吖猩 <<whxaxes@gmail.com>>)
+
 1.32.0 / 2022-07-25
 ==================
 
