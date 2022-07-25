@@ -1,4 +1,10 @@
 
+1.32.0 / 2022-07-25
+==================
+
+**features**
+  * [[`802f578`](http://github.com/whxaxes/egg-ts-helper/commit/802f578db9a3708ea61cc7cb822bdad3e8bad265)] - feat: export register and command clazz (#91) (吖猩 <<whxaxes@gmail.com>>)
+
 1.31.2 / 2022-07-18
 ==================
 
