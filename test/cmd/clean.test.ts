@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { triggerBin, tsc } from '../utils';
+import { triggerBin, getOutput, tsc } from '../utils';
 import assert = require('assert');
 
 describe('cmd/clean.test.ts', () => {
@@ -24,5 +24,10 @@ describe('cmd/clean.test.ts', () => {
     assert(!fs.existsSync(path.resolve(appPath, './testtsx.js')));
     assert(!fs.existsSync(path.resolve(appPath, './app/testtsx.js')));
     assert(!fs.existsSync(path.resolve(appPath, './app/app/testtsx.js')));
+  });
+
+  it('should deprecated clean command without error', async () => {
+    const stdout = await getOutput('clean', '-c', path.resolve(__dirname, '../fixtures/app9'));
+    assert(stdout.includes('`ets clean` has been deprecated'));
   });
 });

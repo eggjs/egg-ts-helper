@@ -27,7 +27,7 @@ export default class Register {
 
     const watch = util.convertString(process.env.ETS_WATCH, process.env.NODE_ENV !== 'test');
     const clazz = this.tsHelperClazz;
-    const cwd = process.cwd();
+    const cwd = options?.cwd || process.cwd();
     const instance = new clazz({ watch, ...options });
 
     if (util.checkMaybeIsJsProj(cwd)) {
