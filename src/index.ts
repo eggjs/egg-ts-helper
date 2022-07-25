@@ -1,6 +1,9 @@
 import TsHelper from './core';
 
+// export any
 export * from './core';
+export * from './register';
+export * from './command';
+
+// export default
 export default TsHelper;
-export { default as TsHelperRegister } from './register';
-export { default as TsHelperCommand } from './command';

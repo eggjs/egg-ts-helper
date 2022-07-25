@@ -4,10 +4,14 @@ import TsHelper, { TsHelperOption } from './core';
 import * as util from './utils';
 const debug = d('egg-ts-helper#register');
 
+export interface RegisterOption {
+  tsHelperClazz?: typeof TsHelper;
+}
+
 export default class Register {
   tsHelperClazz: typeof TsHelper;
 
-  constructor(options?: { tsHelperClazz?: typeof TsHelper; }) {
+  constructor(options?: RegisterOption) {
     this.tsHelperClazz = options?.tsHelperClazz || TsHelper;
   }
 
@@ -47,3 +51,5 @@ export default class Register {
     instance.build();
   }
 }
+
+export { Register };
