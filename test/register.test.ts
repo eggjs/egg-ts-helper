@@ -2,8 +2,7 @@ import del from 'del';
 import fs from 'fs';
 import { getStd, fork, spawn } from './utils';
 import path from 'path';
-import TsHelper from '../dist';
-import Register from '../dist/register';
+import { TsHelper, Register } from '../dist';
 import assert = require('assert');
 import extend from 'extend2';
 

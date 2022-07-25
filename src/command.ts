@@ -3,18 +3,20 @@ import path from 'path';
 import { Command } from 'commander';
 import assert from 'assert';
 import packInfo from '../package.json';
-import TsHelper, { defaultConfig } from './';
+import TsHelper, { defaultConfig } from './core';
 import { loadModules, writeJsConfig, checkMaybeIsJsProj } from './utils';
+
+export interface CommandOption {
+  version?: string;
+  tsHelperClazz?: typeof TsHelper;
+}
 
 export default class Commander {
   program: Command;
   commands: Record<string, SubCommand>;
   tsHelperClazz: typeof TsHelper;
 
-  constructor(options?: {
-    version?: string;
-    tsHelperClazz?: typeof TsHelper;
-  }) {
+  constructor(options?: CommandOption) {
     this.commands = loadModules<SubCommand>(path.resolve(__dirname, './cmd'), true);
     this.tsHelperClazz = options?.tsHelperClazz || TsHelper;
     this.program = new Command()
@@ -98,3 +100,5 @@ export default class Commander {
     }
   }
 }
+
+export { Command };
