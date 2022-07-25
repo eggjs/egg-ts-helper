@@ -6,7 +6,7 @@ class CleanCommand implements SubCommand {
 
   async run(_, { cwd }: SubCommandOption) {
     cleanJs(cwd);
-    console.info(chalk.red('\nWARNING: `ets clean` has been deprecated! Use `tsc -b -c` instead\n'));
+    console.info(chalk.red('\nWARNING: `ets clean` has been deprecated! Use `tsc -b --clean` instead\n'));
   }
 }
 
