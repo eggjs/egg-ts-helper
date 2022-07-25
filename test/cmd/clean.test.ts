@@ -28,6 +28,6 @@ describe('cmd/clean.test.ts', () => {
 
   it('should deprecated clean command without error', async () => {
     const stdout = await getOutput('clean', '-c', path.resolve(__dirname, '../fixtures/app9'));
-    console.info(stdout);
+    assert(stdout.includes('`ets clean` has been deprecated'));
   });
 });
