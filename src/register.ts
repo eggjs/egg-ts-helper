@@ -1,6 +1,6 @@
 import cluster from 'cluster';
 import d from 'debug';
-import TsHelper from './';
+import TsHelper, { TsHelperOption } from './core';
 import * as util from './utils';
 const debug = d('egg-ts-helper#register');
 
@@ -11,7 +11,7 @@ export default class Register {
     this.tsHelperClazz = options?.tsHelperClazz || TsHelper;
   }
 
-  init() {
+  init(options?: TsHelperOption) {
     /* istanbul ignore else */
     if (!cluster.isMaster) return;
 
@@ -24,7 +24,7 @@ export default class Register {
     const watch = util.convertString(process.env.ETS_WATCH, process.env.NODE_ENV !== 'test');
     const clazz = this.tsHelperClazz;
     const cwd = process.cwd();
-    const instance = new clazz({ watch });
+    const instance = new clazz({ watch, ...options });
 
     if (util.checkMaybeIsJsProj(cwd)) {
       // write jsconfig if the project is wrote by js

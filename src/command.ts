@@ -3,7 +3,7 @@ import path from 'path';
 import { Command } from 'commander';
 import assert from 'assert';
 import packInfo from '../package.json';
-import TsHelper, { defaultConfig } from './';
+import TsHelper, { defaultConfig } from './core';
 import { loadModules, writeJsConfig, checkMaybeIsJsProj } from './utils';
 
 export default class Commander {

@@ -1,4 +1,4 @@
-import { default as TsHelper, TsGenConfig, TsHelperConfig } from '..';
+import { default as TsHelper, TsGenConfig, TsHelperConfig } from '../core';
 
 export interface GeneratorResult {
   dist: string;

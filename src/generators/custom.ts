@@ -1,5 +1,5 @@
 // generator for custom loader
-import { default as TsHelper, TsGenConfig, TsHelperConfig } from '..';
+import { default as TsHelper, TsGenConfig, TsHelperConfig } from '../core';
 import { declMapping } from '../config';
 import * as utils from '../utils';
 import path from 'path';

@@ -1,2 +1,2 @@
-const Register = require('./dist/register').default;
+const Register = require('./').TsHelperRegister;
 new Register().init();
