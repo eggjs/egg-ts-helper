@@ -6,7 +6,7 @@ import path from 'path';
 import mm from 'egg-mock';
 import { sleep, spawn, getStd, eggBin, timeoutPromise, mockFile, createTsHelper, createNodeModuleSym } from './utils';
 import assert = require('assert');
-import TsHelper, { getDefaultGeneratorConfig } from '../dist/';
+import TsHelper, { getDefaultGeneratorConfig, TsHelperRegister, TsHelperCommand } from '../dist/';
 import * as utils from '../dist/utils';
 const debug = d('egg-ts-helper#index.test');
 
@@ -478,5 +478,10 @@ describe('index.test.ts', () => {
       },
     });
     assert(fs.existsSync(path.resolve(cwd, './typings/app/custom/custom-specialCustom.d.ts')));
+  });
+
+  it('should export register and command', () => {
+    assert(TsHelperRegister);
+    assert(TsHelperCommand);
   });
 });
