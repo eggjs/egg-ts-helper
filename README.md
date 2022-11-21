@@ -2,17 +2,11 @@
 
 [![NPM version][npm-image]][npm-url]
 [![Package Quality](http://npm.packagequality.com/shield/egg-ts-helper.svg)](http://packagequality.com/#?package=egg-ts-helper)
-[![Build Status][travis-image]][travis-url]
-[![Appveyor status][appveyor-image]][appveyor-url]
 [![Test coverage][codecov-image]][codecov-url]
 [![NPM download][download-image]][download-url]
 
 [npm-image]: https://img.shields.io/npm/v/egg-ts-helper.svg?style=flat-square
 [npm-url]: https://npmjs.org/package/egg-ts-helper
-[travis-url]: https://travis-ci.org/whxaxes/egg-ts-helper
-[travis-image]: http://img.shields.io/travis/whxaxes/egg-ts-helper.svg
-[appveyor-url]: https://ci.appveyor.com/project/whxaxes/egg-ts-helper/branch/master
-[appveyor-image]: https://ci.appveyor.com/api/projects/status/github/whxaxes/egg-ts-helper?branch=master&svg=true
 [codecov-image]: https://codecov.io/gh/whxaxes/egg-ts-helper/branch/master/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/whxaxes/egg-ts-helper
 [download-image]: https://img.shields.io/npm/dm/egg-ts-helper.svg?style=flat-square
@@ -544,3 +538,7 @@ module.exports = {
 TS demo: https://github.com/whxaxes/egg-boilerplate-d-ts
 
 JS demo: https://github.com/whxaxes/egg-boilerplate-d-js
+
+## License
+
+[MIT](LICENSE)
