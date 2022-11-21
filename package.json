@@ -7,9 +7,14 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "register.js"
+  ],
   "repository": {
     "type": "git",
-    "url": "git@github.com:whxaxes/egg-ts-helper.git"
+    "url": "git@github.com:eggjs/egg-ts-helper.git"
   },
   "scripts": {
     "build": "tsc -d",
@@ -27,10 +32,6 @@
     "egg",
     "typescript"
   ],
-  "files": [
-    "dist",
-    "register.js"
-  ],
   "author": "wanghx",
   "license": "MIT",
   "dependencies": {
@@ -38,7 +39,7 @@
     "chalk": "^2.4.2",
     "chokidar": "^3.0.0",
     "commander": "^2.15.1",
-    "debug": "^3.1.0",
+    "debug": "^4.3.4",
     "dot-prop": "^4.2.0",
     "enquirer": "^2.3.0",
     "globby": "^11.0.0",
@@ -49,28 +50,31 @@
     "typescript": "^4.0.0",
     "yn": "^3.0.0"
   },
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
-  },
   "devDependencies": {
     "@eggjs/tsconfig": "^1.0.0",
     "@types/commander": "^2.12.2",
-    "@types/debug": "^0.0.30",
     "@types/del": "^3.0.0",
     "@types/globby": "^6.1.0",
     "@types/mkdirp": "^0.5.2",
-    "@types/mocha": "^5.0.0",
+    "@types/mocha": "^10.0.0",
     "@types/node": "^9.4.5",
-    "@types/power-assert": "^1.4.29",
     "del": "^3.0.0",
     "del-cli": "^1.1.0",
-    "egg": "^2.10.0",
-    "egg-bin": "^4.3.7",
-    "egg-mock": "^3.21.0",
+    "egg": "^3.5.0",
+    "egg-bin": "^5.5.0",
+    "egg-ci": "^2.2.0",
+    "egg-mock": "^5.2.1",
     "egg-sequelize": "^4.3.1",
-    "eslint": "^8.0.0",
-    "eslint-config-egg": "^11.0.0",
+    "eslint": "^8.28.0",
+    "eslint-config-egg": "^12.1.0",
     "extend2": "^1.0.0",
     "runscript": "^1.3.0"
+  },
+  "engines": {
+    "node": ">= 14.0.0"
+  },
+  "ci": {
+    "version": "14, 16, 18",
+    "os": "linux, macos"
   }
 }
