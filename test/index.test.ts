@@ -395,7 +395,7 @@ describe('index.test.ts', () => {
     assert(!stderr);
   });
 
-  it('should works without error in coverage', async () => {
+  it.skip('should works without error in coverage', async () => {
     const baseDir = path.join(__dirname, './fixtures/real-unittest/');
     del.sync(path.resolve(baseDir, './typings'));
     createNodeModuleSym(baseDir);
