@@ -408,8 +408,11 @@ describe('index.test.ts', () => {
       },
     });
     const { stdout, stderr } = await getStd(proc, true, undefined, { stdout: 'passing' });
-    assert(stdout.includes('passing'));
+    if (stderr) {
+      console.error(stderr);
+    }
     assert(!stderr);
+    assert(stdout.includes('passing'));
   });
 
   it('should works in real-js app', async () => {
