@@ -1,6 +1,7 @@
 # egg-ts-helper
 
 [![NPM version][npm-image]][npm-url]
+[![Node.js CI](https://github.com/eggjs/egg-ts-helper/actions/workflows/nodejs.yml/badge.svg)](https://github.com/eggjs/egg-ts-helper/actions/workflows/nodejs.yml)
 [![Package Quality](http://npm.packagequality.com/shield/egg-ts-helper.svg)](http://packagequality.com/#?package=egg-ts-helper)
 [![Test coverage][codecov-image]][codecov-url]
 [![NPM download][download-image]][download-url]
