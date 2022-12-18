@@ -277,7 +277,7 @@ export function writeFileSync(fileUrl, content) {
 export function cleanJs(cwd: string) {
   const fileList: string[] = [];
   glob
-    .sync([ '**/*.ts', '**/*.tsx', '!**/*.d.ts', '!**/node_modules' ], { cwd })
+    .sync([ '**/*.ts', '**/*.tsx', '!**/*.d.ts', '!**/node_modules', '!**/.sff' ], { cwd })
     .forEach(f => {
       const jf = removeSameNameJs(path.resolve(cwd, f));
       if (jf) fileList.push(path.relative(cwd, jf));
