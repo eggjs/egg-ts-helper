@@ -1,9 +1,6 @@
 {
+  "extends": "@eggjs/tsconfig",
   "compilerOptions": {
-    "target": "es2017",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "noImplicitAny": false,
     "baseUrl": ".",
     "paths": {
       "egg": [
