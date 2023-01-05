@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.34.0](https://github.com/eggjs/egg-ts-helper/compare/v1.33.1...v1.34.0) (2023-01-05)
+
+
+### Features
+
+* remove debug deps ([#98](https://github.com/eggjs/egg-ts-helper/issues/98)) ([0a4403e](https://github.com/eggjs/egg-ts-helper/commit/0a4403ea3899b0a84ceeae39c5198629062853a1))
+
 ## [1.33.1](https://github.com/eggjs/egg-ts-helper/compare/v1.33.0...v1.33.1) (2022-12-19)
 
 
