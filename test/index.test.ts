@@ -1,4 +1,4 @@
-import d from 'debug';
+import { debuglog } from 'util';
 import del from 'del';
 import fs from 'fs';
 import path from 'path';
@@ -7,7 +7,8 @@ import { sleep, spawn, getStd, eggBin, timeoutPromise, mockFile, createTsHelper,
 import assert = require('assert');
 import TsHelper, { getDefaultGeneratorConfig, Register, Command } from '../dist/';
 import * as utils from '../dist/utils';
-const debug = d('egg-ts-helper#index.test');
+
+const debug = debuglog('egg-ts-helper#index.test');
 
 describe('index.test.ts', () => {
   let tsHelper: TsHelper;

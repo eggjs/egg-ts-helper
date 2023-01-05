@@ -2,11 +2,12 @@ import path from 'path';
 import chokidar from 'chokidar';
 import assert from 'assert';
 import { EventEmitter } from 'events';
+import { debuglog } from 'util';
 import { TsGenerator, TsGenConfig, TsHelperConfig, default as TsHelper } from './core';
 import * as utils from './utils';
 import { loadGenerator } from './generator';
-import d from 'debug';
-const debug = d('egg-ts-helper#watcher');
+
+const debug = debuglog('egg-ts-helper#watcher');
 
 export interface BaseWatchItem {
   ref?: string;

@@ -1,8 +1,9 @@
-import d from 'debug';
+import { debuglog } from 'util';
 import path from 'path';
 import { TsGenConfig, TsHelperConfig } from '..';
 import * as utils from '../utils';
-const debug = d('egg-ts-helper#generators_class');
+
+const debug = debuglog('egg-ts-helper#generators_class');
 
 export default function ClassGenerator(config: TsGenConfig, baseConfig: TsHelperConfig) {
   const fileList = config.fileList;

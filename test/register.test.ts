@@ -27,7 +27,7 @@ describe('register.test.ts', () => {
 
   it('should not start register if env.ETS_REGISTER_PID is exist', async () => {
     const { stdout, stderr } = await getStd(
-      runRegister({ env: { ETS_REGISTER_PID: '123', DEBUG: 'egg-ts-helper#register' } }),
+      runRegister({ env: { ETS_REGISTER_PID: '123', NODE_DEBUG: 'egg-ts-helper#register' } }),
       true,
     );
 
