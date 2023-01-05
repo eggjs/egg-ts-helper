@@ -17,6 +17,7 @@
     "url": "git@github.com:eggjs/egg-ts-helper.git"
   },
   "scripts": {
+    "clean": "tsc -b --clean",
     "build": "tsc -d",
     "build:w": "tsc -d -w",
     "release": "del dist && npm run build",
@@ -44,8 +45,7 @@
     "enquirer": "^2.3.0",
     "globby": "^11.0.0",
     "json5": "^2.2.0",
-    "mkdirp": "^0.5.1",
-    "ts-node": "^7.0.0",
+    "ts-node": "^10.9.1",
     "tslib": "^2.0.0",
     "typescript": "^4.0.0",
     "yn": "^3.0.0"
@@ -55,9 +55,8 @@
     "@types/commander": "^2.12.2",
     "@types/del": "^3.0.0",
     "@types/globby": "^6.1.0",
-    "@types/mkdirp": "^0.5.2",
     "@types/mocha": "^10.0.0",
-    "@types/node": "^9.4.5",
+    "@types/node": "^14.18.36",
     "del": "^3.0.0",
     "del-cli": "^1.1.0",
     "egg": "^3.5.0",

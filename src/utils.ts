@@ -1,5 +1,4 @@
 import fs from 'fs';
-import mkdirp from 'mkdirp';
 import glob from 'globby';
 import path from 'path';
 import ts from 'typescript';
@@ -269,7 +268,7 @@ export function getImportStr(
 
 // write file, using fs.writeFileSync to block io that d.ts can create before egg app started.
 export function writeFileSync(fileUrl, content) {
-  mkdirp.sync(path.dirname(fileUrl));
+  fs.mkdirSync(path.dirname(fileUrl), { recursive: true });
   fs.writeFileSync(fileUrl, content);
 }
 

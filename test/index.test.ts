@@ -1,7 +1,6 @@
 import d from 'debug';
 import del from 'del';
 import fs from 'fs';
-import mkdirp from 'mkdirp';
 import path from 'path';
 import mm from 'egg-mock';
 import { sleep, spawn, getStd, eggBin, timeoutPromise, mockFile, createTsHelper, createNodeModuleSym } from './utils';
@@ -20,7 +19,7 @@ describe('index.test.ts', () => {
 
   it('should works without error', async () => {
     const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
-    mkdirp.sync(dir);
+    fs.mkdirSync(dir, { recursive: true });
 
     tsHelper = createTsHelper({
       cwd: path.resolve(__dirname, './fixtures/app'),
@@ -107,7 +106,7 @@ describe('index.test.ts', () => {
 
   it('should works with polling watcher', async () => {
     const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
-    mkdirp.sync(dir);
+    fs.mkdirSync(dir, { recursive: true });
 
     tsHelper = createTsHelper({
       cwd: path.resolve(__dirname, './fixtures/app'),
@@ -161,7 +160,7 @@ describe('index.test.ts', () => {
   it('should works without error while config file changed', async () => {
     mm(utils, 'loadTsConfig', () => ({ skipLibCheck: true }));
     const dir = path.resolve(__dirname, './fixtures/app/app/service/test');
-    mkdirp.sync(dir);
+    fs.mkdirSync(dir, { recursive: true });
 
     tsHelper = createTsHelper({
       cwd: path.resolve(__dirname, './fixtures/app'),
@@ -349,7 +348,7 @@ describe('index.test.ts', () => {
   });
 
   it('should works without error in real app', async () => {
-    const baseDir = path.resolve(__dirname, './fixtures/real/');
+    const baseDir = path.resolve(__dirname, './fixtures/real');
     tsHelper = createTsHelper({
       cwd: baseDir,
       execAtInit: true,
@@ -369,7 +368,7 @@ describe('index.test.ts', () => {
     });
 
     const { stdout, stderr } = await getStd(proc, true, undefined, { stdout: 'egg started' });
-    assert(!stderr);
+    assert(!stderr, stderr);
     assert(stdout.includes('egg started on http'));
     assert(fs.existsSync(path.resolve(baseDir, './typings/app/controller/index.d.ts')));
     assert(fs.existsSync(path.resolve(baseDir, './typings/app/custom/index.d.ts')));

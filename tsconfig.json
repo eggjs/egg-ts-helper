@@ -5,6 +5,7 @@
     "module": "commonjs",
     "moduleResolution": "nodenext",
     "outDir": "dist",
+    "rootDir": "src",
     "noImplicitAny": false,
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
