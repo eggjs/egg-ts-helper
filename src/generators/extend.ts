@@ -1,10 +1,11 @@
-import d from 'debug';
+import { debuglog } from 'util';
 import fs from 'fs';
 import path from 'path';
 import * as utils from '../utils';
 import { declMapping } from '../config';
 import { GeneratorResult, TsGenConfig, TsHelperConfig } from '..';
-const debug = d('egg-ts-helper#generators_extend');
+
+const debug = debuglog('egg-ts-helper#generators_extend');
 
 export default function ExtendGenerator(config: TsGenConfig, baseConfig: TsHelperConfig) {
   const fileList = config.file ? [ config.file ] : config.fileList;

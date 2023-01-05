@@ -40,7 +40,6 @@
     "chalk": "^2.4.2",
     "chokidar": "^3.0.0",
     "commander": "^2.15.1",
-    "debug": "^4.3.4",
     "dot-prop": "^4.2.0",
     "enquirer": "^2.3.0",
     "globby": "^11.0.0",

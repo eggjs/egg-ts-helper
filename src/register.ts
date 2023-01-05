@@ -1,8 +1,9 @@
 import cluster from 'cluster';
-import d from 'debug';
+import { debuglog } from 'util';
 import TsHelper, { TsHelperOption } from './core';
 import * as util from './utils';
-const debug = d('egg-ts-helper#register');
+
+const debug = debuglog('egg-ts-helper#register');
 
 export interface RegisterOption {
   tsHelperClazz?: typeof TsHelper;
