@@ -2,7 +2,7 @@ import { Controller } from 'egg';
 
 export default class HomeController extends Controller {
   async index() {
-    const { ctx, app } = this;
+    const { ctx, app } = this as any;
     ctx.customLog();
     app.customLog();
     ctx.request.customLog();

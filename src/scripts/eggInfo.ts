@@ -28,6 +28,8 @@ if (loader) {
   try {
     loader.loadPlugin();
   } catch (e) {
+    console.warn('[egg-ts-helper] WARN loader.loadPlugin() error: %s, cwd: %s, framework: %s',
+      e, cwd, framework);
     // do nothing
   }
 
@@ -43,6 +45,8 @@ if (loader) {
   try {
     loader.loadConfig();
   } catch (e) {
+    console.warn('[egg-ts-helper] WARN loader.loadConfig() error: %s, cwd: %s, framework: %s',
+      e, cwd, framework);
     // do nothing
   }
 
@@ -66,13 +70,22 @@ function mockFn(obj, name, fn) {
 }
 
 function getLoader(baseDir: string, framework: string) {
-  const frameworkPath = path.join(baseDir, 'node_modules', framework);
+  let frameworkPath = '';
+  try {
+    frameworkPath = require.resolve(framework, { paths: [ baseDir ] });
+  } catch (_) {
+    // ignore error
+  }
+  if (!frameworkPath) {
+    frameworkPath = path.join(baseDir, 'node_modules', framework);
+  }
   const eggCore = findEggCore(baseDir, frameworkPath);
-  /* istanbul ignore if */
-  if (!eggCore) return;
+  if (!eggCore) {
+    console.warn('[egg-ts-helper] WARN cannot find egg core from frameworkPath: %s', frameworkPath);
+    return;
+  }
   const EggLoader = eggCore.EggLoader;
   const egg = utils.requireFile(frameworkPath) || utils.requireFile(framework);
-  /* istanbul ignore if */
   if (!egg || !EggLoader) return;
   process.env.EGG_SERVER_ENV = 'local';
   return new EggLoader({
@@ -88,9 +101,17 @@ function getLoader(baseDir: string, framework: string) {
 }
 
 function findEggCore(baseDir: string, frameworkPath: string) {
-  let eggCorePath = path.join(baseDir, 'node_modules/egg-core');
-  if (!fs.existsSync(eggCorePath)) {
-    eggCorePath = path.join(frameworkPath, 'node_modules/egg-core');
+  let eggCorePath = '';
+  try {
+    eggCorePath = require.resolve('egg-core', { paths: [ frameworkPath ] });
+  } catch (_) {
+    // ignore error
+  }
+  if (!eggCorePath) {
+    eggCorePath = path.join(baseDir, 'node_modules/egg-core');
+    if (!fs.existsSync(eggCorePath)) {
+      eggCorePath = path.join(frameworkPath, 'node_modules/egg-core');
+    }
   }
   // try to load egg-core in cwd
   const eggCore = utils.requireFile(eggCorePath);

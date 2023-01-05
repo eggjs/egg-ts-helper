@@ -8,7 +8,7 @@ describe('cmd/init.test.ts', () => {
   const appPath = path.resolve(__dirname, '../fixtures/init');
   const runInit = type => {
     const cp = triggerBin('init', '-c', appPath);
-    cp.stdin.write(type + '\n');
+    cp.stdin!.write(type + '\n');
     // cp.stdout.pipe(process.stdout);
     return new Promise(resolve => cp.on('exit', resolve));
   };
@@ -21,8 +21,8 @@ describe('cmd/init.test.ts', () => {
     const cp = triggerBin('init', '-c', appPath);
     let stdout = '';
     await sleep(1000);
-    cp.stdout.on('data', data => (stdout += data.toString()));
-    cp.stdin.write('\x03');
+    cp.stdout!.on('data', data => (stdout += data.toString()));
+    cp.stdin!.write('\x03');
     await sleep(1000);
     assert(stdout.includes('cancel initialization'));
   });

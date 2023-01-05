@@ -62,7 +62,7 @@ export function fork(modulePath: string, args?: string[], opt?: child_process.Fo
   return ps;
 }
 
-export function spawn(cmd: string, args?: string[], opt?: child_process.SpawnOptions) {
+export function spawn(cmd: string, args: string[] = [], opt: child_process.SpawnOptions = {}) {
   const ps = child_process.spawn(cmd, args, opt);
   addProc(ps);
   return ps;
@@ -113,7 +113,7 @@ export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, wai
       return c.exec(std);
     };
 
-    proc.stdout.on('data', data => {
+    proc.stdout!.on('data', data => {
       if (process.env.DEBUG) {
         process.stdout.write(data);
       }
@@ -128,7 +128,7 @@ export function getStd(proc: child_process.ChildProcess, autoKill?: boolean, wai
       }
     });
 
-    proc.stderr.on('data', data => {
+    proc.stderr!.on('data', data => {
       if (process.env.DEBUG) {
         process.stderr.write(data);
       }

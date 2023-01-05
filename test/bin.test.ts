@@ -1,6 +1,5 @@
 import del from 'del';
 import fs from 'fs';
-import mkdirp from 'mkdirp';
 import path from 'path';
 import TsHelper from '../dist';
 import Command from '../dist/command';
@@ -91,7 +90,7 @@ describe('bin.test.ts', () => {
     triggerBin('-c', path.resolve(__dirname, './fixtures/app4'), '-w', '-e', 'service');
     await sleep(5000);
     const dir = path.resolve(__dirname, './fixtures/app4/app/service/test');
-    mkdirp.sync(dir);
+    fs.mkdirSync(dir, { recursive: true });
 
     assert(fs.existsSync(path.resolve(__dirname, './fixtures/app4/typings/app/controller/index.d.ts')));
     const dts = path.resolve(__dirname, './fixtures/app4/typings/app/service/index.d.ts');
