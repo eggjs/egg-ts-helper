@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.34.1](https://github.com/eggjs/egg-ts-helper/compare/v1.34.0...v1.34.1) (2023-01-11)
+
+
+### Bug Fixes
+
+* remove require cache ([#99](https://github.com/eggjs/egg-ts-helper/issues/99)) ([72e4161](https://github.com/eggjs/egg-ts-helper/commit/72e4161f309ddf62d9ada7d9162206b58072c8b0))
+
 ## [1.34.0](https://github.com/eggjs/egg-ts-helper/compare/v1.33.1...v1.34.0) (2023-01-05)
 
 
