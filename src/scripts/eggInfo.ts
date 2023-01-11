@@ -2,7 +2,6 @@
  * Getting plugin info in child_process to prevent effecting egg application( splitting scopes ).
  */
 
-import 'cache-require-paths';
 import fs from 'fs';
 import path from 'path';
 import { eggInfoPath } from '../config';
