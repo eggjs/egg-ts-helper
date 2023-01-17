@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.34.2](https://github.com/eggjs/egg-ts-helper/compare/v1.34.1...v1.34.2) (2023-01-17)
+
+
+### Bug Fixes
+
+* skip run when egg.Application not exists ([#100](https://github.com/eggjs/egg-ts-helper/issues/100)) ([62012fe](https://github.com/eggjs/egg-ts-helper/commit/62012fe40d91da832c687e186782ea73c3762bf8))
+
 ## [1.34.1](https://github.com/eggjs/egg-ts-helper/compare/v1.34.0...v1.34.1) (2023-01-11)
 
 
