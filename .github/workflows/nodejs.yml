@@ -16,3 +16,4 @@ jobs:
     with:
       os: 'ubuntu-latest'
       version: '14, 16, 18'
+      install: 'npm i -g npminstall && npminstall'

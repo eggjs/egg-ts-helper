@@ -85,7 +85,7 @@ function getLoader(baseDir: string, framework: string) {
   }
   const EggLoader = eggCore.EggLoader;
   const egg = utils.requireFile(frameworkPath) || utils.requireFile(framework);
-  if (!egg || !EggLoader) return;
+  if (!egg || !egg.Application || !EggLoader) return;
   process.env.EGG_SERVER_ENV = 'local';
   return new EggLoader({
     baseDir,
