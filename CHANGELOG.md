@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.34.3](https://github.com/eggjs/egg-ts-helper/compare/v1.34.2...v1.34.3) (2023-01-30)
+
+
+### Bug Fixes
+
+* disable eslint by default ([#101](https://github.com/eggjs/egg-ts-helper/issues/101)) ([ab5960e](https://github.com/eggjs/egg-ts-helper/commit/ab5960e60a7e893d68b849994eb2ccba9cf78191))
+
 ## [1.34.2](https://github.com/eggjs/egg-ts-helper/compare/v1.34.1...v1.34.2) (2023-01-17)
 
 
