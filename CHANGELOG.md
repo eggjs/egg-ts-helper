@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.34.4](https://github.com/eggjs/egg-ts-helper/compare/v1.34.3...v1.34.4) (2023-02-03)
+
+
+### Bug Fixes
+
+* read default framework from env.ETS_FRAMEWORK ([#102](https://github.com/eggjs/egg-ts-helper/issues/102)) ([4160562](https://github.com/eggjs/egg-ts-helper/commit/41605624e52826f0e7fa1232824e74f4ed3d25ec))
+
 ## [1.34.3](https://github.com/eggjs/egg-ts-helper/compare/v1.34.2...v1.34.3) (2023-01-30)
 
 
