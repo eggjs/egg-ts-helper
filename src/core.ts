@@ -364,8 +364,8 @@ export default class TsHelper extends EventEmitter {
     // load watcher config
     this.loadWatcherConfig(this.config, options);
 
-    // deprecated framework
-    if (this.config.framework && this.config.framework !== defaultConfig.framework) {
+    // deprecated framework when env.ETS_FRAMEWORK exists
+    if (this.config.framework && this.config.framework !== defaultConfig.framework && process.env.ETS_FRAMEWORK) {
       this.warn(`options.framework are deprecated, using default value(${defaultConfig.framework}) instead`);
     }
   }
