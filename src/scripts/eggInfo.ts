@@ -21,7 +21,7 @@ if (utils.checkMaybeIsTsProj(cwd)) {
   }
 }
 
-const framework = (utils.getPkgInfo(cwd).egg || {}).framework || 'egg';
+const framework = (utils.getPkgInfo(cwd).egg || {}).framework || process.env.ETS_FRAMEWORK || 'egg';
 const loader = getLoader(cwd, framework);
 if (loader) {
   try {
