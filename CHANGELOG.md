@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.34.5](https://github.com/eggjs/egg-ts-helper/compare/v1.34.4...v1.34.5) (2023-02-03)
+
+
+### Bug Fixes
+
+* only deprecated options.framework on env.ETS_FRAMEWORK exists ([#103](https://github.com/eggjs/egg-ts-helper/issues/103)) ([441d3ff](https://github.com/eggjs/egg-ts-helper/commit/441d3ff697e5b8f7b0301ac66e91c7d14fa64342))
+
 ## [1.34.4](https://github.com/eggjs/egg-ts-helper/compare/v1.34.3...v1.34.4) (2023-02-03)
 
 
