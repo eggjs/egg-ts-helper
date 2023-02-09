@@ -21,7 +21,8 @@ if (utils.checkMaybeIsTsProj(cwd)) {
   }
 }
 
-const framework = (utils.getPkgInfo(cwd).egg || {}).framework || process.env.ETS_FRAMEWORK || 'egg';
+// try to read postinstall script env.ETS_SCRIPT_FRAMEWORK, let egg-bin can auto set the default framework
+const framework = (utils.getPkgInfo(cwd).egg || {}).framework || process.env.ETS_SCRIPT_FRAMEWORK || 'egg';
 const loader = getLoader(cwd, framework);
 if (loader) {
   try {
