@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.34.6](https://github.com/eggjs/egg-ts-helper/compare/v1.34.5...v1.34.6) (2023-02-09)
+
+
+### Bug Fixes
+
+* change to read ETS_SCRIPT_FRAMEWORK on postinstall script ([#104](https://github.com/eggjs/egg-ts-helper/issues/104)) ([57c9749](https://github.com/eggjs/egg-ts-helper/commit/57c97493b33a10ca8c148dc3e3c704cfccf2f687))
+
 ## [1.34.5](https://github.com/eggjs/egg-ts-helper/compare/v1.34.4...v1.34.5) (2023-02-03)
 
 
