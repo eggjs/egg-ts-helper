@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.34.7](https://github.com/eggjs/egg-ts-helper/compare/v1.34.6...v1.34.7) (2023-02-13)
+
+
+### Bug Fixes
+
+* should reset ETS_REGISTER_PID env after build ([#105](https://github.com/eggjs/egg-ts-helper/issues/105)) ([d706a31](https://github.com/eggjs/egg-ts-helper/commit/d706a31b2ede68ef64c17be02aed2055c1f8f790))
+
 ## [1.34.6](https://github.com/eggjs/egg-ts-helper/compare/v1.34.5...v1.34.6) (2023-02-09)
 
 
