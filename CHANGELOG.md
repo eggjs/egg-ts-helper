@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.35.0](https://github.com/eggjs/egg-ts-helper/compare/v1.34.7...v1.35.0) (2023-08-02)
+
+
+### Features
+
+* use typescript v5 ([#107](https://github.com/eggjs/egg-ts-helper/issues/107)) ([a934501](https://github.com/eggjs/egg-ts-helper/commit/a9345017aad7aea1d612387881353f1e8662cef4))
+
 ## [1.34.7](https://github.com/eggjs/egg-ts-helper/compare/v1.34.6...v1.34.7) (2023-02-13)
 
 
