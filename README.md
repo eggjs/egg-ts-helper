@@ -15,39 +15,32 @@
 
 A simple tool for creating `d.ts` in [egg](https://eggjs.org) application. Injecting `controller, proxy, service, etc.` to definition type of egg ( such as `Context` `Application` etc. ) by [Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html), and making IntelliSense works in both egg-js and egg-ts.
 
-
 ## Install
 
 open your application and install.
 
-```
+```bash
 npm i egg-ts-helper --save-dev
-```
-
-or
-
-```
-yarn add egg-ts-helper --dev
 ```
 
 ## QuickStart
 
 Open your egg application, executing ets by [npx](https://github.com/zkat/npx)
 
-```
-$ npx ets
+```bash
+npx ets
 ```
 
 Watching files by `-w` flag.
 
-```
-$ npx ets -w
+```bash
+npx ets -w
 ```
 
 `egg-ts-helper` has build-in in `egg-bin`, You can easily to use it by
 
-```
-$ egg-bin dev --dts
+```bash
+egg-bin dev --dts
 ```
 
 or add configuration `egg.declarations` in `package.json`
@@ -180,7 +173,7 @@ Also you can pass options by env ( support since 1.22.0 )
 
 > Support since 1.24.0
 
-`egg-ts-helper` support customLoader configuration of egg. see https://github.com/eggjs/egg/issues/3480 
+`egg-ts-helper` support customLoader configuration of egg. see <https://github.com/eggjs/egg/issues/3480>
 
 Configure in `config.default.ts`
 
@@ -535,9 +528,9 @@ module.exports = {
 
 `egg-ts-helper` can works in both `ts` and `js` egg project.
 
-TS demo: https://github.com/whxaxes/egg-boilerplate-d-ts
+TS demo: <https://github.com/whxaxes/egg-boilerplate-d-ts>
 
-JS demo: https://github.com/whxaxes/egg-boilerplate-d-js
+JS demo: <https://github.com/whxaxes/egg-boilerplate-d-js>
 
 ## License
 
