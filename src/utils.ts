@@ -546,7 +546,7 @@ export function isClass(v): v is { new (...args: any[]): any } {
 }
 
 // check kind in node.modifiers.
-export function modifierHas(node: ts.Node, kind) {
+export function modifierHas(node, kind) {
   return node.modifiers && node.modifiers.find(mod => kind === mod.kind);
 }
 

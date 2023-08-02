@@ -1,5 +1,5 @@
-import { cleanJs } from '../utils';
 import chalk from 'chalk';
+import { cleanJs } from '../utils';
 
 class CleanCommand implements SubCommand {
   description = 'Clean js file while it has the same name ts/tsx file';
