@@ -73,8 +73,7 @@ export default class Watcher extends EventEmitter {
       .concat(utils.toArray(this.options.ignore).map(p => `!${utils.formatPath(p)}`));
 
     assert(options.directory, `options.directory must set in ${generatorName}`);
-    const baseDir = options.directory.replace(/\/|\\/, path.sep);
-    this.dir = path.resolve(this.config.cwd, baseDir);
+    this.dir = path.resolve(this.config.cwd, options.directory);
     this.dtsDir = path.resolve(
       this.config.typings,
       path.relative(this.config.cwd, this.dir),

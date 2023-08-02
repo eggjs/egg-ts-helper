@@ -19,41 +19,35 @@
 
 打开应用目录并且安装
 
-```
+```bash
 npm i egg-ts-helper --save-dev
-```
-
-或者
-
-```
-yarn add egg-ts-helper --dev
 ```
 
 ## 快速开始
 
 打开你的 egg 应用，通过 [npx](https://github.com/zkat/npx) 来执行 ets 指令
 
-```
-$ npx ets
+```bash
+npx ets
 ```
 
 可以通过 `-w` 来监听文件改动并且重新生成 `d.ts`
 
-```
-$ npx ets -w
+```bash
+npx ets -w
 ```
 
 `egg-ts-helper` 已经内置在 `egg-bin` 中，可以通过以下命令方便使用
 
-```
-$ egg-bin dev --dts
+```bash
+egg-bin dev --dts
 ```
 
 再或者在 `package.json` 中配置 `egg.declarations` 为 true 即可。
 
 ## 命令行
 
-```
+```bash
 $ ets -h
 
   Usage: ets [commands] [options]
@@ -161,7 +155,7 @@ module.exports = {
 
 > 在 1.24.0 之后版本支持
 
-`egg-ts-helper` 支持 egg 的 customLoader 配置，会自动去读取应用/插件/框架中的 customLoader 配置. 详情请看 https://github.com/eggjs/egg/issues/3480 
+`egg-ts-helper` 支持 egg 的 customLoader 配置，会自动去读取应用/插件/框架中的 customLoader 配置. 详情请看 <https://github.com/eggjs/egg/issues/3480>
 
 在 `config.default.ts` 中配置 customLoader
 
@@ -190,7 +184,7 @@ export default function(appInfo: EggAppConfig) {
 }
 ```
 
-`egg-ts-helper` 将会根据 `app/model` 目录下的文件，自动生成声明 （ 参考 https://github.com/whxaxes/egg-boilerplate-d-ts 这个项目 ）
+`egg-ts-helper` 将会根据 `app/model` 目录下的文件，自动生成声明 （ 参考 <https://github.com/whxaxes/egg-boilerplate-d-ts> 这个项目 ）
 
 ```typescript
 // This file is created by egg-ts-helper@1.24.1
@@ -515,9 +509,9 @@ module.exports = {
 
 `egg-ts-helper` 可用于 egg 的 `ts` 和 `js` 项目.
 
-TS 项目: https://github.com/whxaxes/egg-boilerplate-d-ts
+TS 项目: <https://github.com/whxaxes/egg-boilerplate-d-ts>
 
-JS 项目: https://github.com/whxaxes/egg-boilerplate-d-js
+JS 项目: <https://github.com/whxaxes/egg-boilerplate-d-js>
 
 ## License
 

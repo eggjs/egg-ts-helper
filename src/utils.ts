@@ -20,7 +20,6 @@ export const TS_CONFIG: Partial<TsConfigJson> = {
     experimentalDecorators: true,
     emitDecoratorMetadata: true,
     allowSyntheticDefaultImports: true,
-    charset: 'utf8',
     allowJs: false,
     pretty: true,
     lib: [ 'es6' ],
