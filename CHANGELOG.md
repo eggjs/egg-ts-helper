@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.34.8](https://github.com/eggjs/egg-ts-helper/compare/v1.34.7...v1.34.8) (2023-08-02)
+
+
+### Bug Fixes
+
+* checkout 1.x branch ([7b7b674](https://github.com/eggjs/egg-ts-helper/commit/7b7b67476f5d7b1b96e52a0f830d8d7207cd8802))
+
 ## [1.34.7](https://github.com/eggjs/egg-ts-helper/compare/v1.34.6...v1.34.7) (2023-02-13)
 
 
