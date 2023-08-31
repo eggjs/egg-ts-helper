@@ -10,8 +10,6 @@
       "windows": { "runtimeExecutable": "npm.cmd" },
       "runtimeArgs": [ "run", "test-local", "--", "--inspect-brk=9229" ],
       "console": "integratedTerminal",
-      "protocol": "auto",
-      "port": 9229,
       "autoAttachChildProcesses": true
     }
   ]

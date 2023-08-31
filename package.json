@@ -18,15 +18,15 @@
   },
   "scripts": {
     "clean": "tsc -b --clean",
-    "build": "tsc -d",
-    "build:w": "tsc -d -w",
+    "tsc": "tsc -d",
+    "tsc:w": "tsc -d -w",
     "lint": "eslint . --ext .ts",
-    "check": "npm run build && npm run lint",
+    "check": "npm run tsc && npm run lint",
     "test": "npm run check && npm run test-local",
     "test-local": "egg-bin test --ts",
-    "prepublish": "del dist && npm run build",
+    "prepublishOnly": "del dist && npm run tsc",
     "cov": "egg-bin cov --ts",
-    "ci": "npm run check && npm run cov"
+    "ci": "npm run check && npm run cov && npm run tsc"
   },
   "keywords": [
     "egg",
