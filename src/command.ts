@@ -2,9 +2,8 @@
 import path from 'path';
 import { Command } from 'commander';
 import assert from 'assert';
-import packInfo from '../package.json';
 import TsHelper, { defaultConfig } from './core';
-import { loadModules, writeJsConfig, checkMaybeIsJsProj } from './utils';
+import { loadModules, writeJsConfig, checkMaybeIsJsProj, getPkgInfo } from './utils';
 
 export interface CommandOption {
   version?: string;
@@ -19,8 +18,12 @@ export default class Commander {
   constructor(options?: CommandOption) {
     this.commands = loadModules<SubCommand>(path.resolve(__dirname, './cmd'), true);
     this.tsHelperClazz = options?.tsHelperClazz || TsHelper;
+    let version = options?.version;
+    if (!version) {
+      version = getPkgInfo(path.dirname(__dirname)).version;
+    }
     this.program = new Command()
-      .version(options?.version || packInfo.version, '-v, --version')
+      .version(version!, '-v, --version')
       .usage('[commands] [options]')
       .option('-w, --watch', 'Watching files, d.ts would recreated while file changed')
       .option('-c, --cwd [path]', 'Egg application base dir (default: process.cwd)')

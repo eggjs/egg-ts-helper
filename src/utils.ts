@@ -3,9 +3,9 @@ import glob from 'globby';
 import path from 'path';
 import ts from 'typescript';
 import yn from 'yn';
-import { eggInfoPath, tmpDir } from './config';
 import { execFileSync, execFile, ExecFileOptions } from 'child_process';
 import JSON5 from 'json5';
+import { eggInfoPath, tmpDir } from './config';
 
 export const JS_CONFIG = {
   include: [ '**/*' ],
@@ -383,7 +383,7 @@ export function parseJson(jsonStr: string) {
 
 // load package.json
 export function getPkgInfo(cwd: string) {
-  return readJson(path.resolve(cwd, './package.json'));
+  return readJson(path.resolve(cwd, 'package.json'));
 }
 
 // read json file
