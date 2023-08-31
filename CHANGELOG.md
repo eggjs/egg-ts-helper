@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/eggjs/egg-ts-helper/compare/v2.0.0...v2.1.0) (2023-08-31)
+
+
+### Features
+
+* use @eggjs/tsconfig ([#109](https://github.com/eggjs/egg-ts-helper/issues/109)) ([5b0a976](https://github.com/eggjs/egg-ts-helper/commit/5b0a976702e39f32b21c56fd9ec3400f608a65f4))
+
 ## [2.0.0](https://github.com/eggjs/egg-ts-helper/compare/v1.35.0...v2.0.0) (2023-08-02)
 
 
