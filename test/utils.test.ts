@@ -220,5 +220,10 @@ describe('utils.test.ts', () => {
     const tsConfig2 = utils.loadTsConfig(path.resolve(__dirname, './fixtures/test-tsconfig/tsconfig.json'));
     assert(tsConfig2);
     assert(tsConfig2.skipLibCheck);
+
+    const tsConfig3 = utils.loadTsConfig(path.resolve(__dirname, './fixtures/test-tsconfig/tsconfig.node.json'));
+    assert(tsConfig3);
+    assert(tsConfig3.strict);
+    assert(tsConfig3.skipLibCheck);
   });
 });

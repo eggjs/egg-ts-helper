@@ -49,6 +49,7 @@
   },
   "devDependencies": {
     "@eggjs/tsconfig": "^1.0.0",
+    "@tsconfig/node14": "^14.1.2",
     "@types/commander": "^2.12.2",
     "@types/del": "^3.0.0",
     "@types/globby": "^6.1.0",
