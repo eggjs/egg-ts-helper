@@ -9,8 +9,9 @@ import ObjectGenerator from './generators/object';
 import PluginGenerator from './generators/plugin';
 import { BaseGenerator } from './generators/base';
 import * as utils from './utils';
-import path from 'path';
-import assert = require('assert');
+import path from 'node:path';
+import assert from 'node:assert';
+
 type GeneratorKlass = { new (...args: any[]): BaseGenerator };
 
 export const generators = {

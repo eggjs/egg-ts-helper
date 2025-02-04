@@ -1,7 +1,6 @@
-
-import path from 'path';
+import path from 'node:path';
 import { Command } from 'commander';
-import assert from 'assert';
+import assert from 'node:assert';
 import TsHelper, { defaultConfig } from './core';
 import { loadModules, writeJsConfig, checkMaybeIsJsProj, getPkgInfo } from './utils';
 

@@ -1,9 +1,9 @@
-import fs from 'fs';
+import fs from 'node:fs';
 import glob from 'globby';
-import path from 'path';
+import path from 'node:path';
 import ts from 'typescript';
 import yn from 'yn';
-import { execFileSync, execFile, ExecFileOptions } from 'child_process';
+import { execFileSync, execFile, ExecFileOptions } from 'node:child_process';
 import JSON5 from 'json5';
 import { eggInfoPath, tmpDir } from './config';
 

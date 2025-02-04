@@ -1,7 +1,7 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import { triggerBin, getOutput, tsc } from '../utils';
-import assert = require('assert');
+import assert from 'node:assert';
 
 describe('cmd/clean.test.ts', () => {
   it('should works with clean command correctly', async () => {

@@ -1,6 +1,6 @@
-import path from 'path';
+import path from 'node:path';
 import { GeneratorResult } from '../../dist/';
-import assert = require('assert');
+import assert from 'node:assert';
 import { createTsHelper } from '../utils';
 
 export function triggerGenerator<T extends GeneratorResult[] | GeneratorResult = GeneratorResult[]>(

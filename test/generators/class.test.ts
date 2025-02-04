@@ -1,5 +1,5 @@
-import path from 'path';
-import assert = require('assert');
+import path from 'node:path';
+import assert from 'node:assert';
 import { GeneratorResult } from '../../dist/';
 import { triggerGenerator } from './utils';
 

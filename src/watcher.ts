@@ -1,8 +1,8 @@
-import path from 'path';
+import path from 'node:path';
 import chokidar from 'chokidar';
-import assert from 'assert';
-import { EventEmitter } from 'events';
-import { debuglog } from 'util';
+import assert from 'node:assert';
+import { EventEmitter } from 'node:events';
+import { debuglog } from 'node:util';
 import { TsGenerator, TsGenConfig, TsHelperConfig, default as TsHelper } from './core';
 import * as utils from './utils';
 import { loadGenerator } from './generator';

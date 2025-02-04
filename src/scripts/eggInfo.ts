@@ -2,8 +2,8 @@
  * Getting plugin info in child_process to prevent effecting egg application( splitting scopes ).
  */
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import { eggInfoPath } from '../config';
 import * as utils from '../utils';
 
@@ -21,42 +21,44 @@ if (utils.checkMaybeIsTsProj(cwd)) {
   }
 }
 
-// try to read postinstall script env.ETS_SCRIPT_FRAMEWORK, let egg-bin can auto set the default framework
-const framework = (utils.getPkgInfo(cwd).egg || {}).framework || process.env.ETS_SCRIPT_FRAMEWORK || 'egg';
-const loader = getLoader(cwd, framework);
-if (loader) {
-  try {
-    loader.loadPlugin();
-  } catch (e) {
-    console.warn('[egg-ts-helper] WARN loader.loadPlugin() error: %s, cwd: %s, framework: %s',
-      e, cwd, framework);
-    // do nothing
-  }
-
-  // hack loadFile, ignore config file without customLoader for faster booting
-  mockFn(loader, 'loadFile', filepath => {
-    if (filepath && filepath.substring(filepath.lastIndexOf(path.sep) + 1).startsWith('config.')) {
-      const fileContent = fs.readFileSync(filepath, 'utf-8');
-      if (!fileContent.includes('customLoader')) return;
+async function main() {
+  // try to read postinstall script env.ETS_SCRIPT_FRAMEWORK, let egg-bin can auto set the default framework
+  const framework = (utils.getPkgInfo(cwd).egg || {}).framework || process.env.ETS_SCRIPT_FRAMEWORK || 'egg';
+  const loader = getLoader(cwd, framework);
+  if (loader) {
+    try {
+      await loader.loadPlugin();
+    } catch (e) {
+      console.warn('[egg-ts-helper] WARN loader.loadPlugin() error: %s, cwd: %s, framework: %s',
+        e, cwd, framework);
+      // do nothing
     }
-    return true;
-  });
 
-  try {
-    loader.loadConfig();
-  } catch (e) {
-    console.warn('[egg-ts-helper] WARN loader.loadConfig() error: %s, cwd: %s, framework: %s',
-      e, cwd, framework);
-    // do nothing
+    // hack loadFile, ignore config file without customLoader for faster booting
+    mockFn(loader, 'loadFile', (filepath: string) => {
+      if (filepath && filepath.substring(filepath.lastIndexOf(path.sep) + 1).startsWith('config.')) {
+        const fileContent = fs.readFileSync(filepath, 'utf-8');
+        if (!fileContent.includes('customLoader')) return;
+      }
+      return true;
+    });
+
+    try {
+      await loader.loadConfig();
+    } catch (e) {
+      console.warn('[egg-ts-helper] WARN loader.loadConfig() error: %s, cwd: %s, framework: %s',
+        e, cwd, framework);
+      // do nothing
+    }
+
+    eggInfo.plugins = loader.allPlugins;
+    eggInfo.config = loader.config;
+    eggInfo.eggPaths = loader.eggPaths;
+    eggInfo.timing = Date.now() - startTime;
   }
 
-  eggInfo.plugins = loader.allPlugins;
-  eggInfo.config = loader.config;
-  eggInfo.eggPaths = loader.eggPaths;
-  eggInfo.timing = Date.now() - startTime;
+  utils.writeFileSync(eggInfoPath, JSON.stringify(eggInfo));
 }
-
-utils.writeFileSync(eggInfoPath, JSON.stringify(eggInfo));
 
 /* istanbul ignore next */
 function noop() {}
@@ -81,7 +83,7 @@ function getLoader(baseDir: string, framework: string) {
   }
   const eggCore = findEggCore(baseDir, frameworkPath);
   if (!eggCore) {
-    console.warn('[egg-ts-helper] WARN cannot find egg core from frameworkPath: %s', frameworkPath);
+    console.warn('[egg-ts-helper] WARN cannot find @eggjs/core from frameworkPath: %s', frameworkPath);
     return;
   }
   const EggLoader = eggCore.EggLoader;
@@ -100,24 +102,26 @@ function getLoader(baseDir: string, framework: string) {
   });
 }
 
-function findEggCore(baseDir: string, frameworkPath: string) {
+function findEggCore(baseDir: string, frameworkPath: string, eggCorePkgName = '@eggjs/core') {
   let eggCorePath = '';
   try {
-    eggCorePath = require.resolve('egg-core', { paths: [ frameworkPath ] });
+    eggCorePath = require.resolve(eggCorePkgName, { paths: [ frameworkPath ] });
   } catch (_) {
     // ignore error
   }
   if (!eggCorePath) {
-    eggCorePath = path.join(baseDir, 'node_modules/egg-core');
+    eggCorePath = path.join(baseDir, 'node_modules', eggCorePkgName);
     if (!fs.existsSync(eggCorePath)) {
-      eggCorePath = path.join(frameworkPath, 'node_modules/egg-core');
+      eggCorePath = path.join(frameworkPath, 'node_modules', eggCorePkgName);
     }
   }
   // try to load egg-core in cwd
   const eggCore = utils.requireFile(eggCorePath);
   if (!eggCore) {
     // try to resolve egg-core
-    return utils.requireFile('egg-core');
+    return utils.requireFile(eggCorePkgName);
   }
   return eggCore;
 }
+
+main();

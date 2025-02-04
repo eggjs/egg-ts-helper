@@ -1,7 +1,7 @@
 
 
-import mm from 'egg-mock';
-import { app } from 'egg-mock/bootstrap';
+import { mm } from '@eggjs/mock';
+import { app } from '@eggjs/mock/bootstrap';
 
 describe('index.test.js', () => {
   beforeEach(() => {

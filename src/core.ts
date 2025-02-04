@@ -1,10 +1,10 @@
 import chokidar from 'chokidar';
-import assert from 'assert';
-import { EventEmitter } from 'events';
-import fs from 'fs';
-import crypto from 'crypto';
+import assert from 'node:assert';
+import { EventEmitter } from 'node:events';
+import fs from 'node:fs';
+import crypto from 'node:crypto';
 import chalk from 'chalk';
-import path from 'path';
+import path from 'node:path';
 import * as generator from './generator';
 import { get as deepGet, set as deepSet } from 'dot-prop';
 import { declMapping, dtsComment, dtsCommentRE } from './config';

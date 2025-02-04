@@ -1,20 +1,21 @@
-import path from 'path';
-import assert = require('assert');
+import path from 'node:path';
+import assert from 'node:assert';
 import { GeneratorResult } from '../../dist/';
 import * as utils from '../../dist/utils';
 import { triggerGenerator } from './utils';
-import mm from 'egg-mock';
+import { mm } from '@eggjs/mock';
 
-describe('generators/plugin.test.ts', () => {
+describe('test/generators/plugin.test.ts', () => {
   const appDir = path.resolve(__dirname, '../fixtures/real-unittest');
 
   afterEach(mm.restore);
 
   it('should works without error', () => {
     const result = triggerGenerator<GeneratorResult>('plugin', path.resolve(__dirname, appDir));
+    // console.log(result);
     assert(result.dist);
-    assert(result.content!.includes('import \'egg-view\''));
-    assert(!result.content!.includes('import \'egg-static\''));
+    assert(result.content!.includes('import \'@eggjs/view\''));
+    assert(!result.content!.includes('import \'@eggjs/static\''));
     assert(result.content!.includes('static?: EggPluginItem'));
     assert(result.content!.includes('view?: EggPluginItem'));
   });

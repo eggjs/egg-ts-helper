@@ -4,6 +4,7 @@
     "target": "es2017",
     "module": "commonjs",
     "moduleResolution": "node",
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "esModuleInterop": true
   }
 }
