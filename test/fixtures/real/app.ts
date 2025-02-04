@@ -1,6 +1,7 @@
-import * as path from 'path';
+import path from 'node:path';
+import { Application } from 'egg';
 
-export default (app: Egg.Application) => {
+export default (app: Application) => {
   let directory = path.resolve(app.baseDir, './app/model');
   app.loader.loadToApp(directory, 'model', {
     caseStyle: 'upper',

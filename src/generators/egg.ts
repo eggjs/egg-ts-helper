@@ -1,5 +1,5 @@
 import { TsGenConfig, TsHelperConfig } from '..';
-import path from 'path';
+import path from 'node:path';
 
 // declare global namespace Egg
 export default function EggGenerator(config: TsGenConfig, baseConfig: TsHelperConfig) {

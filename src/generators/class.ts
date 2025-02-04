@@ -1,5 +1,5 @@
-import { debuglog } from 'util';
-import path from 'path';
+import { debuglog } from 'node:util';
+import path from 'node:path';
 import { TsGenConfig, TsHelperConfig } from '..';
 import * as utils from '../utils';
 

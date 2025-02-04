@@ -1,9 +1,9 @@
 import del from 'del';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import TsHelper from '../dist';
 import Command from '../dist/command';
-import assert = require('assert');
+import assert from 'node:assert';
 import { triggerBinSync, triggerBin, getOutput, sleep, spawn, getStd } from './utils';
 
 describe('bin.test.ts', () => {

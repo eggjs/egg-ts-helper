@@ -1,9 +1,9 @@
-import path from 'path';
-import assert = require('assert');
+import path from 'node:path';
+import assert from 'node:assert';
 import { GeneratorResult } from '../../dist/';
 import * as utils from '../../dist/utils';
 import { triggerGenerator } from './utils';
-import mm from 'egg-mock';
+import { mm } from '@eggjs/mock';
 
 describe('generators/config.test.ts', () => {
   const appDir = path.resolve(__dirname, '../fixtures/app');

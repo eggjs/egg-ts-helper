@@ -1,11 +1,11 @@
-import * as child_process from 'child_process';
-import path from 'path';
-import fs from 'fs';
-import os from 'os';
+import child_process from 'node:child_process';
+import path from 'node:path';
+import fs from 'node:fs';
+import os from 'node:os';
 import del from 'del';
-import { promisify } from 'util';
+import { promisify } from 'node:util';
 import { createTsHelperInstance, TsHelperOption } from '../dist';
-import mm from 'egg-mock';
+import { mm } from '@eggjs/mock';
 const psList: child_process.ChildProcess[] = [];
 
 beforeEach(mm.restore);

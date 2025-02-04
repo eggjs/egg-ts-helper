@@ -1,5 +1,5 @@
-import cluster from 'cluster';
-import { debuglog } from 'util';
+import cluster from 'node:cluster';
+import { debuglog } from 'node:util';
 import TsHelper, { TsHelperOption } from './core';
 import {
   convertString, checkMaybeIsJsProj, writeJsConfig, cleanJs,

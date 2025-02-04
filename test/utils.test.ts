@@ -1,6 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-import assert = require('assert');
+import fs from 'node:fs';
+import path from 'node:path';
+import assert from 'node:assert';
 import ts from 'typescript';
 import del from 'del';
 import * as utils from '../dist/utils';

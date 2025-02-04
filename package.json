@@ -23,9 +23,9 @@
     "lint": "eslint . --ext .ts",
     "check": "npm run tsc && npm run lint",
     "test": "npm run check && npm run test-local",
-    "test-local": "egg-bin test --ts",
+    "test-local": "egg-bin test",
     "prepublishOnly": "del dist && npm run tsc",
-    "cov": "egg-bin cov --ts",
+    "cov": "egg-bin cov",
     "ci": "npm run check && npm run cov && npm run tsc"
   },
   "keywords": [
@@ -48,6 +48,8 @@
     "yn": "^3.0.0"
   },
   "devDependencies": {
+    "@eggjs/bin": "^7.0.4",
+    "@eggjs/mock": "^6.0.5",
     "@eggjs/tsconfig": "^1.0.0",
     "@tsconfig/node14": "^14.1.2",
     "@types/commander": "^2.12.2",
@@ -57,16 +59,13 @@
     "@types/node": "^20.4.5",
     "del": "^3.0.0",
     "del-cli": "^1.1.0",
-    "egg": "^3.5.0",
-    "egg-bin": "^6.4.1",
-    "egg-mock": "^5.2.1",
+    "egg": "^4.0.7",
     "egg-sequelize": "^4.3.1",
     "eslint": "^8.28.0",
-    "eslint-config-egg": "^12.1.0",
-    "extend2": "^1.0.0",
-    "runscript": "^1.3.0"
+    "eslint-config-egg": "14",
+    "extend2": "^1.0.0"
   },
   "engines": {
-    "node": ">= 14.21.3"
+    "node": ">= 18.19.0"
   }
 }
