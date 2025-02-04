@@ -1,5 +1,45 @@
 # Changelog
 
+## [3.0.0](https://github.com/eggjs/egg-ts-helper/compare/v2.1.1...v3.0.0) (2025-02-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* drop Node.js < 18.19.0 support
+
+Only support egg >= 4.0.0
+
+part of https://github.com/eggjs/egg/issues/3644
+
+https://github.com/eggjs/egg/issues/5257
+
+<!-- This is an auto-generated comment: release notes by coderabbit.ai
+-->
+
+## Summary by CodeRabbit
+
+- **Documentation**
+- Introduced a new “Contributors” section in the project documentation
+to highlight community involvement.
+- **Chores**
+- Streamlined CI workflows by removing legacy configurations and
+updating triggers for improved efficiency.
+- Upgraded key dependencies and increased the minimum required Node.js
+version for enhanced performance and security.
+- **Refactor**
+- Standardized module import practices across the codebase to align with
+current Node.js conventions.
+	- Improved asynchronous handling in core operations.
+- **Tests**
+- Updated test setups and assertions to reflect the new module import
+standards and dependency changes.
+
+<!-- end of auto-generated comment: release notes by coderabbit.ai -->
+
+### Features
+
+* support egg v4 ([#114](https://github.com/eggjs/egg-ts-helper/issues/114)) ([90491cf](https://github.com/eggjs/egg-ts-helper/commit/90491cf758e6a36d006b06caf0bac91065c17afb))
+
 ## [2.1.1](https://github.com/eggjs/egg-ts-helper/compare/v2.1.0...v2.1.1) (2025-02-04)
 
 
