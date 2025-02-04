@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.35.2](https://github.com/eggjs/egg-ts-helper/compare/v1.35.1...v1.35.2) (2025-02-04)
+
+
+### Bug Fixes
+
+* load the tsconfig extends with the specific extension name ([#110](https://github.com/eggjs/egg-ts-helper/issues/110)) ([7e19250](https://github.com/eggjs/egg-ts-helper/commit/7e19250cb7345241e65319d642d1016e73f5074f))
+
 ## [1.34.8](https://github.com/eggjs/egg-ts-helper/compare/v1.34.7...v1.34.8) (2023-08-02)
 
 
