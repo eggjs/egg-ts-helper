@@ -442,11 +442,13 @@ export function loadTsConfig(tsconfigPath: string): ts.CompilerOptions {
       path.resolve(tsconfigDirName, extendPattern),
       path.resolve(tsconfigDirName, `${extendPattern}.json`),
     ];
-
-    if (!path.extname(tsConfig.extends) && !extendPattern.startsWith('.') && !extendPattern.startsWith('/')) {
+    const isExtendFromNodeModules = !extendPattern.startsWith('.') && !extendPattern.startsWith('/');
+    if (isExtendFromNodeModules) {
+      const DEFAULT_TS_CONFIG_FILE_NAME = 'tsconfig.json';
+      const extendTsConfigPath = !path.extname(extendPattern) ? DEFAULT_TS_CONFIG_FILE_NAME : '';
       maybeRealExtendPath.push(
-        path.resolve(tsconfigDirName, 'node_modules', extendPattern, 'tsconfig.json'),
-        path.resolve(process.cwd(), 'node_modules', extendPattern, 'tsconfig.json'),
+        path.resolve(tsconfigDirName, 'node_modules', extendPattern, extendTsConfigPath),
+        path.resolve(process.cwd(), 'node_modules', extendPattern, extendTsConfigPath),
       );
     }
 
