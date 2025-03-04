@@ -39,8 +39,9 @@ export default class Watcher extends EventEmitter {
   fsWatcher?: chokidar.FSWatcher;
   throttleTick: any = null;
   throttleStack: string[] = [];
+  helper: TsHelper;
 
-  constructor(public helper: TsHelper) {
+  constructor(helper: TsHelper) {
     super();
     this.helper = helper;
   }
