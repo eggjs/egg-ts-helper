@@ -2,12 +2,11 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import { getLoader } from '@eggjs/utils';
 
-// node save_egg_info.mjs baseDir frameworkName saveEggInfoPath
+// node save_egg_info.mjs baseDir frameworkPath saveEggInfoPath
 
-const [ baseDir, frameworkName, saveEggInfoPath ] = process.argv.slice(2);
+const [ baseDir, frameworkPath, saveEggInfoPath ] = process.argv.slice(2);
 
 async function main() {
-  const frameworkPath = path.join(baseDir, 'node_modules', frameworkName);
   console.warn('[egg-ts-helper] Save egg info, baseDir: %s, frameworkPath: %s', baseDir, frameworkPath);
   const startTime = Date.now();
   const loader = await getLoader({

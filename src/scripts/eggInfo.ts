@@ -31,11 +31,13 @@ async function main() {
   if (pkg.type === 'module') {
     const saveEggInfoPath = path.join(__dirname, '../../save_egg_info.mjs');
     console.warn('[egg-ts-helper] use esm script to save egg info, %o', saveEggInfoPath);
+    const frameworkPath = getFrameworkPath(cwd, framework);
     const esmLoader = pathToFileURL(require.resolve('ts-node/esm')).href;
-    execFileSync(process.execPath, [ '--no-warnings', '--loader', esmLoader, saveEggInfoPath, cwd, framework, eggInfoPath ], {
+    execFileSync(process.execPath, [ '--no-warnings', '--loader', esmLoader, saveEggInfoPath, cwd, frameworkPath, eggInfoPath ], {
       env: {
         ...process.env,
         EGG_TS_ENABLE: 'true',
+        VITEST: 'true',
       },
     });
     return;
@@ -90,8 +92,9 @@ function mockFn(obj, name, fn) {
 function getFrameworkPath(baseDir: string, framework: string) {
   let frameworkPath = '';
   try {
-    frameworkPath = require.resolve(framework, { paths: [ baseDir ] });
-  } catch (_) {
+    frameworkPath = require.resolve(`${framework}/package.json`, { paths: [ baseDir ] });
+    frameworkPath = path.dirname(frameworkPath);
+  } catch {
     // ignore error
   }
   if (!frameworkPath) {
