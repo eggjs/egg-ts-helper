@@ -116,30 +116,30 @@ describe('utils.test.ts', () => {
   it('should getImportStr without error', () => {
     const cwd = path.resolve(__dirname, './fixtures/app/');
     let importContext = utils.getImportStr(path.resolve(cwd, 'typings'), path.resolve(cwd, 'controller/test.ts'), 'Test');
-    assert(importContext === "import Test from '../controller/test';");
+    assert.equal(importContext, "import Test from '../controller/test.js';");
 
     importContext = utils.getImportStr(path.resolve(cwd, 'typings/app'), path.resolve(cwd, 'service/test.ts'), 'Test');
-    assert(importContext === "import Test from '../../service/test';");
+    assert.equal(importContext, "import Test from '../../service/test.js';");
 
     importContext = utils.getImportStr(path.resolve(cwd, 'app/typings'), path.resolve(cwd, 'app/controller/test.ts'), 'Test', true);
-    assert(importContext === "import * as Test from '../controller/test';");
+    assert.equal(importContext, "import * as Test from '../controller/test.js';");
 
     importContext = utils.getImportStr(path.resolve(cwd, 'typings'), path.resolve(cwd, 'controller/test.js'), 'Test');
-    assert(importContext === "import Test = require('../controller/test');");
+    assert.equal(importContext, "import Test = require('../controller/test');");
 
     importContext = utils.getImportStr(path.resolve(cwd, 'typings'), path.resolve(cwd, 'controller/test.js'), 'Test', true);
-    assert(importContext === "import Test = require('../controller/test');");
+    assert.equal(importContext, "import Test = require('../controller/test');");
 
     importContext = utils.getImportStr(cwd, path.resolve(__dirname, './fixtures/app7/test4.js'), 'Test', true);
-    assert(importContext === "import * as Test from '../app7/test4';");
+    assert.equal(importContext, "import * as Test from '../app7/test4.js';");
   });
 
   it('should getModuleObjByPath without error', () => {
     let result = utils.getModuleObjByPath('abc/fff.ts');
-    assert(result.moduleName === 'AbcFff');
+    assert.equal(result.moduleName, 'AbcFff');
 
     result = utils.getModuleObjByPath('abc/bbb.ts');
-    assert(result.moduleName === 'AbcBbb');
+    assert.equal(result.moduleName, 'AbcBbb');
   });
 
   it('should findExportNode without error', () => {

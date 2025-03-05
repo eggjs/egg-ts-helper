@@ -4,6 +4,9 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
+
 import { eggInfoPath } from '../config';
 import * as utils from '../utils';
 
@@ -22,8 +25,23 @@ if (utils.checkMaybeIsTsProj(cwd)) {
 }
 
 async function main() {
+  const pkg = utils.getPkgInfo(cwd);
   // try to read postinstall script env.ETS_SCRIPT_FRAMEWORK, let egg-bin can auto set the default framework
-  const framework = (utils.getPkgInfo(cwd).egg || {}).framework || process.env.ETS_SCRIPT_FRAMEWORK || 'egg';
+  const framework = (pkg.egg || {}).framework || process.env.ETS_SCRIPT_FRAMEWORK || 'egg';
+  if (pkg.type === 'module') {
+    const saveEggInfoPath = path.join(__dirname, '../../save_egg_info.mjs');
+    console.warn('[egg-ts-helper] use esm script to save egg info, %o', saveEggInfoPath);
+    const frameworkPath = getFrameworkPath(cwd, framework);
+    const esmLoader = pathToFileURL(require.resolve('ts-node/esm')).href;
+    execFileSync(process.execPath, [ '--no-warnings', '--loader', esmLoader, saveEggInfoPath, cwd, frameworkPath, eggInfoPath ], {
+      env: {
+        ...process.env,
+        EGG_TS_ENABLE: 'true',
+        VITEST: 'true',
+      },
+    });
+    return;
+  }
   const loader = getLoader(cwd, framework);
   if (loader) {
     try {
@@ -71,16 +89,22 @@ function mockFn(obj, name, fn) {
   };
 }
 
-function getLoader(baseDir: string, framework: string) {
+function getFrameworkPath(baseDir: string, framework: string) {
   let frameworkPath = '';
   try {
-    frameworkPath = require.resolve(framework, { paths: [ baseDir ] });
-  } catch (_) {
+    frameworkPath = require.resolve(`${framework}/package.json`, { paths: [ baseDir ] });
+    frameworkPath = path.dirname(frameworkPath);
+  } catch {
     // ignore error
   }
   if (!frameworkPath) {
     frameworkPath = path.join(baseDir, 'node_modules', framework);
   }
+  return frameworkPath;
+}
+
+function getLoader(baseDir: string, framework: string) {
+  const frameworkPath = getFrameworkPath(baseDir, framework);
   const eggCore = findEggCore(baseDir, frameworkPath);
   if (!eggCore) {
     console.warn('[egg-ts-helper] WARN cannot find @eggjs/core from frameworkPath: %s', frameworkPath);
@@ -106,7 +130,7 @@ function findEggCore(baseDir: string, frameworkPath: string, eggCorePkgName = '@
   let eggCorePath = '';
   try {
     eggCorePath = require.resolve(eggCorePkgName, { paths: [ frameworkPath ] });
-  } catch (_) {
+  } catch {
     // ignore error
   }
   if (!eggCorePath) {

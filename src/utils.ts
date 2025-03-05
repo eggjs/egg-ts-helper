@@ -261,7 +261,7 @@ export function getImportStr(
   const importPath = path.relative(from, toPathWithoutExt).replace(/\/|\\/g, '/');
   const isTS = extname === '.ts' || fs.existsSync(`${toPathWithoutExt}.d.ts`);
   const importStartStr = isTS && importStar ? '* as ' : '';
-  const fromStr = isTS ? `from '${importPath}'` : `= require('${importPath}')`;
+  const fromStr = isTS ? `from '${importPath}.js'` : `= require('${importPath}')`;
   return `import ${importStartStr}${moduleName} ${fromStr};`;
 }
 
