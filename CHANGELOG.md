@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.0](https://github.com/eggjs/egg-ts-helper/compare/v3.0.0...v3.1.0) (2025-03-05)
+
+
+### Features
+
+* support gen ts defines on esm project ([#115](https://github.com/eggjs/egg-ts-helper/issues/115)) ([5c25621](https://github.com/eggjs/egg-ts-helper/commit/5c256219b684922b026dbe25b2840feb9b09c22d))
+
 ## [3.0.0](https://github.com/eggjs/egg-ts-helper/compare/v2.1.1...v3.0.0) (2025-02-04)
 
 
