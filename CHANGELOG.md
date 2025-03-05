@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.1](https://github.com/eggjs/egg-ts-helper/compare/v3.1.0...v3.1.1) (2025-03-05)
+
+
+### Bug Fixes
+
+* make sure parent dir exists ([2a63587](https://github.com/eggjs/egg-ts-helper/commit/2a63587a59000a3a7eebf271e448694514a6cd39))
+
 ## [3.1.0](https://github.com/eggjs/egg-ts-helper/compare/v3.0.0...v3.1.0) (2025-03-05)
 
 
