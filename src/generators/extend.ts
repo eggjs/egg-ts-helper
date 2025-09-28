@@ -6,6 +6,10 @@ import { declMapping } from '../config';
 import { GeneratorResult, TsGenConfig, TsHelperConfig } from '..';
 
 const debug = debuglog('egg-ts-helper#generators_extend');
+const hasExportWithoutDefault = (filePath: string) => {
+  const result = utils.findExportNode(fs.readFileSync(filePath, 'utf-8'));
+  return !result.exportDefaultNode;
+};
 
 export default function ExtendGenerator(config: TsGenConfig, baseConfig: TsHelperConfig) {
   const fileList = config.file ? [ config.file ] : config.fileList;
@@ -41,7 +45,9 @@ export default function ExtendGenerator(config: TsGenConfig, baseConfig: TsHelpe
 
     // get import info
     const moduleName = `Extend${interfaceEnvironment}${interfaceName}`;
-    const importContext = utils.getImportStr(config.dtsDir, f, moduleName);
+
+    const useImportStar = hasExportWithoutDefault(f);
+    const importContext = utils.getImportStr(config.dtsDir, f, moduleName, useImportStar);
     tsList.push({
       dist,
       content:

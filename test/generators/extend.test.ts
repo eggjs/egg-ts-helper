@@ -49,7 +49,7 @@ describe('generators/extend.test.ts', () => {
   it('should works without error with helper', () => {
     const result = triggerGenerator('extend', appDir, 'helper.ts');
     const item = result[0];
-    assert(item.content!.includes('../../../app/extend/helper'));
+    assert(item.content!.includes('import * as ExtendIHelper from \'../../../app/extend/helper\''));
     assert(item.content!.includes('type ExtendIHelperType = typeof ExtendIHelper'));
     assert(item.content!.includes('interface IHelper extends ExtendIHelperType { }'));
   });
@@ -58,7 +58,7 @@ describe('generators/extend.test.ts', () => {
     const result = triggerGenerator('extend', appDir, 'application.unittest.ts');
     const item = result[0];
     assert(item.dist === path.resolve(appDir, './typings/app/extend/application.unittest.d.ts'));
-    assert(item.content!.includes('../../../app/extend/application.unittest'));
+    assert(item.content!.includes('import ExtendUnittestApplication from \'../../../app/extend/application.unittest\''));
     assert(item.content!.includes('type ExtendUnittestApplicationType = typeof ExtendUnittestApplication;'));
     assert(item.content!.includes('interface Application extends ExtendUnittestApplicationType { }'));
   });
