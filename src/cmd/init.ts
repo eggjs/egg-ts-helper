@@ -1,7 +1,7 @@
 import { prompt } from 'enquirer';
 import * as utils from '../utils';
-import path from 'path';
-import fs from 'fs';
+import path from 'node:path';
+import fs from 'node:fs';
 import { createTsHelperInstance } from '../';
 
 const TYPE_TS = 'typescript';

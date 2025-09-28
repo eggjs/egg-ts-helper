@@ -1,9 +1,9 @@
 import del from 'del';
-import fs from 'fs';
+import fs from 'node:fs';
 import { getStd, fork, spawn } from './utils';
-import path from 'path';
+import path from 'node:path';
 import { TsHelper, Register } from '../dist';
-import assert = require('assert');
+import assert from 'node:assert';
 import extend from 'extend2';
 
 const options = {

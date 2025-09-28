@@ -1,4 +1,4 @@
-import assert = require('assert');
+import assert from 'node:assert';
 import { generator } from '..';
 const { generators, registerGenerator, BaseGenerator } = generator;
 

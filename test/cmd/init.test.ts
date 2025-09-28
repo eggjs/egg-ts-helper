@@ -1,8 +1,8 @@
 import del from 'del';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import { triggerBin, getOutput, sleep } from '../utils';
-import assert = require('assert');
+import assert from 'node:assert';
 
 describe('cmd/init.test.ts', () => {
   const appPath = path.resolve(__dirname, '../fixtures/init');

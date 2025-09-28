@@ -2,7 +2,7 @@
 import { default as TsHelper, TsGenConfig, TsHelperConfig } from '../core';
 import { declMapping } from '../config';
 import * as utils from '../utils';
-import path from 'path';
+import path from 'node:path';
 
 const customWatcherName = 'custom';
 const customSpecRef = `${customWatcherName}_spec_ref`;

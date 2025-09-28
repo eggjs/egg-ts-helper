@@ -535,3 +535,9 @@ JS demo: <https://github.com/whxaxes/egg-boilerplate-d-js>
 ## License
 
 [MIT](LICENSE)
+
+## Contributors
+
+[![Contributors](https://contrib.rocks/image?repo=eggjs/tracer)](https://github.com/eggjs/tracer/graphs/contributors)
+
+Made with [contributors-img](https://contrib.rocks).

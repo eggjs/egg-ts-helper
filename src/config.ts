@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import { getPkgInfo } from './utils';
 
 const root = path.dirname(__dirname);

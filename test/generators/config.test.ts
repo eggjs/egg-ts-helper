@@ -1,9 +1,9 @@
-import path from 'path';
-import assert = require('assert');
+import path from 'node:path';
+import assert from 'node:assert';
 import { GeneratorResult } from '../../dist/';
 import * as utils from '../../dist/utils';
 import { triggerGenerator } from './utils';
-import mm from 'egg-mock';
+import { mm } from '@eggjs/mock';
 
 describe('generators/config.test.ts', () => {
   const appDir = path.resolve(__dirname, '../fixtures/app');
@@ -14,7 +14,7 @@ describe('generators/config.test.ts', () => {
   it('should works without error', () => {
     const result = triggerGenerator<GeneratorResult>('config', appDir);
     assert(result.content);
-    assert(result.content!.includes("import ExportConfigDefault from '../../config/config.default';"));
+    assert(result.content!.includes("import ExportConfigDefault from '../../config/config.default.js';"));
     assert(result.content!.includes('type ConfigDefault = ReturnType<typeof ExportConfigDefault>;'));
     assert(result.content!.includes('type NewEggAppConfig = ConfigDefault;'));
     assert(result.content!.includes("declare module 'larva'"));
@@ -25,9 +25,9 @@ describe('generators/config.test.ts', () => {
     mm(utils, 'loadTsConfig', () => ({ skipLibCheck: true }));
     const result = triggerGenerator<GeneratorResult>('config', appDir, undefined, commonConfig);
     assert(result.content);
-    assert(result.content!.includes("import ExportConfigDefault from '../../config/config.default';"));
-    assert(result.content!.includes("import ExportConfigLocal from '../../config/config.local';"));
-    assert(result.content!.includes("import * as ExportConfigProd from '../../config/config.prod';"));
+    assert(result.content!.includes("import ExportConfigDefault from '../../config/config.default.js';"));
+    assert(result.content!.includes("import ExportConfigLocal from '../../config/config.local.js';"));
+    assert(result.content!.includes("import * as ExportConfigProd from '../../config/config.prod.js';"));
     assert(result.content!.includes('type ConfigDefault = ReturnType<typeof ExportConfigDefault>;'));
     assert(result.content!.includes('type ConfigLocal = typeof ExportConfigLocal;'));
     assert(result.content!.includes('type ConfigProd = typeof ExportConfigProd;'));
@@ -39,8 +39,8 @@ describe('generators/config.test.ts', () => {
   it('should not generate d.ts with export plain object', () => {
     const result = triggerGenerator<GeneratorResult>('config', appDir, undefined, commonConfig);
     assert(result.content);
-    assert(result.content!.includes("import ExportConfigDefault from '../../config/config.default';"));
-    assert(!result.content!.includes("import ExportConfigLocal from '../../config/config.local';"));
+    assert(result.content!.includes("import ExportConfigDefault from '../../config/config.default.js';"));
+    assert(!result.content!.includes("import ExportConfigLocal from '../../config/config.local.js';"));
   });
 
   it('should works without error with file changed', () => {
@@ -48,9 +48,9 @@ describe('generators/config.test.ts', () => {
     triggerGenerator<GeneratorResult>('config', appDir, undefined, commonConfig);
     const result = triggerGenerator<GeneratorResult>('config', appDir, 'config.default', commonConfig);
     assert(result.content);
-    assert(result.content!.includes("import ExportConfigDefault from '../../config/config.default';"));
-    assert(result.content!.includes("import ExportConfigLocal from '../../config/config.local';"));
-    assert(result.content!.includes("import * as ExportConfigProd from '../../config/config.prod';"));
+    assert(result.content!.includes("import ExportConfigDefault from '../../config/config.default.js';"));
+    assert(result.content!.includes("import ExportConfigLocal from '../../config/config.local.js';"));
+    assert(result.content!.includes("import * as ExportConfigProd from '../../config/config.prod.js';"));
     assert(result.content!.includes('type ConfigDefault = ReturnType<typeof ExportConfigDefault>;'));
     assert(result.content!.includes('type ConfigLocal = typeof ExportConfigLocal;'));
     assert(result.content!.includes('type ConfigProd = typeof ExportConfigProd;'));
@@ -64,15 +64,15 @@ describe('generators/config.test.ts', () => {
     triggerGenerator<GeneratorResult>('config', appDir, undefined, commonConfig);
     const result = triggerGenerator<GeneratorResult>('config', appDir, 'config.xxx', commonConfig);
     assert(!result.content!.includes("config.xxx';"));
-    assert(result.content!.includes("import ExportConfigDefault from '../../config/config.default';"));
-    assert(result.content!.includes("import ExportConfigLocal from '../../config/config.local';"));
+    assert(result.content!.includes("import ExportConfigDefault from '../../config/config.default.js';"));
+    assert(result.content!.includes("import ExportConfigLocal from '../../config/config.local.js';"));
   });
 
   it('should works while only has config.ts', () => {
     mm(utils, 'loadTsConfig', () => ({ skipLibCheck: true }));
     const result = triggerGenerator<GeneratorResult>('config', path.resolve(__dirname, '../fixtures/app2'));
     assert(result.content);
-    assert(result.content!.includes("import ExportConfig from '../../config/config';"));
+    assert(result.content!.includes("import ExportConfig from '../../config/config.js';"));
     assert(result.content!.includes('type Config = ReturnType<typeof ExportConfig>;'));
     assert(result.content!.includes('Config'));
   });

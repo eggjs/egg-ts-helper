@@ -1,9 +1,9 @@
-import fs from 'fs';
+import fs from 'node:fs';
 import glob from 'globby';
-import path from 'path';
+import path from 'node:path';
 import ts from 'typescript';
 import yn from 'yn';
-import { execFileSync, execFile, ExecFileOptions } from 'child_process';
+import { execFileSync, execFile, ExecFileOptions } from 'node:child_process';
 import JSON5 from 'json5';
 import { eggInfoPath, tmpDir } from './config';
 
@@ -261,7 +261,7 @@ export function getImportStr(
   const importPath = path.relative(from, toPathWithoutExt).replace(/\/|\\/g, '/');
   const isTS = extname === '.ts' || fs.existsSync(`${toPathWithoutExt}.d.ts`);
   const importStartStr = isTS && importStar ? '* as ' : '';
-  const fromStr = isTS ? `from '${importPath}'` : `= require('${importPath}')`;
+  const fromStr = isTS ? `from '${importPath}.js'` : `= require('${importPath}')`;
   return `import ${importStartStr}${moduleName} ${fromStr};`;
 }
 
@@ -442,11 +442,13 @@ export function loadTsConfig(tsconfigPath: string): ts.CompilerOptions {
       path.resolve(tsconfigDirName, extendPattern),
       path.resolve(tsconfigDirName, `${extendPattern}.json`),
     ];
-
-    if (!path.extname(tsConfig.extends) && !extendPattern.startsWith('.') && !extendPattern.startsWith('/')) {
+    const isExtendFromNodeModules = !extendPattern.startsWith('.') && !extendPattern.startsWith('/');
+    if (isExtendFromNodeModules) {
+      const DEFAULT_TS_CONFIG_FILE_NAME = 'tsconfig.json';
+      const extendTsConfigPath = !path.extname(extendPattern) ? DEFAULT_TS_CONFIG_FILE_NAME : '';
       maybeRealExtendPath.push(
-        path.resolve(tsconfigDirName, 'node_modules', extendPattern, 'tsconfig.json'),
-        path.resolve(process.cwd(), 'node_modules', extendPattern, 'tsconfig.json'),
+        path.resolve(tsconfigDirName, 'node_modules', extendPattern, extendTsConfigPath),
+        path.resolve(process.cwd(), 'node_modules', extendPattern, extendTsConfigPath),
       );
     }
 

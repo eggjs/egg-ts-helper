@@ -1,7 +1,7 @@
 import { default as TsHelper, createTsHelperInstance, getDefaultGeneratorConfig } from '../dist';
 import Watcher, { WatchItem } from '../dist/watcher';
-import path from 'path';
-import assert = require('assert');
+import path from 'node:path';
+import assert from 'node:assert';
 
 describe('watcher.test.ts', () => {
   let watcher: Watcher;

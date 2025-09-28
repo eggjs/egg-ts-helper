@@ -1,5 +1,66 @@
 # Changelog
 
+## [3.1.1](https://github.com/eggjs/egg-ts-helper/compare/v3.1.0...v3.1.1) (2025-03-05)
+
+
+### Bug Fixes
+
+* make sure parent dir exists ([2a63587](https://github.com/eggjs/egg-ts-helper/commit/2a63587a59000a3a7eebf271e448694514a6cd39))
+
+## [3.1.0](https://github.com/eggjs/egg-ts-helper/compare/v3.0.0...v3.1.0) (2025-03-05)
+
+
+### Features
+
+* support gen ts defines on esm project ([#115](https://github.com/eggjs/egg-ts-helper/issues/115)) ([5c25621](https://github.com/eggjs/egg-ts-helper/commit/5c256219b684922b026dbe25b2840feb9b09c22d))
+
+## [3.0.0](https://github.com/eggjs/egg-ts-helper/compare/v2.1.1...v3.0.0) (2025-02-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* drop Node.js < 18.19.0 support
+
+Only support egg >= 4.0.0
+
+part of https://github.com/eggjs/egg/issues/3644
+
+https://github.com/eggjs/egg/issues/5257
+
+<!-- This is an auto-generated comment: release notes by coderabbit.ai
+-->
+
+## Summary by CodeRabbit
+
+- **Documentation**
+- Introduced a new “Contributors” section in the project documentation
+to highlight community involvement.
+- **Chores**
+- Streamlined CI workflows by removing legacy configurations and
+updating triggers for improved efficiency.
+- Upgraded key dependencies and increased the minimum required Node.js
+version for enhanced performance and security.
+- **Refactor**
+- Standardized module import practices across the codebase to align with
+current Node.js conventions.
+	- Improved asynchronous handling in core operations.
+- **Tests**
+- Updated test setups and assertions to reflect the new module import
+standards and dependency changes.
+
+<!-- end of auto-generated comment: release notes by coderabbit.ai -->
+
+### Features
+
+* support egg v4 ([#114](https://github.com/eggjs/egg-ts-helper/issues/114)) ([90491cf](https://github.com/eggjs/egg-ts-helper/commit/90491cf758e6a36d006b06caf0bac91065c17afb))
+
+## [2.1.1](https://github.com/eggjs/egg-ts-helper/compare/v2.1.0...v2.1.1) (2025-02-04)
+
+
+### Bug Fixes
+
+* load the tsconfig extends with the specific extension name ([#111](https://github.com/eggjs/egg-ts-helper/issues/111)) ([2bbc458](https://github.com/eggjs/egg-ts-helper/commit/2bbc458bd1d7d695f482ad88c5f3bbc5b365f2c7))
+
 ## [2.1.0](https://github.com/eggjs/egg-ts-helper/compare/v2.0.0...v2.1.0) (2023-08-31)
 
 

@@ -1,6 +1,6 @@
-import { debuglog } from 'util';
-import fs from 'fs';
-import path from 'path';
+import { debuglog } from 'node:util';
+import fs from 'node:fs';
+import path from 'node:path';
 import * as utils from '../utils';
 import { declMapping } from '../config';
 import { GeneratorResult, TsGenConfig, TsHelperConfig } from '..';
