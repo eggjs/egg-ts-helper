@@ -131,7 +131,7 @@ export function getEggInfo<T extends 'async' | 'sync' = 'sync'>(option: GetEggIn
   }
 
   try {
-    execFileSync(cmd, args, opt);
+    execFileSync(cmd, args, opt as any);
     return end(parseJson(fs.readFileSync(eggInfoPath, 'utf-8')));
   } catch (e) {
     return end({});
