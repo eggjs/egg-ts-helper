@@ -37,6 +37,12 @@ export default class ConfigGenerator extends BaseGenerator<ConfigGeneratorParams
     const cache = globalCache[baseConfig.id] = globalCache[baseConfig.id] || {};
     if (!fileList.length) return;
 
+    // skip when framework `egg >= 4.0.0`
+    if (baseConfig.framework === 'egg' && baseConfig.frameworkVersion && Number(baseConfig.frameworkVersion.split('.')[0]) >= 4) {
+      this.tsHelper.log(`skip gen \`typings/config/index.d.ts\` on ${baseConfig.framework}@${baseConfig.frameworkVersion}`);
+      return;
+    }
+
     const importList: string[] = [];
     const declarationList: string[] = [];
     const moduleList: string[] = [];
@@ -51,12 +57,6 @@ export default class ConfigGenerator extends BaseGenerator<ConfigGeneratorParams
         // skip when not usePowerPartial and skipLibCheck in ts file
         // because it maybe cause types error.
         if (path.extname(f) !== '.js' && !usePowerPartial && !skipLibCheck) return;
-
-        // skip when framework `egg >= 4.0.0`
-        if (baseConfig.framework === 'egg' && baseConfig.frameworkVersion && Number(baseConfig.frameworkVersion.split('.')[0]) >= 4) {
-          this.tsHelper.log(`skip gen \`typings/config/index.d.ts\` on ${baseConfig.framework}@${baseConfig.frameworkVersion}`);
-          return;
-        }
 
         const { moduleName: sModuleName } = utils.getModuleObjByPath(f);
         const moduleName = `Export${sModuleName}`;
