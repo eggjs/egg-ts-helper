@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.2.0 (2025-10-05)
+
+* feat: don't generate typings/config/index.d.ts on egg >= 4.0.0 (#118) ([594a132](https://github.com/eggjs/egg-ts-helper/commit/594a132)), closes [#118](https://github.com/eggjs/egg-ts-helper/issues/118)
+* chore: use trust publish (#117) ([9584f17](https://github.com/eggjs/egg-ts-helper/commit/9584f17)), closes [#117](https://github.com/eggjs/egg-ts-helper/issues/117)
+
 ## [3.1.1](https://github.com/eggjs/egg-ts-helper/compare/v3.1.0...v3.1.1) (2025-03-05)
 
 
