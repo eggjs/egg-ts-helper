@@ -8,11 +8,13 @@ export function triggerGenerator<T extends GeneratorResult[] | GeneratorResult =
   appDir: string,
   file?: string,
   extra?: any,
+  options?: any,
 ) {
   const tsHelper = createTsHelper({
     cwd: appDir,
     watch: false,
     execAtInit: false,
+    ...options,
   });
 
   const watcher = tsHelper.watcherList.find(w => w.name === name)!;

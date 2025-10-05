@@ -323,10 +323,10 @@ export function removeSameNameJs(f: string) {
 }
 
 // resolve module
-export function resolveModule(url) {
+export function resolveModule(url, cwd?: string) {
   try {
-    return require.resolve(url);
-  } catch (e) {
+    return require.resolve(url, cwd ? { paths: [ cwd ] } : undefined);
+  } catch {
     return undefined;
   }
 }

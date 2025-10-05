@@ -13,7 +13,11 @@ import { BaseGenerator } from './generators/base';
 import * as utils from './utils';
 import { CompilerOptions } from 'typescript';
 import glob from 'globby';
+import { debuglog } from 'node:util';
+
 const isInUnitTest = process.env.NODE_ENV === 'test';
+
+const debug = debuglog('egg-ts-helper/core');
 
 declare global {
   interface PlainObject<T = any> {
@@ -24,6 +28,7 @@ declare global {
 export interface TsHelperOption {
   cwd?: string;
   framework?: string;
+  frameworkVersion?: string;
   typings?: string;
   generatorConfig?: { [key: string]: WatchItem | boolean };
   /** @deprecated alias of generatorConfig, has been deprecated */
@@ -71,6 +76,7 @@ export type TsGenerator<T = GeneratorAllResult | void> = ((
 export const defaultConfig = {
   cwd: utils.convertString(process.env.ETS_CWD, process.cwd()),
   framework: utils.convertString(process.env.ETS_FRAMEWORK, 'egg'),
+  frameworkVersion: utils.convertString(process.env.ETS_FRAMEWORK_VERSION, ''),
   typings: utils.convertString(process.env.ETS_TYPINGS, './typings'),
   caseStyle: utils.convertString(process.env.ETS_CASE_STYLE, 'lower'),
   autoRemoveJs: utils.convertString(process.env.ETS_AUTO_REMOVE_JS, true),
@@ -357,9 +363,18 @@ export default class TsHelper extends EventEmitter {
     });
 
     config.framework = options.framework || defaultConfig.framework;
+    config.frameworkVersion = options.frameworkVersion || defaultConfig.frameworkVersion;
+    if (!config.frameworkVersion) {
+      const frameworkPackageJSONFile = utils.resolveModule(`${config.framework}/package.json`, config.cwd);
+      if (frameworkPackageJSONFile) {
+        const frameworkPackageJSON = utils.readJson(frameworkPackageJSONFile);
+        config.frameworkVersion = frameworkPackageJSON.version;
+      }
+    }
     config.generatorConfig = getDefaultGeneratorConfig(config);
     config.typings = path.resolve(config.cwd, config.typings);
     this.config = config;
+    debug('config %o', this.config);
 
     // load watcher config
     this.loadWatcherConfig(this.config, options);

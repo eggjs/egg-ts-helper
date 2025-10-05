@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
+
 import { TsGenConfig } from '..';
 import { declMapping } from '../config';
 import * as utils from '../utils';
@@ -35,6 +36,12 @@ export default class ConfigGenerator extends BaseGenerator<ConfigGeneratorParams
     const fileList = config.fileList;
     const cache = globalCache[baseConfig.id] = globalCache[baseConfig.id] || {};
     if (!fileList.length) return;
+
+    // skip when framework `egg >= 4.0.0`
+    if (baseConfig.framework === 'egg' && baseConfig.frameworkVersion && Number(baseConfig.frameworkVersion.split('.')[0]) >= 4) {
+      this.tsHelper.log(`skip gen \`typings/config/index.d.ts\` on ${baseConfig.framework}@${baseConfig.frameworkVersion}`);
+      return;
+    }
 
     const importList: string[] = [];
     const declarationList: string[] = [];
