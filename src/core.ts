@@ -13,7 +13,11 @@ import { BaseGenerator } from './generators/base';
 import * as utils from './utils';
 import { CompilerOptions } from 'typescript';
 import glob from 'globby';
+import { debuglog } from 'node:util';
+
 const isInUnitTest = process.env.NODE_ENV === 'test';
+
+const debug = debuglog('egg-ts-helper/core');
 
 declare global {
   interface PlainObject<T = any> {
@@ -361,7 +365,7 @@ export default class TsHelper extends EventEmitter {
     config.framework = options.framework || defaultConfig.framework;
     config.frameworkVersion = options.frameworkVersion || defaultConfig.frameworkVersion;
     if (!config.frameworkVersion) {
-      const frameworkPackageJSONFile = utils.resolveModule(`${config.framework}/package.json`);
+      const frameworkPackageJSONFile = require.resolve(`${config.framework}/package.json`, { paths: [ config.cwd ] });
       if (frameworkPackageJSONFile) {
         const frameworkPackageJSON = utils.readJson(frameworkPackageJSONFile);
         config.frameworkVersion = frameworkPackageJSON.version;
@@ -370,6 +374,7 @@ export default class TsHelper extends EventEmitter {
     config.generatorConfig = getDefaultGeneratorConfig(config);
     config.typings = path.resolve(config.cwd, config.typings);
     this.config = config;
+    debug('config %o', this.config);
 
     // load watcher config
     this.loadWatcherConfig(this.config, options);
