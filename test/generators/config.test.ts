@@ -1,11 +1,13 @@
 import path from 'node:path';
 import assert from 'node:assert';
+
+import { mm } from '@eggjs/mock';
+
 import { GeneratorResult } from '../../dist/';
 import * as utils from '../../dist/utils';
 import { triggerGenerator } from './utils';
-import { mm } from '@eggjs/mock';
 
-describe('generators/config.test.ts', () => {
+describe('test/generators/config.test.ts', () => {
   const appDir = path.resolve(__dirname, '../fixtures/app');
   const commonConfig = {
     pattern: 'config.*.(ts|js)',
@@ -19,6 +21,15 @@ describe('generators/config.test.ts', () => {
     assert(result.content!.includes('type NewEggAppConfig = ConfigDefault;'));
     assert(result.content!.includes("declare module 'larva'"));
     assert(result.content!.includes('interface EggAppConfig extends NewEggAppConfig { }\n'));
+  });
+
+  it('should not generate typings/config/index.d.ts when egg >= 4.0.0', () => {
+    const result = triggerGenerator<GeneratorResult>('config', appDir, undefined, undefined, {
+      framework: 'egg',
+      frameworkVersion: '4.0.0',
+    });
+    // console.log(result);
+    assert(!result.content);
   });
 
   it('should works without error with *.ts', () => {
