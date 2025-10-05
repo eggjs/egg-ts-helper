@@ -365,7 +365,7 @@ export default class TsHelper extends EventEmitter {
     config.framework = options.framework || defaultConfig.framework;
     config.frameworkVersion = options.frameworkVersion || defaultConfig.frameworkVersion;
     if (!config.frameworkVersion) {
-      const frameworkPackageJSONFile = require.resolve(`${config.framework}/package.json`, { paths: [ config.cwd ] });
+      const frameworkPackageJSONFile = utils.resolveModule(`${config.framework}/package.json`, config.cwd);
       if (frameworkPackageJSONFile) {
         const frameworkPackageJSON = utils.readJson(frameworkPackageJSONFile);
         config.frameworkVersion = frameworkPackageJSON.version;
