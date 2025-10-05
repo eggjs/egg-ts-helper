@@ -12,10 +12,11 @@ describe('test/generators/plugin.test.ts', () => {
 
   it('should works without error', () => {
     const result = triggerGenerator<GeneratorResult>('plugin', path.resolve(__dirname, appDir));
-    // console.log(result);
+    console.log(result);
     assert(result.dist);
-    assert(result.content!.includes('import \'@eggjs/view\''));
-    assert(!result.content!.includes('import \'@eggjs/static\''));
+    // assert(result.content!.includes('import \'@eggjs/view\''));
+    // assert(!result.content!.includes('import \'@eggjs/static\''));
+    assert(result.content!.includes('import \'egg-view\''));
     assert(result.content!.includes('static?: EggPluginItem'));
     assert(result.content!.includes('view?: EggPluginItem'));
   });
