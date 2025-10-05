@@ -54,7 +54,7 @@ export default class ConfigGenerator extends BaseGenerator<ConfigGeneratorParams
 
         // skip when framework `egg >= 4.0.0`
         if (baseConfig.framework === 'egg' && baseConfig.frameworkVersion && Number(baseConfig.frameworkVersion.split('.')[0]) >= 4) {
-          console.log('skip gen `typings/config/index.d.ts` on %s@%s', baseConfig.framework, baseConfig.frameworkVersion);
+          this.tsHelper.log(`skip gen \`typings/config/index.d.ts\` on ${baseConfig.framework}@${baseConfig.frameworkVersion}`);
           return;
         }
 
